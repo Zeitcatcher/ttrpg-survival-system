@@ -12,7 +12,7 @@
 
 1. **Core never names a system.** The string `"pf2e"` lives only inside `src/systems/`. A lint rule bans `game.system.id` outside that folder.
 2. **One write authority.** Every shared-state mutation runs on the **primary GM client**; players round-trip through `socketlib.executeAsGM`.
-3. **One day code path.** World-clock crossing, Rest, and the "Advance a Day" button all converge on `SurvivalEngine.runTick()`.
+3. **One day code path.** World-clock crossing, Rest, and the Advance-a-Day/Week control all converge on `SurvivalEngine.runTick()`.
 4. **Separation enforced at the sourcing layer**, never the UI — a separated pool is removed from the allocation list *before* allocation.
 5. **Native conditions over bespoke effects** — the adapter maps each ladder stage to the host system's real condition vocabulary.
 
@@ -116,8 +116,8 @@ interface PoolRef { uuid: string; withParty: Record<GroupTag, boolean>; label: s
 interface MemberRef { uuid: string; group: GroupTag; enabled: boolean; joinedDay: number;
                       needsOverride?: Partial<{food:number; water:number}>; }
 interface MountRef extends PoolRef {
-  consumes: { food:number; water:number } | "offBooks";  // default "offBooks" (pool-only)
-  applyConsequences: boolean;                             // default false (narrate, don't auto-condition)
+  consumes: { food:number; water:number } | "offBooks";  // default size-based (Huge ×4 for Chiga-Biga); "offBooks" is an opt-out
+  applyConsequences: boolean;                             // default false (narrate, don't auto-condition an NPC)
   isStorage: boolean; handlerUuid?: string;
 }
 type ClimateBand = "temperate"|"hot"|"extremeHeat"|"cold"|"extremeCold";
@@ -132,7 +132,7 @@ type GroupTag = string;
 
 ### 3.1 Triggers → one method (decoupled from world-time)
 - **World clock crossing** → `updateWorldTime` hook does the day-boundary math, then calls `runTick(targetDay)`.
-- **Rest-for-the-Night** and the **"Advance a Day" button** → call `runTick(currentDay + 1)` **directly**. They do *not* go through `game.time.advance()` — PF2e's Rest advances a system-computed duration (often 8h, configurable) and conflating "a survival day passed" with "world time advanced 86400s" is what creates double-advance bugs against a calendar module. All three converge on `runTick`; only the clock hook does boundary arithmetic.
+- **Rest-for-the-Night** and the **Advance a Day / Week (or N days)** controls → call `runTick(currentDay + N)` **directly**. They do *not* go through `game.time.advance()` — PF2e's Rest advances a system-computed duration (often 8h, configurable) and conflating "a survival day passed" with "world time advanced 86400s" is what creates double-advance bugs against a calendar module. All three converge on `runTick`; only the clock hook does boundary arithmetic. (A week advance is just `N = 7` through the same day-interleaved loop in §3.2.)
 
 ### 3.2 `runTick(targetDay)` — day-interleaved, transactional, GM-only
 
@@ -162,7 +162,7 @@ release lock
 - **Day-interleaved** — consumption *and* ladder advance run inside the per-day loop, so a 6-day jump that goes dry on day 4 escalates correctly (reaches Wasting, not Hungry).
 - **Single idempotency pointer** — one global `lastTickDay`; late arrivals use `joinedDay` instead of a parallel per-actor pointer (the two-pointer design desynced on rewind).
 - **Rewind** = a backward clock move sets the pointer back without refunding consumed items, and a **large backward jump prompts "new campaign? reset survival tracking?"** (the cross-campaign clock-reset trap — real, given vault reuse).
-- **Catch-up cap** (`maxCatchUpDays`, default 14) — on overflow, *ask* the GM: process the cap as a montage, or apply a lump deprivation summary. Never silently under-charge.
+- **Catch-up cap** (`maxCatchUpDays`, default 14 — comfortably covers a one-day or one-week advance) — on overflow (e.g. the ~1.5-month desert crossing), *ask* the GM: process the cap as a montage, or apply a lump deprivation summary. Never silently under-charge.
 - **Re-entrancy lock** — world-state-backed, so the Rest hook and the world-time hook can't both enter `runTick` for the same day.
 - **Dangling UUID resilience** — a pool whose actor no longer resolves (the mount died) is skipped with *"its supplies are lost"* + a GM cargo-disposition prompt — never a crash.
 
@@ -171,7 +171,7 @@ release lock
 ## 4. UI (ApplicationV2)
 
 Four surfaces, all `HandlebarsApplicationMixin(ApplicationV2)`:
-- **GmControlPanel** (GM): the headline readout, per-pool `With party?` toggles + the Delving preset, the roster (per-consumer status, **visible clocks**, needs override, a red "no reachable supply" badge for mis-configured consumers), and the climate picker. Click-a-number pool edits commit on **blur/Enter** (not per-keystroke).
+- **GmControlPanel** (GM): the headline readout, per-pool `With party?` toggles + the Delving preset, the roster (per-consumer status, **visible clocks**, needs override, a red "no reachable supply" badge for mis-configured consumers), the climate picker, and an **Advance Day / Week (or N days)** control. Click-a-number pool edits commit on **blur/Enter** (not per-keystroke).
 - **PartyHud** (players, read-mostly): pool headline + per-PC track icons + each player's own **"Kept warm tonight?"** checkbox. Separated pools render greyed with a tag.
 - **UpkeepDialog**: the single daily card (need vs available vs source, named-cause shortfalls, firewood row only when relevant, one Confirm). Split parties = **one card, two sections** — never two dialogs.
 - **Sheet injection** via `renderActorSheetV2` / `renderItemSheetV2`: a "Kept warm" checkbox on PCs and a "Survival resource: food/water/firewood" dropdown on item sheets (the homebrew escape hatch — sets the per-item override flag the adapter reads first). Applied conditions already show as native HUD icons — no parallel status widget.
