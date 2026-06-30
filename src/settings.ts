@@ -1,7 +1,7 @@
 // The dials, as a declarative table (pure data — unit-tested) plus a Foundry registration pass.
 // Defaults are the locked decisions for The Shards.
 
-export const MODULE_ID = "shards-survival";
+export const MODULE_ID = "ttrpg-survival-system";
 
 export type SettingScope = "world" | "client";
 export type SettingType = "String" | "Number" | "Boolean" | "Object";

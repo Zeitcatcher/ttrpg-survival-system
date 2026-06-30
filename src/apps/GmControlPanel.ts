@@ -78,8 +78,8 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
-    id: "shards-survival-gm",
-    classes: ["shards-survival", "ss-gm"],
+    id: `${MODULE_ID}-gm`,
+    classes: [MODULE_ID, "ss-gm"],
     tag: "div",
     window: { title: "SURVIVAL.Panel.Title", icon: "fa-solid fa-campground", resizable: true },
     position: { width: 580 },

@@ -44,7 +44,7 @@ Hooks.once("ready", () => {
   Hooks.on("getSceneControlButtons", (controls: any) => {
     if (!game.user?.isGM) return;
     const tool = {
-      name: "shards-survival",
+      name: MODULE_ID,
       title: "SURVIVAL.Panel.Title",
       icon: "fa-solid fa-campground",
       button: true,

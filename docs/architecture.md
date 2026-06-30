@@ -2,7 +2,7 @@
 
 > **Status: FINALIZED (2026-06-30)** against the locked decisions ([mechanics §10](survival-mechanics.md)). **Part A** below is the architecture; **Part B** (appended) is the implementation-level detail — concrete data shapes, the full settings registry, the socket catalog, the `readModel()`, the `runTick` sequence (incl. week/N-day advance), compendium seeding, and unit-test seams; **B.9** lists the corrections applied after a verification pass. The phased build sequence lives in [implementation-plan.md](implementation-plan.md).
 >
-> **Module id:** `shards-survival` · **Stack:** TypeScript + Vite · **i18n:** English default, locale-ready from day one.
+> **Module id:** `ttrpg-survival-system` · **Stack:** TypeScript + Vite · **i18n:** English default, locale-ready from day one.
 
 **Platform reconciliation:** your saved environment targets **Foundry v14.364 + pf2e v8.2.0**. The architecture targets `minimum: 13`, `verified: 14`, **no `maximum`** (a `maximum` would lock players out of future Foundry with no override). On v13+/v14 the sheet/app layer is fully ApplicationV2, which removes the v12-era pf2e-sheet caveats an earlier draft worried about.
 
@@ -67,7 +67,7 @@ export interface SurvivalSystemAdapter {
 }
 ```
 
-**Why `reconcileConsequences(actor, allTracks)` and not per-track `applyStage`** (the most important fix from review): a per-track call bakes in PF2e's *independent multi-condition* model. dnd5e's sink is a **single 0–6 Exhaustion scalar** that all three tracks collapse onto — so the adapter must see all tracks at once to compute the aggregate. A single reconcile call also fixes the **shared-`Fatigued` bug**: hunger, thirst, and cold all want Fatigued at Stage 1, but it's one non-stacking flag — recovering one track must not strip a condition the other two still demand. The adapter computes the **union** of demanded conditions and diffs to it. pf2e diffs to native conditions via a declarative `STAGE_MAP`; generic uses module ActiveEffects tagged `flags["shards-survival"].track`; dnd5e maps the aggregate to one Exhaustion value (and branches 2014 vs 2024 on `game.system.version`).
+**Why `reconcileConsequences(actor, allTracks)` and not per-track `applyStage`** (the most important fix from review): a per-track call bakes in PF2e's *independent multi-condition* model. dnd5e's sink is a **single 0–6 Exhaustion scalar** that all three tracks collapse onto — so the adapter must see all tracks at once to compute the aggregate. A single reconcile call also fixes the **shared-`Fatigued` bug**: hunger, thirst, and cold all want Fatigued at Stage 1, but it's one non-stacking flag — recovering one track must not strip a condition the other two still demand. The adapter computes the **union** of demanded conditions and diffs to it. pf2e diffs to native conditions via a declarative `STAGE_MAP`; generic uses module ActiveEffects tagged `flags["ttrpg-survival-system"].track`; dnd5e maps the aggregate to one Exhaustion value (and branches 2014 vs 2024 on `game.system.version`).
 
 > Honest caveat: for dnd5e this **replaces** the SRD's save-based survival rules with our deterministic ladder, rather than honoring them. That's a deliberate design choice (we impose one consistent survival model across systems), and it should be stated in the 5e adapter's docs.
 
@@ -96,8 +96,8 @@ Conditions follow PF2e stacking: the adapter unions every active track's full st
 |---|---|---|
 | **The Caravan registry** (members, storage, mounts, each `withParty` per group, group tags, per-group climate) | a **dedicated "Caravan" document** (an Actor or JournalEntry), holding the registry in its flags | A pool spans many actors + storage + mounts — no natural owning doc. A *document* (not a world-setting blob) gives **atomic, queued `update()`** and a free `updateDocument` re-render hook — sidestepping the read-modify-write race a single settings-blob would suffer when the tick, a panel edit, and a socket call collide. Stores **UUID references**, never embedded actors. |
 | **Storage stockpiles / each mount's contents** | a **real Actor**, referenced by UUID | Reusing an Actor gives a sheet, inventory, permissions, and Bulk for free. Chiga-Biga = one actor that is both mount and storage → one UUID, one toggle. |
-| **Per-actor survival counters** (per-track `daysDeprived` + `stage`, `blockedHealing`, `joinedDay`) | `actor.flags["shards-survival"].state` | Travels with the actor across scenes and **campaigns** (the vault is reused). |
-| **"Kept warm tonight"** | `actor.flags["shards-survival"].warmth` — a **separate key** | Must be its own key so a player's owner-write doesn't get clobbered by the GM's wholesale `state` write (or vice-versa). |
+| **Per-actor survival counters** (per-track `daysDeprived` + `stage`, `blockedHealing`, `joinedDay`) | `actor.flags["ttrpg-survival-system"].state` | Travels with the actor across scenes and **campaigns** (the vault is reused). |
+| **"Kept warm tonight"** | `actor.flags["ttrpg-survival-system"].warmth` — a **separate key** | Must be its own key so a player's owner-write doesn't get clobbered by the GM's wholesale `state` write (or vice-versa). |
 | **The dials + thresholds + climate presets + item-match lists + locale-independent config** | **world settings** | Standard config surface; a `registerMenu` opens the richer config app. |
 | **UI prefs** (panel collapsed, HUD density) | **client setting** | Never write the world DB for view state. |
 
@@ -200,7 +200,7 @@ All player actions route through `socketlib.executeAsGM` (uniform, correct — n
 ## 7. File layout, manifest, tooling
 
 ```
-shards-survival/
+ttrpg-survival-system/
 ├─ module.json · package.json · vite.config.ts · tsconfig.json
 ├─ src/
 │  ├─ module.ts                 # init/ready: settings, adapter resolve, hooks; socket register in socketlib.ready
@@ -218,7 +218,7 @@ shards-survival/
 ```jsonc
 // module.json essentials
 {
-  "id": "shards-survival",
+  "id": "ttrpg-survival-system",
   "compatibility": { "minimum": "13", "verified": "14" },   // NO maximum
   "esmodules": ["scripts/module.js"],
   "relationships": {
@@ -261,13 +261,13 @@ This appendix adds the concrete shapes, settings, sockets, read-model, tick sequ
 In Abstract mode there is **no real Actor inventory to read**. A pool's day-counts live directly on the **Caravan document flags**, keyed by the pool's logical id (the same UUID slot the registry already uses, but the value is a count map rather than a dereferenced actor inventory):
 
 ```ts
-// Stored at: caravanDoc.flags["shards-survival"].abstractPools[poolId]
+// Stored at: caravanDoc.flags["ttrpg-survival-system"].abstractPools[poolId]
 interface AbstractPoolCounts {
   food: number;      // creature-days of rations
   water: number;     // creature-days of water
   firewood: number;  // bundles (camp-nights)
 }
-// caravanDoc.flags["shards-survival"].abstractPools : Record<string /*poolId*/, AbstractPoolCounts>
+// caravanDoc.flags["ttrpg-survival-system"].abstractPools : Record<string /*poolId*/, AbstractPoolCounts>
 ```
 
 `poolId` = the pool/mount's registry key. For mounts (which are also pools) the same `poolId` carries the mount's own carried supply. PCs in Abstract v1 carry no per-PC inventory by default; a personal pack, if the GM wants one, is just another `AbstractPoolRef` with `personal: true` and an `ownerUuid`.
@@ -306,7 +306,7 @@ dailyGroupNeed(firewood,grp) = (band needs warmth && not all-warm-by-clothing) ?
 
 #### B.1.4 Click-the-number edit (Abstract write path)
 
-GM clicks a pool count in `GmControlPanel` → edits inline → commits on **blur/Enter** → `requestEditPool{poolUuid,kind,value}` → GM handler writes `caravanDoc.update({"flags.shards-survival.abstractPools.<poolId>.<kind>": value})`. One atomic document update; the `updateDocument` hook re-renders all surfaces. No tick runs. Negative values clamp to 0.
+GM clicks a pool count in `GmControlPanel` → edits inline → commits on **blur/Enter** → `requestEditPool{poolUuid,kind,value}` → GM handler writes `caravanDoc.update({"flags.ttrpg-survival-system.abstractPools.<poolId>.<kind>": value})`. One atomic document update; the `updateDocument` hook re-renders all surfaces. No tick runs. Negative values clamp to 0.
 
 #### B.1.5 Where Ledger (v2) diverges — and where it does not
 
@@ -324,7 +324,7 @@ GM clicks a pool count in `GmControlPanel` → edits inline → commits on **blu
 
 ### B.2 Complete settings registry
 
-All registered in `settings.ts`. Namespace `shards-survival`. `onChange` listed only where non-trivial. World scope unless noted. The-Shards defaults in the Default column.
+All registered in `settings.ts`. Namespace `ttrpg-survival-system`. `onChange` listed only where non-trivial. World scope unless noted. The-Shards defaults in the Default column.
 
 | Key | Scope | Type | Default (The Shards) | config | onChange |
 |---|---|---|---|---|---|
@@ -380,7 +380,7 @@ All registered in the `socketlib.ready` hook; all invoked via `socketlib.execute
 | Message | Payload | Direction | GM-side handler |
 |---|---|---|---|
 | `requestAdvanceTime` | `{days:number}` | player/GM → GM | `SurvivalEngine.runTick(currentDay + days)`; returns the consolidated summary read-model delta |
-| `requestSetWarm` | `{actorUuid, warm:boolean}` | player → GM | write `actor.flags["shards-survival"].warmth = warm`; re-render; **no tick** |
+| `requestSetWarm` | `{actorUuid, warm:boolean}` | player → GM | write `actor.flags["ttrpg-survival-system"].warmth = warm`; re-render; **no tick** |
 | `requestForage` | `{actorUuid}` | player → GM | if foraging on: `adapter.rollForage(actor, dc)`, apply result to communal pool / Fatigued; return outcome |
 | `requestEditPool` | `{poolUuid, kind, value:number}` | GM → GM | Abstract: write `abstractPools[poolId][kind]`; Ledger: reconcile item qty; clamp ≥0; no tick |
 | `requestToggleWithParty` | `{poolUuid, group, withParty:boolean}` | GM → GM | set `withParty[group]`; atomic doc update; re-render (headline cliff) |
@@ -534,9 +534,9 @@ runTick(targetDay):
 
 ### B.6 Compendium seeding (`packs/`)
 
-The module ships a compendium pack `shards-survival.survival-items` containing two Items: **"Water (day)"** (1 unit = one creature-day of water; full waterskin = qty 2) and **"Firewood (bundle)"** (1 unit = one camp-night). Native "Rations" (1 week) is decomposed to 7 day-units by the adapter — not seeded.
+The module ships a compendium pack `ttrpg-survival-system.survival-items` containing two Items: **"Water (day)"** (1 unit = one creature-day of water; full waterskin = qty 2) and **"Firewood (bundle)"** (1 unit = one camp-night). Native "Rations" (1 week) is decomposed to 7 day-units by the adapter — not seeded.
 
-- **When:** seeded **lazily on first need in Ledger mode only.** On `ready`, GM-only, if `supplyDetail === "ledger"` and the seed flag `flags["shards-survival"].seeded !== dataVersion`, import the two Items into the world (or just leave them in the compendium and let `getResourceLots` resolve from the pack). Set the seed flag.
+- **When:** seeded **lazily on first need in Ledger mode only.** On `ready`, GM-only, if `supplyDetail === "ledger"` and the seed flag `flags["ttrpg-survival-system"].seeded !== dataVersion`, import the two Items into the world (or just leave them in the compendium and let `getResourceLots` resolve from the pack). Set the seed flag.
 - **Abstract v1 does not need them** — counts live on the Caravan doc, no Items exist. So seeding is skipped entirely while `supplyDetail === "abstract"`, and runs the first time the GM flips to Ledger.
 - The seeded Item names are added to `itemMatchList` so `getResourceLots` recognizes them; the dropdown sheet-injection lets a GM tag any homebrew item as food/water/firewood via the per-item override flag (checked first, before the match list).
 

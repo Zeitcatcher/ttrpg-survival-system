@@ -1,6 +1,6 @@
 ﻿# Implementation Plan
 
-> **Module:** `shards-survival` · **Stack:** TypeScript + Vite · **Target:** Foundry v13+/v14, pf2e v8.2.0 · **v1 scope:** Abstract supply mode (Decision A).
+> **Module:** `ttrpg-survival-system` · **Stack:** TypeScript + Vite · **Target:** Foundry v13+/v14, pf2e v8.2.0 · **v1 scope:** Abstract supply mode (Decision A).
 > Ground truth: [`survival-mechanics.md`](./survival-mechanics.md) + [`architecture.md`](./architecture.md). This plan operationalizes both. Where they disagree, the docs win — flag and ask.
 
 This plan builds a **walking skeleton first**, then sequences the three differentiators — **the separation rule**, **mount-as-consumer (Chiga-Biga ×4)**, and **week / N-day advance** — to land in M2, the very first feature milestone after scaffold and registry. The engine heart is testable headless before any polished UI exists.
@@ -21,11 +21,11 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 
 ## M0 — Scaffold + tooling (the walking skeleton)
 
-**Goal:** A module that installs in Foundry v14, loads with zero errors, registers one socket, and prints a visible "alive" banner + a stub `game.modules.get("shards-survival").api.ping()`. CI builds and a release action exists. This is the smallest end-to-end thing that loads and does something visible.
+**Goal:** A module that installs in Foundry v14, loads with zero errors, registers one socket, and prints a visible "alive" banner + a stub `game.modules.get("ttrpg-survival-system").api.ping()`. CI builds and a release action exists. This is the smallest end-to-end thing that loads and does something visible.
 
 **Tasks**
-- Init repo `shards-survival/` with `package.json`, `tsconfig.json` (strict), `vite.config.ts` (build → `scripts/module.js`; copy `public/` assets).
-- `module.json`: id `shards-survival`, `compatibility { minimum:"13", verified:"14" }` — **NO `maximum`**; `esmodules:["scripts/module.js"]`; `relationships.requires:[socketlib]`, `systems:[pf2e advertised]` (no calendar dependency — the tick runs off core `updateWorldTime`); `languages:[en, ru]`.
+- Init repo `ttrpg-survival-system/` with `package.json`, `tsconfig.json` (strict), `vite.config.ts` (build → `scripts/module.js`; copy `public/` assets).
+- `module.json`: id `ttrpg-survival-system`, `compatibility { minimum:"13", verified:"14" }` — **NO `maximum`**; `esmodules:["scripts/module.js"]`; `relationships.requires:[socketlib]`, `systems:[pf2e advertised]` (no calendar dependency — the tick runs off core `updateWorldTime`); `languages:[en, ru]`.
 - `src/module.ts`: `init`/`ready` hooks; register socketlib handler in the **`socketlib.ready`** hook (not `init` — it throws); expose `module.api` with a `ping()` stub; `ui.notifications.info` "alive" banner on `ready`.
 - Empty `lang/en.json` + `lang/ru.json` with one key each (`SURVIVAL.Alive`).
 - **ESLint rule** banning `game.system.id` / `"pf2e"` outside `src/systems/` (Pillar 1 — wire it now so it guards every later PR).
@@ -34,7 +34,7 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 
 **Files created:** `module.json`, `package.json`, `vite.config.ts`, `tsconfig.json`, `.eslintrc`, `src/module.ts`, `lang/en.json`, `lang/ru.json`, `vitest.config.ts`, `test/smoke.test.ts`, `.github/workflows/ci.yml`, `.github/workflows/release.yml`.
 
-**Acceptance:** `npm run build` emits `scripts/module.js`; dropping the build into Foundry v14 loads with no console errors; `game.modules.get("shards-survival").api.ping()` returns `"pong"`; an "alive" notification shows on world load; CI is green on the first PR.
+**Acceptance:** `npm run build` emits `scripts/module.js`; dropping the build into Foundry v14 loads with no console errors; `game.modules.get("ttrpg-survival-system").api.ping()` returns `"pong"`; an "alive" notification shows on world load; CI is green on the first PR.
 
 **Dependencies:** none.
 **Size:** M.
@@ -50,7 +50,7 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 - `src/core/Caravan.ts`: the `CaravanStore` shape (`groups`, per-group `climate`, `members`, `storage`, `mounts`) per architecture §2.2. CRUD via the document's flags; **store UUID references, never embedded actors**. Provide `load()`, `save()` (queued atomic `update()`), and a `Hooks.on("updateDocument")` re-render signal.
 - Choose the document kind (recommend a hidden **JournalEntry** to avoid an Actor showing in the actors directory) and a "find-or-create on first GM ready" bootstrap.
 - `src/settings.ts`: declaratively register Dials 1–9 with the **locked defaults** (Supply=Abstract, needs=Food+Water+Firewood, Upkeep="only when wrong", Source=Communal-first, Climate=Manual band, Lethal=Cap@3, Split=Single-party, Foraging=off, extras=off) + `maxCatchUpDays=14`; a `registerMenu` stub for the richer config app.
-- Per-actor flag schema stubs: `flags["shards-survival"].state` (per-track `daysDeprived`/`stage`, `blockedHealing`, `joinedDay`) and a **separate** `.warmth` key (avoids the GM-write-clobbers-player-write race).
+- Per-actor flag schema stubs: `flags["ttrpg-survival-system"].state` (per-track `daysDeprived`/`stage`, `blockedHealing`, `joinedDay`) and a **separate** `.warmth` key (avoids the GM-write-clobbers-player-write race).
 - `dataVersion` on the registry; an empty `src/core/migrations.ts` with the `(old)→new` ordered-pass skeleton.
 - Read-model: `getHeadline(group)` computing pool sums in **Abstract mode** (pools are day-count numbers). Wire it to `module.api` so it's console-demoable.
 - Seed a **fixture builder** for The Shards party (5 PCs, Chiga-Biga Huge×4 storage+mount, Staf ×1, mephits/Guenhwyvar needs=0) — reused by every later test.
