@@ -102,7 +102,7 @@ blockquote p{margin:.35em 0}
     <div class="brand">TTRPG Survival System<small>Foundry VTT module — design docs</small></div>
     <div class="repo"><a href="https://github.com/Zeitcatcher/ttrpg-survival-system" target="_blank" rel="noopener">github.com/Zeitcatcher/ttrpg-survival-system</a></div>
     <h2>Contents</h2>
-    <div class="toc-group"><a class="toc-doc" href="#doc-mechanics">Survival Mechanics</a><ul><li class="lvl2"><a href="#mechanics-2">0. Design philosophy</a></li><li class="lvl2"><a href="#mechanics-3">1. The complexity dials (global GM settings)</a></li><li class="lvl2"><a href="#mechanics-4">2. Resources &amp;amp; units</a></li><li class="lvl3"><a href="#mechanics-5">Per-creature daily need</a></li><li class="lvl2"><a href="#mechanics-6">3. Consumption + the separation rule (the feature that earns the module&amp;#39;s keep)</a></li><li class="lvl3"><a href="#mechanics-7">When consumption happens</a></li><li class="lvl3"><a href="#mechanics-8">The resolver (source priority — Dial 4)</a></li><li class="lvl3"><a href="#mechanics-9">The separation rule</a></li><li class="lvl2"><a href="#mechanics-10">4. Consequence ladders</a></li><li class="lvl2"><a href="#mechanics-11">5. Climate &amp;amp; warmth</a></li><li class="lvl3"><a href="#mechanics-12">Warmth — dead simple, exactly as asked</a></li><li class="lvl2"><a href="#mechanics-13">6. Automation vs. manual</a></li><li class="lvl2"><a href="#mechanics-14">7. Mounts / pack animals</a></li><li class="lvl2"><a href="#mechanics-15">8. Worked example — the Ssir-Kat descent</a></li><li class="lvl2"><a href="#mechanics-16">9. Optional extras (Dial 9 — all off unless turned on)</a></li><li class="lvl2"><a href="#mechanics-17">10. Open decisions for you (before we lock the spec)</a></li></ul></div><div class="toc-group"><a class="toc-doc" href="#doc-architecture">Architecture</a><ul><li class="lvl2"><a href="#architecture-2">0. Pillars (non-negotiables)</a></li><li class="lvl2"><a href="#architecture-3">1. Layers</a></li><li class="lvl2"><a href="#architecture-4">1.1 The adapter contract (revised)</a></li><li class="lvl2"><a href="#architecture-5">1.2 PF2e stage map (lives in the adapter, not core)</a></li><li class="lvl2"><a href="#architecture-6">2. Data model</a></li><li class="lvl3"><a href="#architecture-7">2.1 Where state lives</a></li><li class="lvl3"><a href="#architecture-8">2.2 Registry shape (sketch)</a></li><li class="lvl2"><a href="#architecture-9">3. The daily tick</a></li><li class="lvl3"><a href="#architecture-10">3.1 Triggers → one method (decoupled from world-time)</a></li><li class="lvl3"><a href="#architecture-11">3.2 runTick(targetDay) — day-interleaved, transactional, GM-only</a></li><li class="lvl2"><a href="#architecture-12">4. UI (ApplicationV2)</a></li><li class="lvl2"><a href="#architecture-13">5. Localization</a></li><li class="lvl2"><a href="#architecture-14">6. Extensibility</a></li><li class="lvl2"><a href="#architecture-15">7. File layout, manifest, tooling</a></li><li class="lvl2"><a href="#architecture-16">8. Migrations &amp;amp; risk register</a></li></ul></div>
+    <div class="toc-group"><a class="toc-doc" href="#doc-mechanics">Survival Mechanics</a><ul><li class="lvl2"><a href="#mechanics-2">0. Design philosophy</a></li><li class="lvl2"><a href="#mechanics-3">1. The complexity dials (global GM settings)</a></li><li class="lvl2"><a href="#mechanics-4">2. Resources &amp;amp; units</a></li><li class="lvl3"><a href="#mechanics-5">Per-creature daily need</a></li><li class="lvl2"><a href="#mechanics-6">3. Consumption + the separation rule (the feature that earns the module&amp;#39;s keep)</a></li><li class="lvl3"><a href="#mechanics-7">When consumption happens</a></li><li class="lvl3"><a href="#mechanics-8">The resolver (source priority — Dial 4)</a></li><li class="lvl3"><a href="#mechanics-9">The separation rule</a></li><li class="lvl2"><a href="#mechanics-10">4. Consequence ladders</a></li><li class="lvl2"><a href="#mechanics-11">5. Climate &amp;amp; warmth</a></li><li class="lvl3"><a href="#mechanics-12">Warmth — dead simple, exactly as asked</a></li><li class="lvl2"><a href="#mechanics-13">6. Automation vs. manual</a></li><li class="lvl2"><a href="#mechanics-14">7. Mounts / pack animals</a></li><li class="lvl2"><a href="#mechanics-15">8. Worked example — the Ssir-Kat descent</a></li><li class="lvl2"><a href="#mechanics-16">9. Optional extras (Dial 9 — all off unless turned on)</a></li><li class="lvl2"><a href="#mechanics-17">10. Decisions — locked</a></li></ul></div><div class="toc-group"><a class="toc-doc" href="#doc-architecture">Architecture</a><ul><li class="lvl2"><a href="#architecture-2">0. Pillars (non-negotiables)</a></li><li class="lvl2"><a href="#architecture-3">1. Layers</a></li><li class="lvl2"><a href="#architecture-4">1.1 The adapter contract (revised)</a></li><li class="lvl2"><a href="#architecture-5">1.2 PF2e stage map (lives in the adapter, not core)</a></li><li class="lvl2"><a href="#architecture-6">2. Data model</a></li><li class="lvl3"><a href="#architecture-7">2.1 Where state lives</a></li><li class="lvl3"><a href="#architecture-8">2.2 Registry shape (sketch)</a></li><li class="lvl2"><a href="#architecture-9">3. The daily tick</a></li><li class="lvl3"><a href="#architecture-10">3.1 Triggers → one method (decoupled from world-time)</a></li><li class="lvl3"><a href="#architecture-11">3.2 runTick(targetDay) — day-interleaved, transactional, GM-only</a></li><li class="lvl2"><a href="#architecture-12">4. UI (ApplicationV2)</a></li><li class="lvl2"><a href="#architecture-13">5. Localization</a></li><li class="lvl2"><a href="#architecture-14">6. Extensibility</a></li><li class="lvl2"><a href="#architecture-15">7. File layout, manifest, tooling</a></li><li class="lvl2"><a href="#architecture-16">8. Migrations &amp;amp; risk register</a></li></ul></div>
   </nav>
   <main class="content">
     <header class="page-head">
@@ -275,7 +275,7 @@ blockquote p{margin:.35em 0}
 <hr>
 <h2 id="mechanics-6">3. Consumption + the separation rule (the feature that earns the module&#39;s keep)</h2>
 <h3 id="mechanics-7">When consumption happens</h3>
-<p>Once per in-game <strong>day</strong>, triggered by <strong>any</strong> of: a world-clock day crossing, a Rest-for-the-Night, or the panel&#39;s <strong>&quot;Advance a Day&quot;</strong> button — all one code path, run once on the GM&#39;s client.</p>
+<p>Once per in-game <strong>day</strong>, triggered by <strong>any</strong> of: a world-clock day crossing, a Rest-for-the-Night, or the panel&#39;s <strong>Advance a Day / Advance a Week</strong> button (or any N days) — all one code path, run once on the GM&#39;s client. Advancing several days at once accrues <strong>each day&#39;s</strong> consumption and escalation in order (a week of travel really burns a week of supplies) and reports a <strong>single consolidated summary</strong>, not seven dialogs.</p>
 <h3 id="mechanics-8">The resolver (source priority — Dial 4)</h3>
 <blockquote>
 <p><strong>Communal-first (default):</strong> mount/base pool → shared storage → own pack.
@@ -512,18 +512,15 @@ blockquote p{margin:.35em 0}
 </tr>
 <tr>
 <td>One whispered summary + private per-player clock nudges</td>
-<td>The <strong>&quot;Advance a Day&quot;</strong> button</td>
+<td>The <strong>Advance a Day / Week</strong> button (or any N days)</td>
 </tr>
 </tbody></table></div>
 <p>The <strong>one dialog</strong> (when it appears) shows each need as <em>need vs available vs source used</em>, every shortfall with its named cause, the firewood row only when relevant, a warmth row, and a single <strong>Confirm</strong> — pre-filled with the auto-resolution. On a green day with Dial 3 = &quot;only when wrong,&quot; <strong>it never opens.</strong> Players get <em>private</em> nudges, never public shaming.</p>
 <hr>
 <h2 id="mechanics-14">7. Mounts / pack animals</h2>
 <p>A mount is <strong>both a consumer and a pool</strong> — and Chiga-Biga is the proof case: a sentient giant larva that <em>is</em> the party&#39;s mobile base. One actor serves as mount <strong>and</strong> storage, so a single <code>With party?</code> toggle separates the beast and the entire stockpile at once.</p>
-<p><strong>Default behaviour (revised per critique): mounts are pool-only — narrate their needs, don&#39;t auto-track them.</strong> Canon gives Chiga-Biga no consumption figure, and a suffering NPC pack animal usually wants a GM beat, not an automated Drained stack. Per-mount, the GM can opt in to:</p>
-<ul>
-<li><strong>Consumption</strong> (a size-based Food/Water draw — e.g. Huge ×4), and/or</li>
-<li><strong>Auto-applied consequences</strong> (off by default — narrate-only).</li>
-</ul>
+<p><strong>Default behaviour: mounts are real consumers.</strong> Each mount eats and drinks by size (Large ×2, <strong>Huge ×4</strong>), drawing from its own carried supply → storage (never a PC&#39;s backpack). <strong>Chiga-Biga = Huge ×4</strong> — so the party must actually feed the giant larva, and in hot or cold country that draw is felt. Canon gives no consumption figure, so ×4 is a sensible size-based default, fully GM-editable (a one-click &quot;off the books&quot; remains available per mount if you ever want it).</p>
+<p>Deprivation <strong>consequences</strong> for a mount default to <strong>narrate-only</strong> — the GM gets a flagged alert (<em>&quot;Chiga-Biga is going hungry&quot;</em>) rather than auto-stacked PF2e conditions on an NPC — with a one-toggle opt-in to full auto-applied conditions per mount.</p>
 <p>Other handling:</p>
 <ul>
 <li><strong>Handler binding (cosmetic):</strong> the panel names the mount&#39;s handler (<strong>Ракакак</strong> for Chiga-Biga) so whispers read <em>&quot;Ракакак notes Chiga-Biga is getting hungry.&quot;</em></li>
@@ -532,13 +529,14 @@ blockquote p{margin:.35em 0}
 </ul>
 <hr>
 <h2 id="mechanics-15">8. Worked example — the Ssir-Kat descent</h2>
-<p><strong>Party (group &quot;Main&quot;):</strong> Иримэ, Вестник, Ракакак, Грог, Аранэя (5 PCs, Medium) + <strong>Chiga-Biga</strong> (mount + base, pool-only) + Staf + 3 mephits (needs 0). <strong>Surface climate: Hot.</strong> Source: Communal-first. <strong>Pools on the base:</strong> 20 Rations, 16 Water, 4 Firewood; each PC also carries ~7 Rations + a waterskin (2 Water).</p>
+<p><strong>Party (group &quot;Main&quot;):</strong> Иримэ, Вестник, Ракакак, Грог, Аранэя (5 PCs, Medium) + <strong>Chiga-Biga</strong> (mount + base, <strong>Huge ×4 consumer</strong>) + Staf + 3 mephits (needs 0). <strong>Surface climate: Hot.</strong> Source: Communal-first. <strong>Pools on the base:</strong> 20 Rations, 16 Water, 4 Firewood; each PC also carries ~7 Rations + a waterskin (2 Water).</p>
 <ol>
 <li><strong>The split.</strong> The party descends on foot. The upkeep prompts; the GM clicks the <strong>&quot;Delving — leave the base behind&quot;</strong> preset → Chiga-Biga (and its storage) → <em>not with party</em>; the delvers&#39; band → Temperate (underground). The headline recomputes from personal packs only: <strong>Food ~35 · Water 10 · 🔥 0.</strong></li>
 <li><strong>Day 1 underground.</strong> Communal-first wants the base first, but it&#39;s excluded, so each PC draws from their own pack. Food covered; Water covered (waterskins now empty). Firewood not needed (Temperate). <strong>Card (whispered):</strong> <em>&quot;📦 The base is separated — drawing from personal supplies. Food 5/5, Water 5/5, waterskins now empty.&quot;</em> One Confirm.</li>
 <li><strong>Day 2 — the shortfall bites.</strong> Waterskins empty, base still separated. <strong>Water 0/5.</strong> Card: <em>&quot;⚠️ No water — the base is separated on the surface. Thirst clocks advancing.&quot;</em> PCs with Con +2 (grace 3) are still on the clock; a Con +0 PC hits <strong>Thirsty (Fatigued)</strong> — and the card shows exactly <em>why now</em>.</li>
-<li><strong>Resolution.</strong> They climb out, reunite, the GM flips <code>With party?</code> back on. The next tick draws freely from the 14-Water stockpile; everyone drinks; the clocks reset and Fatigued clears on the next rest.</li>
+<li><strong>Resolution.</strong> They climb out, reunite, the GM flips <code>With party?</code> back on. The next tick draws freely from the stockpile; everyone drinks; the clocks reset and Fatigued clears on the next rest.</li>
 </ol>
+<p><em>Meanwhile, topside:</em> the Camp group still has the base — but now must <strong>feed Chiga-Biga</strong>. Huge ×4 in Hot weather is 4 Rations + 8 Water/day, visibly drawing the base stockpile down (16 Water → 8 → dry on day 3), so even the group that kept the supplies feels the clock. This is exactly the pressure the &quot;real consumer&quot; choice adds.</p>
 <p><strong>Total GM interaction across the arc:</strong> the Delving preset, two Confirms, one reunion toggle. Everything else — draws, shortfall math, condition apply/remove — was automatic, with a named-cause card each day.</p>
 <hr>
 <h2 id="mechanics-16">9. Optional extras (Dial 9 — all off unless turned on)</h2>
@@ -592,80 +590,75 @@ blockquote p{margin:.35em 0}
 </tr>
 </tbody></table></div>
 <hr>
-<h2 id="mechanics-17">10. Open decisions for you (before we lock the spec)</h2>
-<p>These are the choices the design can&#39;t make for you. My recommendation is in <strong>bold</strong>; nothing is committed until you say so.</p>
+<h2 id="mechanics-17">10. Decisions — locked</h2>
+<p>Decided with the GM (2026-06-30). All as recommended <strong>except C</strong> (mounts are real consumers).</p>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
 <th>#</th>
 <th>Decision</th>
-<th>Options</th>
-<th>My recommendation</th>
+<th>Locked choice</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>A</strong></td>
-<td><strong>Supply Detail at launch</strong></td>
-<td>Abstract first (safe, ships fast) vs Ledger first (the differentiator, but where the bugs live)</td>
-<td><strong>Abstract as v1; Ledger as the flagship v2.</strong> Get a trustworthy tool to the table fast, then add real-inventory decrement once it&#39;s hardened.</td>
+<td>A</td>
+<td>Supply Detail at launch</td>
+<td><strong>Abstract</strong> (v1, ships first); Ledger is the hardened v2.</td>
 </tr>
 <tr>
-<td><strong>B</strong></td>
-<td><strong>Default tracked needs</strong></td>
-<td>Food+Water+Firewood vs Water+Cold only (a reviewer argued Food rarely bites)</td>
-<td><strong>Keep Food</strong> — you named it explicitly — but ship Foraging <strong>on only for wilderness arcs</strong>, not in dungeons.</td>
+<td>B</td>
+<td>Default tracked needs</td>
+<td><strong>Food + Water + Firewood</strong>; Foraging on for wilderness arcs only.</td>
 </tr>
 <tr>
 <td><strong>C</strong></td>
 <td><strong>Chiga-Biga &amp; mounts</strong></td>
-<td>pool-only (narrate needs) vs real consumer (Huge ×4)</td>
-<td><strong>Pool-only by default</strong>, per-mount opt-in to consumption. Canon gives no number; don&#39;t invent one.</td>
+<td><strong>Real consumers</strong> — size-based (Large ×2, <strong>Huge ×4</strong> for Chiga-Biga), drawing from carried supply → storage. Deprivation is narrate-only by default (a GM alert), one-toggle opt-in to auto-conditions. <em>(changed from the recommendation)</em></td>
 </tr>
 <tr>
-<td><strong>D</strong></td>
-<td><strong>&quot;Unhealable HP until fed/watered&quot;</strong> (Stage 3)</td>
-<td>keep (high fidelity, sidelines the healer) vs soften to &quot;halved healing&quot;</td>
-<td><strong>Keep, but only at Stage 3</strong> and capped by Dial 6 — it&#39;s the meaningful bite. Open to softening.</td>
+<td>D</td>
+<td>&quot;Unhealable HP until fed/watered&quot;</td>
+<td><strong>Kept</strong> at Stage 3 only, capped by Dial 6.</td>
 </tr>
 <tr>
-<td><strong>E</strong></td>
-<td><strong>Lethal Stage 4</strong></td>
-<td>cap at Stage 3 vs allow death</td>
-<td><strong>Cap at Stage 3</strong> for normal play; reserve Stage 4 for an explicit famine/exposure arc.</td>
+<td>E</td>
+<td>Lethal Stage 4</td>
+<td><strong>Capped at Stage 3</strong>; Stage 4 reserved for explicit famine/exposure arcs.</td>
 </tr>
 <tr>
-<td><strong>F</strong></td>
-<td><strong>Green-day dialog</strong></td>
-<td>auto-suppress from day one vs show for the first ~2 weeks then switch</td>
-<td><strong>Auto-suppress from day one</strong> — don&#39;t front-load bookkeeping on a table still buying in.</td>
+<td>F</td>
+<td>Green-day dialog</td>
+<td><strong>Auto-suppressed from day one</strong> (silent whisper, no dialog).</td>
 </tr>
 <tr>
-<td><strong>G</strong></td>
-<td><strong>Water calibration</strong></td>
-<td>waterskin = 1 (harsh) / <strong>2</strong> (one desert day) / 3 (gentle)</td>
-<td><strong>2</strong>, then tune via grace/stage timing rather than unit size.</td>
+<td>G</td>
+<td>Water calibration</td>
+<td><strong>Waterskin = 2 Water</strong> (one desert day).</td>
 </tr>
 <tr>
-<td><strong>H</strong></td>
-<td><strong>Climate source</strong></td>
-<td>manual band per region vs wire to a weather module</td>
-<td><strong>Manual</strong> to start; add weather-module auto-read later if you install one.</td>
+<td>H</td>
+<td>Climate source</td>
+<td><strong>Manual band</strong> per region; weather-module auto-read later.</td>
 </tr>
 <tr>
-<td><strong>I</strong></td>
-<td><strong>Locale at launch</strong></td>
-<td>English-only first vs ship <code>en</code> + <code>ru</code> together</td>
-<td><strong>Ship <code>en</code> + <code>ru</code> together</strong> — your table is bilingual and the i18n architecture supports it from day one.</td>
+<td>I</td>
+<td>Locale at launch</td>
+<td><strong>Ship <code>en</code> + <code>ru</code> together.</strong></td>
 </tr>
 <tr>
-<td><strong>J</strong></td>
-<td><strong>Split-party</strong></td>
-<td>single-toggle default vs named-groups default</td>
-<td><strong>Single-party default</strong>, named-groups available — the full split is rare and adds the only real complexity.</td>
+<td>J</td>
+<td>Split-party</td>
+<td><strong>Single-party default</strong>; named-groups available.</td>
+</tr>
+<tr>
+<td>+</td>
+<td><strong>Time advance</strong></td>
+<td>The GM can advance <strong>a day, a week, or any N days</strong> in one action; the engine accrues each day&#39;s consumption/escalation and reports one consolidated summary.</td>
 </tr>
 </tbody></table></div>
+<p>These are now reflected throughout the spec above. Next: finalize the <a href="architecture.md">architecture</a> and begin implementation.</p>
 <hr>
-<p><em>One-line summary:</em> a one-click daily upkeep that <strong>vanishes on green days</strong>, separation enforced in the math (with a visible supply &quot;cliff&quot; and named-cause shortfalls), three native-PF2e condition ladders with <strong>visible per-character clocks and a capped penalty stack</strong>, a one-checkbox warmth model, Chiga-Biga as a dual mount/storage pool, <strong>Abstract supply mode at launch</strong> and Ledger as the flagship next step — lean by default, rich when you turn the dials up.</p>
+<p><em>One-line summary:</em> a one-click daily upkeep that <strong>vanishes on green days</strong>, separation enforced in the math (with a visible supply &quot;cliff&quot; and named-cause shortfalls), three native-PF2e condition ladders with <strong>visible per-character clocks and a capped penalty stack</strong>, a one-checkbox warmth model, Chiga-Biga as a dual mount/storage pool that must itself be fed, <strong>Abstract supply mode at launch</strong> and Ledger as the flagship next step — lean by default, rich when you turn the dials up.</p>
 </section><section class="doc" id="doc-architecture"><div class="doc-badge">Step 2 · Technical (preliminary)</div><h1 id="architecture-1">Technical Architecture — Draft (step 2)</h1>
 <blockquote>
 <p><strong>Status: PRELIMINARY.</strong> This is the <strong>step-2</strong> layer. It&#39;s provided so you can see the technical direction and judge that the system-agnostic / localization goals are achievable — but it will be finalized <em>after</em> the <a href="survival-mechanics.md">mechanics</a> are approved, since mechanics changes can ripple here. Read for direction, not for sign-off.</p>
@@ -677,7 +670,7 @@ blockquote p{margin:.35em 0}
 <ol>
 <li><strong>Core never names a system.</strong> The string <code>&quot;pf2e&quot;</code> lives only inside <code>src/systems/</code>. A lint rule bans <code>game.system.id</code> outside that folder.</li>
 <li><strong>One write authority.</strong> Every shared-state mutation runs on the <strong>primary GM client</strong>; players round-trip through <code>socketlib.executeAsGM</code>.</li>
-<li><strong>One day code path.</strong> World-clock crossing, Rest, and the &quot;Advance a Day&quot; button all converge on <code>SurvivalEngine.runTick()</code>.</li>
+<li><strong>One day code path.</strong> World-clock crossing, Rest, and the Advance-a-Day/Week control all converge on <code>SurvivalEngine.runTick()</code>.</li>
 <li><strong>Separation enforced at the sourcing layer</strong>, never the UI — a separated pool is removed from the allocation list <em>before</em> allocation.</li>
 <li><strong>Native conditions over bespoke effects</strong> — the adapter maps each ladder stage to the host system&#39;s real condition vocabulary.</li>
 </ol>
@@ -793,8 +786,8 @@ interface PoolRef { uuid: string; withParty: Record&lt;GroupTag, boolean&gt;; la
 interface MemberRef { uuid: string; group: GroupTag; enabled: boolean; joinedDay: number;
                       needsOverride?: Partial&lt;{food:number; water:number}&gt;; }
 interface MountRef extends PoolRef {
-  consumes: { food:number; water:number } | &quot;offBooks&quot;;  // default &quot;offBooks&quot; (pool-only)
-  applyConsequences: boolean;                             // default false (narrate, don&#39;t auto-condition)
+  consumes: { food:number; water:number } | &quot;offBooks&quot;;  // default size-based (Huge ×4 for Chiga-Biga); &quot;offBooks&quot; is an opt-out
+  applyConsequences: boolean;                             // default false (narrate, don&#39;t auto-condition an NPC)
   isStorage: boolean; handlerUuid?: string;
 }
 type ClimateBand = &quot;temperate&quot;|&quot;hot&quot;|&quot;extremeHeat&quot;|&quot;cold&quot;|&quot;extremeCold&quot;;
@@ -806,7 +799,7 @@ type GroupTag = string;
 <h3 id="architecture-10">3.1 Triggers → one method (decoupled from world-time)</h3>
 <ul>
 <li><strong>World clock crossing</strong> → <code>updateWorldTime</code> hook does the day-boundary math, then calls <code>runTick(targetDay)</code>.</li>
-<li><strong>Rest-for-the-Night</strong> and the <strong>&quot;Advance a Day&quot; button</strong> → call <code>runTick(currentDay + 1)</code> <strong>directly</strong>. They do <em>not</em> go through <code>game.time.advance()</code> — PF2e&#39;s Rest advances a system-computed duration (often 8h, configurable) and conflating &quot;a survival day passed&quot; with &quot;world time advanced 86400s&quot; is what creates double-advance bugs against a calendar module. All three converge on <code>runTick</code>; only the clock hook does boundary arithmetic.</li>
+<li><strong>Rest-for-the-Night</strong> and the <strong>Advance a Day / Week (or N days)</strong> controls → call <code>runTick(currentDay + N)</code> <strong>directly</strong>. They do <em>not</em> go through <code>game.time.advance()</code> — PF2e&#39;s Rest advances a system-computed duration (often 8h, configurable) and conflating &quot;a survival day passed&quot; with &quot;world time advanced 86400s&quot; is what creates double-advance bugs against a calendar module. All three converge on <code>runTick</code>; only the clock hook does boundary arithmetic. (A week advance is just <code>N = 7</code> through the same day-interleaved loop in §3.2.)</li>
 </ul>
 <h3 id="architecture-11">3.2 <code>runTick(targetDay)</code> — day-interleaved, transactional, GM-only</h3>
 <pre><code>guard: isPrimaryGM() AND acquire a world-backed re-entrancy lock (serialize concurrent triggers)
@@ -834,7 +827,7 @@ release lock
 <li><strong>Day-interleaved</strong> — consumption <em>and</em> ladder advance run inside the per-day loop, so a 6-day jump that goes dry on day 4 escalates correctly (reaches Wasting, not Hungry).</li>
 <li><strong>Single idempotency pointer</strong> — one global <code>lastTickDay</code>; late arrivals use <code>joinedDay</code> instead of a parallel per-actor pointer (the two-pointer design desynced on rewind).</li>
 <li><strong>Rewind</strong> = a backward clock move sets the pointer back without refunding consumed items, and a <strong>large backward jump prompts &quot;new campaign? reset survival tracking?&quot;</strong> (the cross-campaign clock-reset trap — real, given vault reuse).</li>
-<li><strong>Catch-up cap</strong> (<code>maxCatchUpDays</code>, default 14) — on overflow, <em>ask</em> the GM: process the cap as a montage, or apply a lump deprivation summary. Never silently under-charge.</li>
+<li><strong>Catch-up cap</strong> (<code>maxCatchUpDays</code>, default 14 — comfortably covers a one-day or one-week advance) — on overflow (e.g. the ~1.5-month desert crossing), <em>ask</em> the GM: process the cap as a montage, or apply a lump deprivation summary. Never silently under-charge.</li>
 <li><strong>Re-entrancy lock</strong> — world-state-backed, so the Rest hook and the world-time hook can&#39;t both enter <code>runTick</code> for the same day.</li>
 <li><strong>Dangling UUID resilience</strong> — a pool whose actor no longer resolves (the mount died) is skipped with <em>&quot;its supplies are lost&quot;</em> + a GM cargo-disposition prompt — never a crash.</li>
 </ul>
@@ -842,7 +835,7 @@ release lock
 <h2 id="architecture-12">4. UI (ApplicationV2)</h2>
 <p>Four surfaces, all <code>HandlebarsApplicationMixin(ApplicationV2)</code>:</p>
 <ul>
-<li><strong>GmControlPanel</strong> (GM): the headline readout, per-pool <code>With party?</code> toggles + the Delving preset, the roster (per-consumer status, <strong>visible clocks</strong>, needs override, a red &quot;no reachable supply&quot; badge for mis-configured consumers), and the climate picker. Click-a-number pool edits commit on <strong>blur/Enter</strong> (not per-keystroke).</li>
+<li><strong>GmControlPanel</strong> (GM): the headline readout, per-pool <code>With party?</code> toggles + the Delving preset, the roster (per-consumer status, <strong>visible clocks</strong>, needs override, a red &quot;no reachable supply&quot; badge for mis-configured consumers), the climate picker, and an <strong>Advance Day / Week (or N days)</strong> control. Click-a-number pool edits commit on <strong>blur/Enter</strong> (not per-keystroke).</li>
 <li><strong>PartyHud</strong> (players, read-mostly): pool headline + per-PC track icons + each player&#39;s own <strong>&quot;Kept warm tonight?&quot;</strong> checkbox. Separated pools render greyed with a tag.</li>
 <li><strong>UpkeepDialog</strong>: the single daily card (need vs available vs source, named-cause shortfalls, firewood row only when relevant, one Confirm). Split parties = <strong>one card, two sections</strong> — never two dialogs.</li>
 <li><strong>Sheet injection</strong> via <code>renderActorSheetV2</code> / <code>renderItemSheetV2</code>: a &quot;Kept warm&quot; checkbox on PCs and a &quot;Survival resource: food/water/firewood&quot; dropdown on item sheets (the homebrew escape hatch — sets the per-item override flag the adapter reads first). Applied conditions already show as native HUD icons — no parallel status widget.</li>

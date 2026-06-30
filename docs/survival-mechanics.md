@@ -69,7 +69,7 @@ The only creature-level knob is a **size multiplier** (defaults ×1):
 ## 3. Consumption + the separation rule (the feature that earns the module's keep)
 
 ### When consumption happens
-Once per in-game **day**, triggered by **any** of: a world-clock day crossing, a Rest-for-the-Night, or the panel's **"Advance a Day"** button — all one code path, run once on the GM's client.
+Once per in-game **day**, triggered by **any** of: a world-clock day crossing, a Rest-for-the-Night, or the panel's **Advance a Day / Advance a Week** button (or any N days) — all one code path, run once on the GM's client. Advancing several days at once accrues **each day's** consumption and escalation in order (a week of travel really burns a week of supplies) and reports a **single consolidated summary**, not seven dialogs.
 
 ### The resolver (source priority — Dial 4)
 
@@ -175,7 +175,7 @@ Warm = cold track suppressed, full stop. No insulation math, no layers. Resoluti
 | Supply decrement (real items in Ledger / day-counts in Abstract) | **Click any pool number** to edit (refill, "you found a stream", GM fiat) |
 | Climate water multiplier; ration decomposition | Exclude a consumer ("Иримэ is fasting"); override draw order |
 | Apply / escalate / clear native conditions | Tick "cook a hot meal"; un-tick "light a fire" |
-| One whispered summary + private per-player clock nudges | The **"Advance a Day"** button |
+| One whispered summary + private per-player clock nudges | The **Advance a Day / Week** button (or any N days) |
 
 The **one dialog** (when it appears) shows each need as *need vs available vs source used*, every shortfall with its named cause, the firewood row only when relevant, a warmth row, and a single **Confirm** — pre-filled with the auto-resolution. On a green day with Dial 3 = "only when wrong," **it never opens.** Players get *private* nudges, never public shaming.
 
@@ -185,9 +185,9 @@ The **one dialog** (when it appears) shows each need as *need vs available vs so
 
 A mount is **both a consumer and a pool** — and Chiga-Biga is the proof case: a sentient giant larva that *is* the party's mobile base. One actor serves as mount **and** storage, so a single `With party?` toggle separates the beast and the entire stockpile at once.
 
-**Default behaviour (revised per critique): mounts are pool-only — narrate their needs, don't auto-track them.** Canon gives Chiga-Biga no consumption figure, and a suffering NPC pack animal usually wants a GM beat, not an automated Drained stack. Per-mount, the GM can opt in to:
-- **Consumption** (a size-based Food/Water draw — e.g. Huge ×4), and/or
-- **Auto-applied consequences** (off by default — narrate-only).
+**Default behaviour: mounts are real consumers.** Each mount eats and drinks by size (Large ×2, **Huge ×4**), drawing from its own carried supply → storage (never a PC's backpack). **Chiga-Biga = Huge ×4** — so the party must actually feed the giant larva, and in hot or cold country that draw is felt. Canon gives no consumption figure, so ×4 is a sensible size-based default, fully GM-editable (a one-click "off the books" remains available per mount if you ever want it).
+
+Deprivation **consequences** for a mount default to **narrate-only** — the GM gets a flagged alert (*"Chiga-Biga is going hungry"*) rather than auto-stacked PF2e conditions on an NPC — with a one-toggle opt-in to full auto-applied conditions per mount.
 
 Other handling:
 - **Handler binding (cosmetic):** the panel names the mount's handler (**Ракакак** for Chiga-Biga) so whispers read *"Ракакак notes Chiga-Biga is getting hungry."*
@@ -198,12 +198,14 @@ Other handling:
 
 ## 8. Worked example — the Ssir-Kat descent
 
-**Party (group "Main"):** Иримэ, Вестник, Ракакак, Грог, Аранэя (5 PCs, Medium) + **Chiga-Biga** (mount + base, pool-only) + Staf + 3 mephits (needs 0). **Surface climate: Hot.** Source: Communal-first. **Pools on the base:** 20 Rations, 16 Water, 4 Firewood; each PC also carries ~7 Rations + a waterskin (2 Water).
+**Party (group "Main"):** Иримэ, Вестник, Ракакак, Грог, Аранэя (5 PCs, Medium) + **Chiga-Biga** (mount + base, **Huge ×4 consumer**) + Staf + 3 mephits (needs 0). **Surface climate: Hot.** Source: Communal-first. **Pools on the base:** 20 Rations, 16 Water, 4 Firewood; each PC also carries ~7 Rations + a waterskin (2 Water).
 
 1. **The split.** The party descends on foot. The upkeep prompts; the GM clicks the **"Delving — leave the base behind"** preset → Chiga-Biga (and its storage) → *not with party*; the delvers' band → Temperate (underground). The headline recomputes from personal packs only: **Food ~35 · Water 10 · 🔥 0.**
 2. **Day 1 underground.** Communal-first wants the base first, but it's excluded, so each PC draws from their own pack. Food covered; Water covered (waterskins now empty). Firewood not needed (Temperate). **Card (whispered):** *"📦 The base is separated — drawing from personal supplies. Food 5/5, Water 5/5, waterskins now empty."* One Confirm.
 3. **Day 2 — the shortfall bites.** Waterskins empty, base still separated. **Water 0/5.** Card: *"⚠️ No water — the base is separated on the surface. Thirst clocks advancing."* PCs with Con +2 (grace 3) are still on the clock; a Con +0 PC hits **Thirsty (Fatigued)** — and the card shows exactly *why now*.
-4. **Resolution.** They climb out, reunite, the GM flips `With party?` back on. The next tick draws freely from the 14-Water stockpile; everyone drinks; the clocks reset and Fatigued clears on the next rest.
+4. **Resolution.** They climb out, reunite, the GM flips `With party?` back on. The next tick draws freely from the stockpile; everyone drinks; the clocks reset and Fatigued clears on the next rest.
+
+*Meanwhile, topside:* the Camp group still has the base — but now must **feed Chiga-Biga**. Huge ×4 in Hot weather is 4 Rations + 8 Water/day, visibly drawing the base stockpile down (16 Water → 8 → dry on day 3), so even the group that kept the supplies feels the clock. This is exactly the pressure the "real consumer" choice adds.
 
 **Total GM interaction across the arc:** the Delving preset, two Confirms, one reunion toggle. Everything else — draws, shortfall math, condition apply/remove — was automatic, with a named-cause card each day.
 
@@ -224,23 +226,26 @@ Other handling:
 
 ---
 
-## 10. Open decisions for you (before we lock the spec)
+## 10. Decisions — locked
 
-These are the choices the design can't make for you. My recommendation is in **bold**; nothing is committed until you say so.
+Decided with the GM (2026-06-30). All as recommended **except C** (mounts are real consumers).
 
-| # | Decision | Options | My recommendation |
-|---|---|---|---|
-| **A** | **Supply Detail at launch** | Abstract first (safe, ships fast) vs Ledger first (the differentiator, but where the bugs live) | **Abstract as v1; Ledger as the flagship v2.** Get a trustworthy tool to the table fast, then add real-inventory decrement once it's hardened. |
-| **B** | **Default tracked needs** | Food+Water+Firewood vs Water+Cold only (a reviewer argued Food rarely bites) | **Keep Food** — you named it explicitly — but ship Foraging **on only for wilderness arcs**, not in dungeons. |
-| **C** | **Chiga-Biga & mounts** | pool-only (narrate needs) vs real consumer (Huge ×4) | **Pool-only by default**, per-mount opt-in to consumption. Canon gives no number; don't invent one. |
-| **D** | **"Unhealable HP until fed/watered"** (Stage 3) | keep (high fidelity, sidelines the healer) vs soften to "halved healing" | **Keep, but only at Stage 3** and capped by Dial 6 — it's the meaningful bite. Open to softening. |
-| **E** | **Lethal Stage 4** | cap at Stage 3 vs allow death | **Cap at Stage 3** for normal play; reserve Stage 4 for an explicit famine/exposure arc. |
-| **F** | **Green-day dialog** | auto-suppress from day one vs show for the first ~2 weeks then switch | **Auto-suppress from day one** — don't front-load bookkeeping on a table still buying in. |
-| **G** | **Water calibration** | waterskin = 1 (harsh) / **2** (one desert day) / 3 (gentle) | **2**, then tune via grace/stage timing rather than unit size. |
-| **H** | **Climate source** | manual band per region vs wire to a weather module | **Manual** to start; add weather-module auto-read later if you install one. |
-| **I** | **Locale at launch** | English-only first vs ship `en` + `ru` together | **Ship `en` + `ru` together** — your table is bilingual and the i18n architecture supports it from day one. |
-| **J** | **Split-party** | single-toggle default vs named-groups default | **Single-party default**, named-groups available — the full split is rare and adds the only real complexity. |
+| # | Decision | Locked choice |
+|---|---|---|
+| A | Supply Detail at launch | **Abstract** (v1, ships first); Ledger is the hardened v2. |
+| B | Default tracked needs | **Food + Water + Firewood**; Foraging on for wilderness arcs only. |
+| **C** | **Chiga-Biga & mounts** | **Real consumers** — size-based (Large ×2, **Huge ×4** for Chiga-Biga), drawing from carried supply → storage. Deprivation is narrate-only by default (a GM alert), one-toggle opt-in to auto-conditions. *(changed from the recommendation)* |
+| D | "Unhealable HP until fed/watered" | **Kept** at Stage 3 only, capped by Dial 6. |
+| E | Lethal Stage 4 | **Capped at Stage 3**; Stage 4 reserved for explicit famine/exposure arcs. |
+| F | Green-day dialog | **Auto-suppressed from day one** (silent whisper, no dialog). |
+| G | Water calibration | **Waterskin = 2 Water** (one desert day). |
+| H | Climate source | **Manual band** per region; weather-module auto-read later. |
+| I | Locale at launch | **Ship `en` + `ru` together.** |
+| J | Split-party | **Single-party default**; named-groups available. |
+| + | **Time advance** | The GM can advance **a day, a week, or any N days** in one action; the engine accrues each day's consumption/escalation and reports one consolidated summary. |
+
+These are now reflected throughout the spec above. Next: finalize the [architecture](architecture.md) and begin implementation.
 
 ---
 
-*One-line summary:* a one-click daily upkeep that **vanishes on green days**, separation enforced in the math (with a visible supply "cliff" and named-cause shortfalls), three native-PF2e condition ladders with **visible per-character clocks and a capped penalty stack**, a one-checkbox warmth model, Chiga-Biga as a dual mount/storage pool, **Abstract supply mode at launch** and Ledger as the flagship next step — lean by default, rich when you turn the dials up.
+*One-line summary:* a one-click daily upkeep that **vanishes on green days**, separation enforced in the math (with a visible supply "cliff" and named-cause shortfalls), three native-PF2e condition ladders with **visible per-character clocks and a capped penalty stack**, a one-checkbox warmth model, Chiga-Biga as a dual mount/storage pool that must itself be fed, **Abstract supply mode at launch** and Ledger as the flagship next step — lean by default, rich when you turn the dials up.
