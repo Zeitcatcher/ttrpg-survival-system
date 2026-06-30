@@ -1,7 +1,8 @@
 import { computeTick, type Headline, type TickOptions, type TickResult } from "../core/engine";
-import { type ActorState, type CaravanState, emptyActorState } from "../core/types";
+import { type ActorState, type CaravanState, type ClimateBand, emptyActorState } from "../core/types";
 import { MODULE_ID } from "../settings";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
+import { type GroupView, projectGroups } from "./readModel";
 import { type RegistryData } from "./registryData";
 import { CaravanRegistry } from "./registryDoc";
 import { type ActorFacts, buildCaravanState, writeBackPoolCounts } from "./snapshot";
@@ -101,13 +102,111 @@ async function applyConsequences(state: CaravanState, adapter: SurvivalSystemAda
   }
 }
 
-/** The at-a-glance days-of-supply for a group, without advancing time. */
-export async function readHeadline(adapter: SurvivalSystemAdapter, group = "Main"): Promise<Headline> {
+/** Build the live engine snapshot from the registry + actors (read path; no writes). */
+async function liveState(adapter: SurvivalSystemAdapter): Promise<CaravanState> {
   const registry = await CaravanRegistry.findOrCreate();
   const reg = registry.load();
   const facts = gatherFacts(reg, adapter);
   const actorStates = loadActorStates(reg);
   const lastTickDay = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
-  const state = buildCaravanState(reg, facts, actorStates, lastTickDay);
-  return computeTick(state, lastTickDay).headlineByGroup[group];
+  return buildCaravanState(reg, facts, actorStates, lastTickDay);
+}
+
+/** The at-a-glance days-of-supply for a group, without advancing time. */
+export async function readHeadline(adapter: SurvivalSystemAdapter, group = "Main"): Promise<Headline> {
+  const state = await liveState(adapter);
+  return computeTick(state, state.lastTickDay).headlineByGroup[group];
+}
+
+/** The full view-model every UI surface renders (no tick): headline, pools, roster + clocks. */
+export async function readModel(adapter: SurvivalSystemAdapter): Promise<GroupView[]> {
+  const state = await liveState(adapter);
+  const headline = computeTick(state, state.lastTickDay).headlineByGroup;
+  return projectGroups(state, headline);
+}
+
+// ---- GM mutations (GM-authoritative; the panel is GM-only so these run on the GM client) ----
+
+export async function setWithParty(poolId: string, group: string, withParty: boolean): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const pool = reg.pools.find((p) => p.id === poolId);
+  if (pool) {
+    pool.withParty[group] = withParty;
+    await registry.save(reg);
+  }
+}
+
+export async function editPool(
+  poolId: string,
+  kind: "food" | "water" | "firewood",
+  value: number,
+): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const pool = reg.pools.find((p) => p.id === poolId);
+  if (pool) {
+    pool.counts[kind] = Math.max(0, Math.round(value));
+    await registry.save(reg);
+  }
+}
+
+export async function setClimate(group: string, band: ClimateBand): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  reg.climate[group] = band;
+  await registry.save(reg);
+}
+
+/** "Delving" preset: leave every pool/mount behind for the group; optionally set it underground. */
+export async function applyDelvingPreset(group: string, setUnderground: boolean): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  for (const p of reg.pools) p.withParty[group] = false;
+  if (setUnderground) reg.climate[group] = "temperate";
+  await registry.save(reg);
+}
+
+/** Advance N survival days from the current pointer (Advance Day = 1, Week = 7). */
+export async function advanceDays(days: number, adapter: SurvivalSystemAdapter): Promise<TickResult> {
+  const last = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
+  return runTickViaFoundry(last + days, adapter);
+}
+
+/** Add an actor (by UUID) to the caravan as a consumer, with a personal/mount pool. Idempotent. */
+export async function addActorToCaravan(
+  uuid: string,
+  opts: { isMount?: boolean; group?: string } = {},
+): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  if (reg.members.some((m) => m.uuid === uuid)) return;
+  const group = opts.group ?? "Main";
+  const isMount = !!opts.isMount;
+  const poolId = isMount ? `mount-${uuid}` : `pack-${uuid}`;
+  reg.members.push({ uuid, group, enabled: true, isMount, applyConsequences: false, poolId });
+  if (!reg.pools.some((p) => p.id === poolId)) {
+    reg.pools.push({
+      id: poolId,
+      label: isMount ? "Mount supply" : "Personal pack",
+      counts: { food: 0, water: 0, firewood: 0 },
+      withParty: { [group]: true },
+      isMount,
+      isStorage: isMount,
+    });
+  }
+  await registry.save(reg);
+}
+
+/** Add the currently-selected canvas tokens to the caravan. Returns how many were added. */
+export async function addSelectedTokens(): Promise<number> {
+  const tokens = canvas?.tokens?.controlled ?? [];
+  let n = 0;
+  for (const t of tokens) {
+    const actor = t.actor;
+    if (!actor?.uuid) continue;
+    await addActorToCaravan(actor.uuid, { isMount: !!actor.getFlag?.(MODULE_ID, "isMount") });
+    n++;
+  }
+  return n;
 }
