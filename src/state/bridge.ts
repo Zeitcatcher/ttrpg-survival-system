@@ -1,5 +1,5 @@
 import { computeTick, type Headline, type TickOptions, type TickResult } from "../core/engine";
-import { type ActorState, emptyActorState } from "../core/types";
+import { type ActorState, type CaravanState, emptyActorState } from "../core/types";
 import { MODULE_ID } from "../settings";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
 import { type RegistryData } from "./registryData";
@@ -80,9 +80,25 @@ export async function runTickViaFoundry(
   await registry.save(reg);
   await game.settings.set(MODULE_ID, "lastTickDay", state.lastTickDay);
   await persistActorStates(state);
-  // M3: per consumer, adapter.reconcileConsequences(actor, {hunger,thirst,cold stages})
-  //     to apply native conditions; mounts with applyConsequences=false stay narrate-only.
+  await applyConsequences(state, adapter);
   return result;
+}
+
+/** Apply each consumer's current stages as native conditions. Narrate-only mounts are skipped
+ *  (a GM alert, no conditions on the NPC). The mapping + combined cap live in the adapter. */
+async function applyConsequences(state: CaravanState, adapter: SurvivalSystemAdapter): Promise<void> {
+  for (const c of state.consumers) {
+    if (c.isMount && !c.applyConsequences) continue;
+    const st = state.actorState[c.id];
+    if (!st) continue;
+    const actor = fromUuidSync(c.id);
+    if (!actor) continue;
+    await adapter.reconcileConsequences(actor, {
+      hunger: st.hunger.stage,
+      thirst: st.thirst.stage,
+      cold: st.cold.stage,
+    });
+  }
 }
 
 /** The at-a-glance days-of-supply for a group, without advancing time. */

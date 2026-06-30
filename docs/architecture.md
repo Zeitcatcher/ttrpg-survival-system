@@ -84,7 +84,7 @@ const STAGE_MAP: Record<TrackKey, Record<number, Pf2eConditionSpec[]>> = {
 // Provenance: it only ever touches conditions IT applied — never strips a Doomed from a curse/crit.
 ```
 
-The **combined-cap** mechanic from the spec (never more than Fatigued + one other) is applied in core *before* calling reconcile, by clamping the demanded set.
+Conditions follow PF2e stacking: the adapter unions every active track's full stage signature, taking the **highest value** for a repeated condition type (same-type doesn't stack). Nothing is clamped or dropped — a deeply deprived actor can carry up to three conditions, which clear only as their stages recover.
 
 ---
 
@@ -342,9 +342,7 @@ All registered in `settings.ts`. Namespace `shards-survival`. `onChange` listed 
 | `climatePresets` | world | `Record<presetId,ClimateBand>` (seeded) | the 5 presets below | false | — |
 | `itemMatchList` | world | `{food:string[],water:string[],firewood:string[]}` | seeded from config (B.6) | false (menu) | invalidate Ledger cache |
 | `graceFormula` | world | `"conModPlus1"\|"flat"` + `{flat:number}` | `"conModPlus1"` | false (menu) | — |
-| `thresholds` | world | `LadderThresholds` (B.2.1) | the spec ladders | false (menu) | — |
-| `combinedCap` | world | `"fatiguedPlusOne"\|"uncapped"` | `"fatiguedPlusOne"` | false | — |
-| `mountDefaultApplyConsequences` | world | `boolean` | `false` | true | — |
+| `thresholds` | world | `LadderThresholds` (B.2.1) | the spec ladders | false (menu) | — || `mountDefaultApplyConsequences` | world | `boolean` | `false` | true | — |
 | `dataVersionRegistry` | world | `number` | current | false | — (migration bookkeeping) |
 | `dataVersionActorFlag` | world | `number` | current | false | — |
 | `lastTickDay` | world | `number` | `0` | false | — (idempotency pointer) |
@@ -452,9 +450,7 @@ interface TrackView {
   daysDeprived: number;
   grace: number;                   // Con-mod + 1 (heat-adjusted for thirst)
   stage: 0 | 1 | 2 | 3 | 4;
-  statusName: string;              // localized: "Thirsty", "Wasting", "" if stage 0
-  capped: boolean;                 // true if combined-cap clamped this track's condition
-}
+  statusName: string;              // localized: "Thirsty", "Wasting", "" if stage 0}
 
 interface Shortfall {
   actorUuid: string; name: string;
@@ -518,7 +514,7 @@ runTick(targetDay):
      // --- per-day batch commit (so a GM hand-off mid-loop resumes) ---
      commit: Sourcing.flush(ledger deltas)                                // Abstract: write abstractPools; Ledger: adapter.consume() batched
            + write per-actor flags (daysDeprived/stage/todayDraw/warmth-consumed)
-           + reconcileConsequences(actor, unionStagesAcrossTracks)        // ONE call, combined-cap clamped
+           + reconcileConsequences(actor, unionStagesAcrossTracks)        // ONE call, full union (highest value per type)
      lastTickDay = d                                                      // committed per day
   emit ONE consolidated whispered summary per group (named-cause shortfalls + per-character clocks)
   if upkeepPrompt=="onlyWhenWrong" && all-green: silent whisper, no dialog
@@ -530,7 +526,7 @@ runTick(targetDay):
 **Key invariants enforced here:**
 - **Transactional:** `AllocationLedger.draw` decrements the working copy; `Σ draws ≤ initial availability` always; two consumers never both see the full pool.
 - **Day-interleaved escalation:** a 6-day advance that goes dry on day 4 reaches the correct late stage (e.g. Wasting), not Stage 1 ×6.
-- **`reconcileConsequences` union + cap:** core computes the union of all tracks' demanded conditions, clamps to "Fatigued + one other," then calls reconcile **once** — so recovering thirst doesn't strip the Fatigued that hunger still demands.
+- **`reconcileConsequences` union:** core computes the union of all tracks' demanded conditions (full stage signatures; highest value per repeated type, so same-type never double-stacks) and calls reconcile **once** — so recovering thirst doesn't strip the Fatigued that hunger still demands.
 - **Mounts draw own→storage only**, never a PC pack; default narrate-only.
 - **Rewind:** `targetDay < lastTickDay` sets the pointer back without refunding; a large backward jump prompts "new campaign? reset survival tracking?".
 - **Catch-up idempotency:** `lastTickDay` committed per day; re-running the same span is a no-op.
@@ -575,7 +571,7 @@ These run under Vitest against a **mock adapter** (`MockAdapter implements Survi
 |---|---|---|
 | **AllocationLedger / Resolver** | yes — pure in-memory | **Transactional invariant:** for any pool set + consumer set + source order, `Σ draws[kind] ≤ Σ initialAvailability[kind]`; no consumer draws from a pool not in `presentPools` (separation); communal-first vs personal-first order respected. |
 | **LadderEngine.advanceOrClear** | yes | grace = `graceDays` honored (no stage before grace ends); deprived increments and `stageFor` matches thresholds; **reset-on-satisfied** zeroes `daysDeprived` and steps stage −1/night; recovery runs even after threat gone; lethal dial caps at 3 unless `climbToDeath`. |
-| **combined-cap clamp** | yes | union of three tracks' demanded conditions clamps to "Fatigued + one other"; recovering one track never strips a condition the others still demand (diff against union, not per-track). |
+| **condition union** | yes | union of three tracks' full signatures; same-type takes the highest value (no double-stack); recovering one track never strips a condition the others still demand (diff against union, not per-track). |
 | **ClimateModel.forBand** | yes | band → `{waterMult, cold, bundles, thirstGracePenalty}` math; `dailyGroupNeed` water scales ×1/×2/×3; firewood need only when band warmth-relevant. |
 | **catch-up idempotency** | yes | running `runTick(d)` then `runTick(d)` again is a no-op; `runTick(d+6)` that goes dry on +4 reaches the correct late stage (day-interleaved); rewind sets pointer back without refund; overflow path picks montage/lump deterministically. |
 | **separation filter** | yes | a pool with `withParty[group]===false` is absent from `presentPools` and contributes 0 to both allocation and the headline (the "cliff"); a missing `withParty[newGroup]` key defaults to false (fail-loud). |
@@ -599,8 +595,6 @@ A verification pass against the locked decisions caught the following; these **s
    - `RosterEntry.blockedHealing: boolean` (Decision D) — so the HUD can show *why* a healer's HP restoration isn't landing.
    - `Shortfall.handlerName?: string` — mount narrate-only attribution (*"Ракакак notes Chiga-Biga is going hungry"*).
    - `GroupView.extrasView` — a projection slot for extra-owned rows (the hot-meal "cook?" toggle, the desert "next water in N days" countdown) so extras render **without** polluting the core need rows.
-   - `TrackView.capped` is defined as: *"this track's demanded condition was suppressed by the combined cap."*
-
 5. **Lump catch-up is explicitly an approximation.** On overflow beyond `maxCatchUpDays`: **montage** processes the cap exactly then skips the remainder; **lump** applies the end-state stage for the whole span in one pass (no day-interleaving). The two can therefore yield different stages — by design — and the overflow card says so.
 
 6. **Personal waterskins exist in Abstract v1.** The Shards fixture (plan **M1**) seeds a personal `AbstractPoolRef` (2 Water) per PC, so the canonical Ssir-Kat "waterskins empty on day 2" beat is reproducible under the locked Abstract defaults. Personal packs remain optional in general; the fixture turns them on.
