@@ -1,20 +1,21 @@
 # Design docs
 
-Design for the **TTRPG Survival System** Foundry VTT module. We design in two steps; **step 1 must be approved before step 2 is finalized.**
+Design + build plan for the **TTRPG Survival System** Foundry VTT module.
 
-| Doc | Step | Status |
+| Doc | What | Status |
 |---|---|---|
-| [survival-mechanics.md](survival-mechanics.md) | **1 — game design** (resources, separation rule, hunger/thirst/cold ladders, climate/warmth, automation, mounts, extras) | **Draft for review** — start here |
-| [architecture.md](architecture.md) | 2 — technical architecture (system-agnostic core + adapters, data model, daily tick, UI, i18n) | Preliminary — direction only, finalized after step 1 locks |
+| [survival-mechanics.md](survival-mechanics.md) | Step 1 — game design (resources, separation rule, hunger/thirst/cold ladders, climate, mounts, extras) | **Locked** (decisions in §10) |
+| [architecture.md](architecture.md) | Step 2 — technical architecture (Part A) + implementation-level detail (Part B) | **Finalized** |
+| [implementation-plan.md](implementation-plan.md) | Phased build plan (M0–M9), testing strategy, "first three PRs" | Ready |
+| [design.html](design.html) | All three docs above, rendered into one offline page with a sticky table of contents | Generated |
+| [mockups/survival-ui-mockups.html](mockups/survival-ui-mockups.html) | Visual mockups — GM Control Panel, Players Party HUD, Daily Upkeep card | Generated |
 
-## How this design was produced
+## How this was produced
 
-A multi-agent analysis: research into PF2e Remaster's existing survival/environment rules, existing Foundry survival modules, and system-agnostic module patterns; three competing mechanics designs judged and synthesized; a full architecture; and three adversarial critiques (table-feel, edge-cases, technical soundness). The critiques' fixes are already folded into both docs.
+Multi-agent design + adversarial review: PF2e/Foundry prior-art research, three competing mechanics designs synthesized into one, a full architecture, detailed UI specs, and verification passes. Critique fixes are folded into the docs.
 
-## To move forward
+## Status
 
-1. Read [survival-mechanics.md](survival-mechanics.md), especially **§10 — Open decisions**.
-2. React / refine — change anything; this is a draft.
-3. Approve step 1 → we finalize [architecture.md](architecture.md) and begin implementation.
+Design **step 1 is locked**; architecture **step 2 is finalized**. Next: build per [implementation-plan.md](implementation-plan.md), starting with the **M0 scaffold** and the **M2 engine heart** (Abstract supply mode first; separation rule, the Chiga-Biga ×4 mount consumer, and week/N-day advance are all proven headless in M2).
 
-Targets **Pathfinder 2e (Remaster)** first (campaign *The Shards*); system-agnostic by design. English default, localization-ready (`en` + `ru`).
+Targets **Pathfinder 2e (Remaster)** first (campaign *The Shards*) on **Foundry v13+/v14**; system-agnostic by design; English default, `en` + `ru` shipped together.

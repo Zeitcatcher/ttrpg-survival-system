@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TTRPG Survival System — UI Mockups</title></head>
+<body style="margin:0;background:#0e0f13;">
+<div class="ss-mock">
+<style>
+.ss-mock{
+  --bg:#1a1c22; --panel:#23262e; --panel2:#1f2229; --text:#e6e8ee;
+  --muted:#7a7f8c; --ok:#5fb27a; --warn:#d9a441; --danger:#d8584e;
+  --accent:#5a7fd6; --accent-heat:#cf7a3a; --accent-cold:#4a93c4;
+  --gold:#c9a24b; --line:#34384360;
+  font-family:"Segoe UI",Roboto,system-ui,"Helvetica Neue",Arial,sans-serif;
+  color:var(--text); line-height:1.4; -webkit-font-smoothing:antialiased;
+  background:#0e0f13; padding:24px; box-sizing:border-box;
+}
+.ss-mock *{box-sizing:border-box;}
+.ss-mock .surfaces{display:flex;flex-direction:column;gap:34px;align-items:center;}
+.ss-mock .surf-label{
+  width:100%;max-width:600px;margin:0 auto 8px;color:var(--gold);
+  font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:600;
+  border-bottom:1px solid #2a2d36;padding-bottom:6px;
+}
+.ss-mock .mono{font-family:"Consolas","SF Mono",ui-monospace,monospace;}
+
+/* ---- WINDOW CHROME ---- */
+.ss-mock .win{
+  width:100%;max-width:600px;background:var(--bg);border:1px solid #0a0b0e;
+  border-radius:7px;box-shadow:0 12px 38px #000a, 0 1px 0 #ffffff08 inset;
+  overflow:hidden;
+}
+.ss-mock .titlebar{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  background:linear-gradient(#2b2f39,#222530);border-bottom:1px solid #14161b;
+  font-size:13px;font-weight:600;
+}
+.ss-mock .titlebar .tico{color:var(--gold);}
+.ss-mock .titlebar .ttl{flex:1;letter-spacing:.3px;}
+.ss-mock .winbtn{
+  width:22px;height:20px;display:inline-flex;align-items:center;justify-content:center;
+  color:#aeb3c0;border-radius:4px;font-size:12px;cursor:default;
+}
+.ss-mock .winbtn:hover{background:#ffffff14;}
+.ss-mock .body{padding:12px;display:flex;flex-direction:column;gap:11px;}
+
+/* ---- generic ---- */
+.ss-mock .region{background:var(--panel);border:1px solid #14161b;border-radius:6px;}
+.ss-mock .region-h{
+  display:flex;align-items:center;gap:8px;padding:7px 11px;font-size:11px;
+  text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);font-weight:600;
+  border-bottom:1px solid var(--line);
+}
+.ss-mock .badge{
+  background:#10121733;border:1px solid #3a3f4b;border-radius:10px;
+  padding:1px 8px;font-size:10.5px;color:#b9bdc8;font-weight:600;letter-spacing:.5px;
+}
+.ss-mock .btn{
+  background:linear-gradient(#3a4150,#2d3340);border:1px solid #11131a;color:#dfe2ea;
+  border-radius:5px;padding:5px 10px;font-size:12px;font-weight:600;cursor:default;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.ss-mock .btn:hover{background:linear-gradient(#444c5d,#333a48);}
+.ss-mock .btn.primary{background:linear-gradient(#5a7fd6,#4666b8);border-color:#2c3f73;color:#fff;}
+.ss-mock .btn.heat{background:linear-gradient(#cf7a3a,#a85f29);border-color:#7a431b;color:#fff;}
+.ss-mock .btn.sm{padding:3px 8px;font-size:11px;}
+.ss-mock .toggle{
+  display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#cfd3dd;cursor:default;
+}
+.ss-mock .sw{
+  width:34px;height:18px;border-radius:10px;position:relative;background:#3a3f4b;
+  border:1px solid #14161b;transition:.1s;flex:none;
+}
+.ss-mock .sw::after{content:"";position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:#aeb3c0;}
+.ss-mock .sw.on{background:#3f6b54;}
+.ss-mock .sw.on::after{left:17px;background:#7fdca0;}
+
+/* ---- HEADER region ---- */
+.ss-mock .hdr{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:11px;}
+.ss-mock .hgroup{display:flex;flex-direction:column;gap:5px;}
+.ss-mock .glabel{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.ss-mock .party-tag{display:inline-flex;align-items:center;gap:6px;background:#1b1e25;border:1px solid #333845;border-radius:5px;padding:5px 10px;font-size:12.5px;font-weight:600;}
+.ss-mock .climate{flex:1;min-width:190px;}
+.ss-mock .seg{display:flex;flex-wrap:wrap;gap:4px;}
+.ss-mock .pill{
+  background:#1b1e25;border:1px solid #2f3441;border-radius:5px;padding:4px 8px;
+  font-size:11px;color:#c3c7d1;cursor:default;display:flex;flex-direction:column;gap:1px;line-height:1.15;
+}
+.ss-mock .pill .mult{font-size:9.5px;color:var(--muted);}
+.ss-mock .pill.active{border-color:var(--accent-heat);background:#33231880;color:#fff;box-shadow:0 0 0 1px var(--accent-heat) inset;}
+.ss-mock .pill.active .mult{color:#f0b787;font-weight:600;}
+.ss-mock .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.ss-mock .chip-preset{font-size:10px;color:#9aa0ad;background:#181b21;border:1px solid #2a2e38;border-radius:11px;padding:2px 8px;}
+.ss-mock .chip-preset.sel{color:#f0b787;border-color:var(--accent-heat);background:#2a1d14;}
+.ss-mock .hint{font-size:10.5px;color:#a7826a;margin-top:5px;font-style:italic;}
+.ss-mock .advance{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.ss-mock .splitbtn{display:flex;gap:3px;}
+
+/* ---- HEADLINE region ---- */
+.ss-mock .headline{display:flex;gap:9px;padding:11px;}
+.ss-mock .stat{
+  flex:1;background:var(--panel2);border:1px solid #14161b;border-radius:6px;padding:9px 11px;text-align:center;position:relative;
+}
+.ss-mock .stat .lab{font-size:9.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);}
+.ss-mock .stat .val{font-size:23px;font-weight:700;margin-top:3px;letter-spacing:.5px;}
+.ss-mock .stat .unit{font-size:11px;color:#9aa0ad;margin-left:3px;font-weight:400;}
+.ss-mock .stat.ok .val{color:var(--ok);}
+.ss-mock .stat.warn{border-color:#5a4a2860;background:#27220f40;}
+.ss-mock .stat.warn .val{color:var(--warn);}
+.ss-mock .stat .wflag{position:absolute;top:7px;right:8px;color:var(--warn);font-size:12px;}
+.ss-mock .stat small{display:block;font-size:9px;color:#6c707c;margin-top:4px;}
+
+/* ---- POOLS region ---- */
+.ss-mock .pool-wrap{padding:11px;display:flex;flex-direction:column;gap:9px;}
+.ss-mock .delve{
+  display:flex;flex-direction:column;gap:3px;
+}
+.ss-mock .delve .btn{justify-content:center;width:100%;background:linear-gradient(#6b4a8f,#523774);border-color:#2e1f44;color:#f2e9ff;}
+.ss-mock .delve small{font-size:10px;color:var(--muted);text-align:center;}
+.ss-mock .pcard{background:var(--panel2);border:1px solid #14161b;border-radius:6px;padding:9px 11px;}
+.ss-mock .pcard.sep{opacity:.5;}
+.ss-mock .pcard-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ss-mock .pname{font-weight:700;font-size:13px;cursor:default;}
+.ss-mock .pname:hover{color:var(--accent);text-decoration:underline;}
+.ss-mock .tag{font-size:9.5px;background:#1b1e25;border:1px solid #333845;border-radius:4px;padding:1px 6px;color:#aab0bc;letter-spacing:.4px;}
+.ss-mock .tag.size{color:#f0b787;border-color:#5a3f28;}
+.ss-mock .tag.sep-chip{color:var(--warn);border-color:#5a4a28;background:#241d10;}
+.ss-mock .pcard .handler{font-size:10.5px;color:var(--muted);margin:3px 0 6px;}
+.ss-mock .resrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+.ss-mock .res{font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+.ss-mock .res .num{background:#10121788;border:1px solid #333845;border-radius:4px;padding:1px 8px;min-width:30px;text-align:center;cursor:text;}
+.ss-mock .res.struck .num{text-decoration:line-through;color:var(--muted);}
+.ss-mock .edit-hint{font-size:9.5px;color:#5e626e;margin-left:auto;font-style:italic;}
+.ss-mock .consumes{font-size:10px;color:#8a8f9c;margin-top:6px;}
+.ss-mock .toggle-r{margin-left:auto;}
+
+/* ---- ROSTER region ---- */
+.ss-mock table.roster{width:100%;border-collapse:collapse;font-size:12px;}
+.ss-mock .roster th{
+  text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);
+  font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);background:#1d2027;
+}
+.ss-mock .roster td{padding:7px 8px;border-bottom:1px solid #23262e;vertical-align:middle;}
+.ss-mock .roster tr:last-child td{border-bottom:none;}
+.ss-mock .roster .nm{font-weight:600;}
+.ss-mock .roster .sub{font-size:9.5px;color:var(--muted);font-weight:400;}
+.ss-mock .roster .anc{font-size:10px;color:#8a8f9c;font-weight:400;}
+.ss-mock tr.zero td{color:var(--muted);opacity:.6;}
+.ss-mock tr.shortrow{background:#2a151340;}
+.ss-mock .ck{display:inline-block;width:14px;height:14px;border:1.5px solid #5a6070;border-radius:3px;text-align:center;line-height:12px;font-size:10px;color:var(--ok);}
+.ss-mock .ck.on{background:#1d3326;border-color:#3f6b54;}
+.ss-mock .ck.off{opacity:.4;}
+
+/* clocks */
+.ss-mock .clock{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;}
+.ss-mock .pips{display:inline-flex;gap:2px;}
+.ss-mock .pip{width:9px;height:9px;border-radius:2px;background:#3a3f4b;border:1px solid #14161b;}
+.ss-mock .pip.f{background:var(--warn);border-color:#5a4a28;}
+.ss-mock .pip.d{background:var(--danger);border-color:#5a2824;}
+.ss-mock .clk-txt{color:#aab0bc;}
+.ss-mock .clk-danger .clk-txt{color:var(--danger);font-weight:600;}
+.ss-mock .clk-narrate{color:var(--muted);font-style:italic;font-size:10px;}
+
+/* condition chips */
+.ss-mock .cond{
+  display:inline-flex;align-items:center;gap:4px;border-radius:11px;padding:2px 9px;
+  font-size:10.5px;font-weight:600;letter-spacing:.2px;border:1px solid;
+}
+.ss-mock .cond.ok{color:var(--ok);border-color:#33503f;background:#16271d;}
+.ss-mock .cond.warn{color:var(--warn);border-color:#5a4a28;background:#241d10;}
+.ss-mock .cond.danger{color:#f0938a;border-color:#6e2f2a;background:#2a1411;}
+.ss-mock .cond.narrate{color:#c8a06a;border-color:#54442a;background:#221b10;}
+.ss-mock .needs0{font-size:10px;color:var(--muted);font-style:italic;}
+
+/* ---- FOOTER region ---- */
+.ss-mock .footer{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 11px;font-size:11px;}
+.ss-mock .footer .last{flex:1;color:#b9bdc8;min-width:180px;}
+.ss-mock .footer .last .warn{color:var(--warn);}
+
+/* ---- PLAYER HUD ---- */
+.ss-mock .hud{max-width:430px;}
+.ss-mock .hud .titlebar{background:linear-gradient(#262a34,#1e212a);}
+.ss-mock .hud-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);}
+.ss-mock .hud-head .nums{font-size:13.5px;font-weight:600;letter-spacing:.3px;}
+.ss-mock .days-chip{margin-left:auto;font-size:11px;font-weight:700;border-radius:11px;padding:3px 11px;border:1px solid;}
+.ss-mock .days-chip.red{color:#f0938a;border-color:#6e2f2a;background:#2a1411;}
+.ss-mock .days-chip .sub{font-weight:400;font-size:10px;color:#d8584ecc;}
+.ss-mock .hud-rows{padding:6px 0;}
+.ss-mock .hrow{display:flex;align-items:flex-start;gap:9px;padding:6px 12px;}
+.ss-mock .hicon{width:24px;height:24px;border-radius:5px;background:#2c303b;border:1px solid #14161b;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;}
+.ss-mock .hrow .hbody{flex:1;min-width:0;}
+.ss-mock .hrow .hname{font-size:12.5px;font-weight:600;}
+.ss-mock .calm{color:var(--muted);font-size:12px;letter-spacing:2px;}
+.ss-mock .hrow .cause{font-size:10px;color:#9aa0ad;margin-top:2px;}
+.ss-mock .hud-sep{height:1px;background:var(--line);margin:4px 12px;}
+.ss-mock .nudge{margin:6px 12px 10px;background:#1a2330;border:1px solid #2a3a52;border-radius:6px;padding:8px 10px;font-size:11px;color:#bcd0e8;display:flex;gap:7px;}
+.ss-mock .nudge .ico{color:#6f9fd6;flex:none;}
+
+/* warmth checkbox demo (cold strip) */
+.ss-mock .warm-note{margin:2px 12px 8px;font-size:10px;color:#6c707c;font-style:italic;}
+
+/* ---- UPKEEP CARD ---- */
+.ss-mock .upkeep{max-width:600px;}
+.ss-mock .upk-head{display:flex;align-items:center;gap:8px;padding:9px 12px;background:linear-gradient(#2b2f39,#222530);border-bottom:1px solid #14161b;font-size:12.5px;font-weight:600;}
+.ss-mock .upk-head .hot{color:var(--accent-heat);}
+.ss-mock .verdict{margin:11px;padding:9px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid;}
+.ss-mock .verdict.red{color:#f0938a;border-color:#6e2f2a;background:#2a1411;}
+.ss-mock .needtable{margin:0 11px;border:1px solid #14161b;border-radius:6px;overflow:hidden;}
+.ss-mock .needtable .nt-h{display:flex;font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);background:#1d2027;padding:6px 11px;font-weight:600;}
+.ss-mock .nrow{display:flex;align-items:center;padding:8px 11px;border-top:1px solid #20232b;font-size:12px;}
+.ss-mock .nrow .nname{width:120px;font-weight:600;}
+.ss-mock .nrow .ndemand{width:54px;}
+.ss-mock .nrow .nhave{width:70px;}
+.ss-mock .nrow .nsrc{flex:1;color:#aab0bc;font-size:11px;}
+.ss-mock .nrow .nflag{font-weight:700;}
+.ss-mock .nrow .nflag.ok{color:var(--ok);}
+.ss-mock .nrow .nflag.short{color:var(--warn);}
+.ss-mock .nrow.sub{padding:3px 11px 8px 24px;font-size:10.5px;color:#8a8f9c;border-top:none;}
+.ss-mock .nrow.grey{color:var(--muted);font-style:italic;}
+.ss-mock .upk-section{margin:13px 11px 0;}
+.ss-mock .upk-section .sh{font-size:9.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+.ss-mock .who{font-size:11.5px;color:#cdd1db;margin-bottom:8px;display:flex;gap:7px;line-height:1.45;}
+.ss-mock .who .wi{flex:none;}
+.ss-mock .who b{color:#fff;}
+.ss-mock .who .applied{color:#f0938a;font-weight:700;}
+.ss-mock .clkline{display:flex;align-items:center;gap:9px;font-size:11.5px;padding:4px 0;}
+.ss-mock .clkline .cn{width:92px;font-weight:600;}
+.ss-mock .upk-foot{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:13px 11px 14px;margin-top:11px;border-top:1px solid var(--line);}
+.ss-mock .upk-foot .spacer{flex:1;}
+.ss-mock .baseline{margin:11px 11px 0;font-size:11px;color:#9aa0ad;}
+.ss-mock .baseline b{color:var(--danger);}
+</style>
+
+<div class="surfaces">
+
+<!-- ============================ GM CONTROL PANEL ============================ -->
+<div style="width:100%;max-width:600px;">
+  <div class="surf-label">GM Control Panel</div>
+  <div class="win">
+    <div class="titlebar">
+      <span class="tico">⛺</span>
+      <span class="ttl">Survival — Caravan</span>
+      <span class="winbtn">⚙</span>
+      <span class="winbtn">❔</span>
+      <span class="winbtn">✕</span>
+    </div>
+    <div class="body">
+
+      <!-- HEADER -->
+      <div class="region">
+        <div class="hdr">
+          <div class="hgroup">
+            <span class="glabel">Group</span>
+            <span class="party-tag">👥 Party</span>
+          </div>
+          <div class="hgroup climate">
+            <span class="glabel">Climate band</span>
+            <div class="seg">
+              <span class="pill"><span>Temperate</span><span class="mult">×1</span></span>
+              <span class="pill active"><span>Hot ☀️</span><span class="mult">×2 Water</span></span>
+              <span class="pill"><span>Ext. Heat</span><span class="mult">×3 · −grace</span></span>
+              <span class="pill"><span>Cold</span><span class="mult">×1 · 🔥1</span></span>
+              <span class="pill"><span>Ext. Cold</span><span class="mult">×1 · 🔥2</span></span>
+            </div>
+            <div class="chips">
+              <span class="chip-preset sel">desert_hot</span>
+              <span class="chip-preset">northern_cold</span>
+              <span class="chip-preset">coast_temperate</span>
+              <span class="chip-preset">sunhills_temperate</span>
+            </div>
+            <div class="hint">Desert (Hot) — water drains twice as fast.</div>
+          </div>
+          <div class="hgroup advance">
+            <span class="glabel">Advance</span>
+            <div class="splitbtn">
+              <span class="btn primary">⏭ Advance Day</span>
+            </div>
+            <div class="splitbtn">
+              <span class="btn sm">⏩ Week</span>
+              <span class="btn sm">⏭⏩ +N…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HEADLINE -->
+      <div class="region">
+        <div class="region-h">Days of supply</div>
+        <div class="headline">
+          <div class="stat ok">
+            <div class="lab">🍖 Food</div>
+            <div class="val">2<span class="unit">days</span></div>
+            <small>base 20 ÷ ~10/day (mount eats ×4)</small>
+          </div>
+          <div class="stat warn" title="Water: base dry, skins spent — Chiga-Biga drank 8 (×4, Hot ×2) before the party drank. Out today.">
+            <span class="wflag">⚠</span>
+            <div class="lab">💧 Water</div>
+            <div class="val">0<span class="unit">days</span></div>
+            <small>base 0 + skins spent ÷ ~20/day (Hot ×2)</small>
+          </div>
+          <div class="stat ok">
+            <div class="lab">🔥 Firewood</div>
+            <div class="val">—</div>
+            <small>not needed (Hot)</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- POOLS -->
+      <div class="region">
+        <div class="region-h">Pools &amp; mounts <span class="badge">1 storage · 1 mount</span></div>
+        <div class="pool-wrap">
+          <div class="delve">
+            <span class="btn">⛏ Delving — leave the base behind</span>
+            <small>Flips every pool's “With party?” at once.</small>
+          </div>
+          <!-- Chiga-Biga pool (WITH party, State A) -->
+          <div class="pcard">
+            <div class="pcard-top">
+              <span style="font-size:15px;">🐛</span>
+              <span class="pname">Chiga-Biga</span>
+              <span class="tag size">Huge ×4</span>
+              <span class="tag">base+storage</span>
+              <span class="toggle toggle-r">With party? <span class="sw on"></span></span>
+            </div>
+            <div class="handler">handler: Ракакак</div>
+            <div class="resrow">
+              <span class="res">🍖 <span class="num">20</span></span>
+              <span class="res struck">💧 <span class="num">0</span></span>
+              <span class="res">🔥 <span class="num">4</span></span>
+              <span class="edit-hint">click a number to edit</span>
+            </div>
+            <div class="consumes">eats 4 Food · 8 Water/day (Hot ×2)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROSTER -->
+      <div class="region">
+        <div class="region-h">Roster <span class="badge">7 present / 10</span></div>
+        <table class="roster">
+          <thead>
+            <tr><th>☑</th><th>Name</th><th>Size</th><th>Food</th><th>Water</th><th>Clocks</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ck on">✓</span></td>
+              <td><span class="nm">Иримэ</span> <span class="anc">Catfolk</span></td>
+              <td>M</td><td>1</td><td>2</td>
+              <td><span class="clock"><span class="pips"><span class="pip f"></span><span class="pip"></span><span class="pip"></span></span><span class="clk-txt">Thirst 1/3</span></span></td>
+              <td><span class="cond ok">OK</span></td>
+            </tr>
+            <tr>
+              <td><span class="ck on">✓</span></td>
+              <td><span class="nm">Вестник</span></td>
+              <td>M</td><td>1</td><td>2</td>
+              <td><span class="clock"><span class="pips"><span class="pip f"></span><span class="pip"></span><span class="pip"></span></span><span class="clk-txt">Thirst 1/3</span></span></td>
+              <td><span class="cond ok">OK</span></td>
+            </tr>
+            <tr>
+              <td><span class="ck on">✓</span></td>
+              <td><span class="nm">Ракакак</span> <span class="anc">Tengu Druid</span></td>
+              <td>M</td><td>1</td><td>2</td>
+              <td><span class="clock"><span class="pips"><span class="pip f"></span><span class="pip"></span><span class="pip"></span></span><span class="clk-txt">Thirst 1/3</span></span></td>
+              <td><span class="cond ok">OK</span></td>
+            </tr>
+            <tr class="shortrow">
+              <td><span class="ck on">✓</span></td>
+              <td><span class="nm">Грог</span> <span class="anc">Minotaur</span></td>
+              <td>M</td><td>1</td><td>2</td>
+              <td><span class="clock clk-danger" title="Грог went unwatered — the base ran short in the heat (Water ×2). Thirst clock 1/1 → Thirsty (Fatigued).">
+                <span class="pips"><span class="pip d"></span></span><span class="clk-txt">1/1 → Thirsty</span></span></td>
+              <td><span class="cond danger">⚠ Thirsty (Fatigued)</span></td>
+            </tr>
+            <tr>
+              <td><span class="ck on">✓</span></td>
+              <td><span class="nm">Аранэя</span> <span class="anc">Anadi Wizard</span></td>
+              <td>M</td><td>1</td><td>2</td>
+              <td><span class="clock"><span class="pips"><span class="pip f"></span><span class="pip"></span><span class="pip"></span></span><span class="clk-txt">Thirst 1/3</span></span></td>
+              <td><span class="cond ok">OK</span></td>
+            </tr>
+            <tr>
+              <td><span class="ck on">✓</span></td>
+              <td><span class="nm">Chiga-Biga</span><br><span class="sub">handler: Ракакак</span></td>
+              <td><span class="tag size">Huge ×4</span></td><td>4</td><td>8</td>
+              <td><span class="clk-narrate">Thirst — (narrate)</span></td>
+              <td><span class="cond narrate">⚠ going hungry (narrate)</span></td>
+            </tr>
+            <tr>
+              <td><span class="ck on">✓</span></td>
+              <td><span class="nm">Staf</span></td>
+              <td>M</td><td>1</td><td>2</td>
+              <td><span class="clock"><span class="pips"><span class="pip f"></span><span class="pip f"></span><span class="pip"></span></span><span class="clk-txt">Thirst 2/2</span></span></td>
+              <td><span class="cond ok">OK</span></td>
+            </tr>
+            <tr class="zero">
+              <td><span class="ck off">☐</span></td>
+              <td><span class="nm">Квиззл</span> <span class="anc">mephit</span></td>
+              <td>—</td><td>0</td><td>0</td><td>—</td>
+              <td><span class="needs0">needs 0</span></td>
+            </tr>
+            <tr class="zero">
+              <td><span class="ck off">☐</span></td>
+              <td><span class="nm">Свирп</span> <span class="anc">mephit</span></td>
+              <td>—</td><td>0</td><td>0</td><td>—</td>
+              <td><span class="needs0">needs 0</span></td>
+            </tr>
+            <tr class="zero">
+              <td><span class="ck off">☐</span></td>
+              <td><span class="nm">Винг</span> <span class="anc">mephit</span></td>
+              <td>—</td><td>0</td><td>0</td><td>—</td>
+              <td><span class="needs0">needs 0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="region">
+        <div class="footer">
+          <span class="last">Last advance: <b>Day 3</b> — <span class="warn">⚠ 1 short (Грог: Thirsty)</span></span>
+          <span class="btn sm">↶ Undo Day 3</span>
+          <span class="btn sm">🗂 Show today's card</span>
+          <span class="btn sm">⚙ Dials</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PLAYERS — PARTY HUD ============================ -->
+<div style="width:100%;max-width:600px;display:flex;flex-direction:column;align-items:center;">
+  <div class="surf-label">Players — Party HUD</div>
+  <div class="win hud">
+    <div class="titlebar">
+      <span class="tico">🏕</span>
+      <span class="ttl">The Shards · Survival</span>
+      <span class="winbtn">⠿</span>
+      <span class="winbtn">▭</span>
+      <span class="winbtn">_</span>
+    </div>
+
+    <div class="hud-head">
+      <span class="nums">🍖 Food 12 · 💧 Water 4</span>
+      <span class="days-chip red">≈ 1 day <span class="sub">· Water</span></span>
+    </div>
+
+    <div class="hud-rows">
+      <div class="hrow">
+        <div class="hicon">🐈</div>
+        <div class="hbody"><span class="hname">Иримэ</span></div>
+        <div class="calm">·····</div>
+        <span class="cond ok" style="margin-left:8px;">ok</span>
+      </div>
+      <div class="hrow">
+        <div class="hicon">🧍</div>
+        <div class="hbody"><span class="hname">Вестник</span></div>
+        <div class="calm">·····</div>
+        <span class="cond ok" style="margin-left:8px;">ok</span>
+      </div>
+      <div class="hrow">
+        <div class="hicon">🐦</div>
+        <div class="hbody"><span class="hname">Ракакак</span></div>
+        <div class="calm">·····</div>
+        <span class="cond ok" style="margin-left:8px;">ok</span>
+      </div>
+      <div class="hrow" style="background:#2a151320;">
+        <div class="hicon" style="border-color:#6e2f2a;">🜂</div>
+        <div class="hbody">
+          <span class="hname">Грог <span style="font-size:10px;color:#6f9fd6;font-weight:600;">(you)</span></span>
+          <div class="cause">water ran short — base draining fast</div>
+        </div>
+        <span class="cond danger" style="margin-left:8px;">💧 Thirsty (Fatigued)</span>
+      </div>
+      <div class="hrow">
+        <div class="hicon">🕷</div>
+        <div class="hbody">
+          <span class="hname">Аранэя</span>
+          <div class="cause">water ran short</div>
+        </div>
+        <span class="cond warn" style="margin-left:8px;display:inline-flex;gap:5px;">💧 Thirsty · <span class="mono">clock 2/3</span></span>
+      </div>
+    </div>
+
+    <div class="warm-note">No “Kept warm?” box — band is Hot, the cold track can't fire.</div>
+
+    <div class="nudge">
+      <span class="ico">💬</span>
+      <span>You're Thirsty (Fatigued). A drink at the next stop clears it after a rest. <span style="color:#6c707c;">— private, only you see this</span></span>
+    </div>
+  </div>
+
+  <!-- Cold-band mini variant to demonstrate the warmth checkbox -->
+  <div style="width:100%;max-width:430px;margin-top:14px;">
+    <div class="region" style="background:var(--panel);">
+      <div class="region-h">Cold-band variant — the “Kept warm?” control 🔵</div>
+      <div style="padding:8px 0;">
+        <div class="hrow">
+          <div class="hicon">🐈</div>
+          <div class="hbody"><span class="hname">Иримэ</span></div>
+          <label class="toggle" style="margin-left:auto;"><span class="ck on">✓</span> warm — <span style="color:var(--muted);">clothing</span></label>
+        </div>
+        <div class="hrow" style="background:#1a233020;">
+          <div class="hicon" style="border-color:#2a3a52;">🜂</div>
+          <div class="hbody"><span class="hname">Грог <span style="font-size:10px;color:#6f9fd6;font-weight:600;">(you)</span></span></div>
+          <label class="toggle" style="margin-left:auto;color:#bcd0e8;"><span class="ck off" style="color:#6f9fd6;">☐</span> Kept warm tonight?</label>
+        </div>
+        <div class="hrow">
+          <div class="hicon">🐦</div>
+          <div class="hbody"><span class="hname">Ракакак</span></div>
+          <label class="toggle" style="margin-left:auto;"><span class="ck on">✓</span> warm — <span style="color:var(--muted);">shelter</span></label>
+        </div>
+        <div class="hrow">
+          <div class="hicon" style="border-color:#5a4a28;">🕷</div>
+          <div class="hbody"><span class="hname">Аранэя</span><div class="cause">no fire &amp; no warm clothes</div></div>
+          <span class="cond warn" style="margin-left:8px;">❄ Chilled (Fatigued)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ DAILY UPKEEP CARD ============================ -->
+<div style="width:100%;max-width:600px;">
+  <div class="surf-label">Daily Upkeep Card</div>
+  <div class="win upkeep">
+    <div class="upk-head">
+      <span>📅 DAY 14 · Пустыня (<span class="hot">Hot ☀️ · Water ×2</span>)</span>
+      <span style="margin-left:auto;" class="badge">Main ▾</span>
+    </div>
+
+    <div class="verdict red">⛔ Грог hit Stage 1 — Thirsty. Water ran short.</div>
+
+    <!-- need table -->
+    <div class="needtable">
+      <div class="nt-h">
+        <span style="width:120px;">Need</span>
+        <span style="width:54px;">Need</span>
+        <span style="width:70px;">Have</span>
+        <span style="flex:1;">Source</span>
+      </div>
+      <div class="nrow">
+        <span class="nname">🍖 Food</span>
+        <span class="ndemand mono">10</span>
+        <span class="nhave mono">10 met</span>
+        <span class="nsrc">base stockpile (20 → 10 left)</span>
+        <span class="nflag ok">✓</span>
+      </div>
+      <div class="nrow">
+        <span class="nname">💧 Water</span>
+        <span class="ndemand mono">20</span>
+        <span class="nhave mono">18 met</span>
+        <span class="nsrc">base → personal skins</span>
+        <span class="nflag short">⚠ −2</span>
+      </div>
+      <div class="nrow sub">└ of which Chiga-Biga drank 8 (Huge ×4, Hot ×2)</div>
+      <div class="nrow grey">
+        <span class="nname">🔥 Firewood</span>
+        <span style="flex:1;">— not needed (Hot — no cold track)</span>
+      </div>
+    </div>
+
+    <div class="baseline" style="margin-top:9px;">WARMTH — not tracked tonight (band Hot)</div>
+
+    <!-- who went without -->
+    <div class="upk-section">
+      <div class="sh">Who went without</div>
+      <div class="who">
+        <span class="wi">💧</span>
+        <span><b>Грог</b> — no water. Cause: the base ran dry — Chiga-Biga drank 8 in the heat before the party drank. Thirst 1/1 grace → <span class="applied">THIRSTY (Fatigued) applied.</span></span>
+      </div>
+      <div class="who">
+        <span class="wi">💧</span>
+        <span><b>Иримэ</b> — covered by her own waterskin (now empty). The base had nothing left for her. Clock unchanged (3 grace).</span>
+      </div>
+    </div>
+
+    <!-- clocks -->
+    <div class="upk-section">
+      <div class="sh">Clocks</div>
+      <div class="clkline clk-danger">
+        <span class="cn">Грог</span>
+        <span class="pips"><span class="pip d"></span></span>
+        <span class="cond danger">💧 THIRSTY (Fatigued)</span>
+      </div>
+      <div class="clkline">
+        <span class="cn">Иримэ</span>
+        <span class="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>
+        <span class="clk-txt">💧 drank (skin empty next)</span>
+      </div>
+      <div class="clkline">
+        <span class="cn">Вестник</span>
+        <span class="pips"><span class="pip f"></span><span class="pip f"></span><span class="pip"></span></span>
+        <span class="clk-txt">💧 2/3</span>
+      </div>
+      <div class="clkline">
+        <span class="cn">Chiga-Biga</span>
+        <span class="clk-narrate">💧 ⚑ fed today, but the base is nearly dry — 0 Water left for tomorrow (narrate-only)</span>
+      </div>
+    </div>
+
+    <div class="baseline">Base now: 🍖 <b>10</b> · 💧 <b>0</b> &nbsp;<span style="color:var(--muted);">(refilled? click “Edit a pool”)</span></div>
+
+    <div class="upk-foot">
+      <span class="btn sm">✎ Edit a pool</span>
+      <span class="btn sm">💧 Found water?</span>
+      <span class="spacer"></span>
+      <span class="btn primary">Confirm Day 14</span>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+</body></html>

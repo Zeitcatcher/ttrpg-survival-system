@@ -102,14 +102,14 @@ blockquote p{margin:.35em 0}
     <div class="brand">TTRPG Survival System<small>Foundry VTT module — design docs</small></div>
     <div class="repo"><a href="https://github.com/Zeitcatcher/ttrpg-survival-system" target="_blank" rel="noopener">github.com/Zeitcatcher/ttrpg-survival-system</a></div>
     <h2>Contents</h2>
-    <div class="toc-group"><a class="toc-doc" href="#doc-mechanics">Survival Mechanics</a><ul><li class="lvl2"><a href="#mechanics-2">0. Design philosophy</a></li><li class="lvl2"><a href="#mechanics-3">1. The complexity dials (global GM settings)</a></li><li class="lvl2"><a href="#mechanics-4">2. Resources &amp;amp; units</a></li><li class="lvl3"><a href="#mechanics-5">Per-creature daily need</a></li><li class="lvl2"><a href="#mechanics-6">3. Consumption + the separation rule (the feature that earns the module&amp;#39;s keep)</a></li><li class="lvl3"><a href="#mechanics-7">When consumption happens</a></li><li class="lvl3"><a href="#mechanics-8">The resolver (source priority — Dial 4)</a></li><li class="lvl3"><a href="#mechanics-9">The separation rule</a></li><li class="lvl2"><a href="#mechanics-10">4. Consequence ladders</a></li><li class="lvl2"><a href="#mechanics-11">5. Climate &amp;amp; warmth</a></li><li class="lvl3"><a href="#mechanics-12">Warmth — dead simple, exactly as asked</a></li><li class="lvl2"><a href="#mechanics-13">6. Automation vs. manual</a></li><li class="lvl2"><a href="#mechanics-14">7. Mounts / pack animals</a></li><li class="lvl2"><a href="#mechanics-15">8. Worked example — the Ssir-Kat descent</a></li><li class="lvl2"><a href="#mechanics-16">9. Optional extras (Dial 9 — all off unless turned on)</a></li><li class="lvl2"><a href="#mechanics-17">10. Decisions — locked</a></li></ul></div><div class="toc-group"><a class="toc-doc" href="#doc-architecture">Architecture</a><ul><li class="lvl2"><a href="#architecture-2">0. Pillars (non-negotiables)</a></li><li class="lvl2"><a href="#architecture-3">1. Layers</a></li><li class="lvl2"><a href="#architecture-4">1.1 The adapter contract (revised)</a></li><li class="lvl2"><a href="#architecture-5">1.2 PF2e stage map (lives in the adapter, not core)</a></li><li class="lvl2"><a href="#architecture-6">2. Data model</a></li><li class="lvl3"><a href="#architecture-7">2.1 Where state lives</a></li><li class="lvl3"><a href="#architecture-8">2.2 Registry shape (sketch)</a></li><li class="lvl2"><a href="#architecture-9">3. The daily tick</a></li><li class="lvl3"><a href="#architecture-10">3.1 Triggers → one method (decoupled from world-time)</a></li><li class="lvl3"><a href="#architecture-11">3.2 runTick(targetDay) — day-interleaved, transactional, GM-only</a></li><li class="lvl2"><a href="#architecture-12">4. UI (ApplicationV2)</a></li><li class="lvl2"><a href="#architecture-13">5. Localization</a></li><li class="lvl2"><a href="#architecture-14">6. Extensibility</a></li><li class="lvl2"><a href="#architecture-15">7. File layout, manifest, tooling</a></li><li class="lvl2"><a href="#architecture-16">8. Migrations &amp;amp; risk register</a></li></ul></div>
+    <div class="toc-group"><a class="toc-doc" href="#doc-mechanics">Survival Mechanics</a><ul><li class="lvl2"><a href="#mechanics-2">0. Design philosophy</a></li><li class="lvl2"><a href="#mechanics-3">1. The complexity dials (global GM settings)</a></li><li class="lvl2"><a href="#mechanics-4">2. Resources &amp;amp; units</a></li><li class="lvl3"><a href="#mechanics-5">Per-creature daily need</a></li><li class="lvl2"><a href="#mechanics-6">3. Consumption + the separation rule (the feature that earns the module&amp;#39;s keep)</a></li><li class="lvl3"><a href="#mechanics-7">When consumption happens</a></li><li class="lvl3"><a href="#mechanics-8">The resolver (source priority — Dial 4)</a></li><li class="lvl3"><a href="#mechanics-9">The separation rule</a></li><li class="lvl2"><a href="#mechanics-10">4. Consequence ladders</a></li><li class="lvl2"><a href="#mechanics-11">5. Climate &amp;amp; warmth</a></li><li class="lvl3"><a href="#mechanics-12">Warmth — dead simple, exactly as asked</a></li><li class="lvl2"><a href="#mechanics-13">6. Automation vs. manual</a></li><li class="lvl2"><a href="#mechanics-14">7. Mounts / pack animals</a></li><li class="lvl2"><a href="#mechanics-15">8. Worked example — the Ssir-Kat descent</a></li><li class="lvl2"><a href="#mechanics-16">9. Optional extras (Dial 9 — all off unless turned on)</a></li><li class="lvl2"><a href="#mechanics-17">10. Decisions — locked</a></li></ul></div><div class="toc-group"><a class="toc-doc" href="#doc-architecture">Architecture</a><ul><li class="lvl2"><a href="#architecture-2">0. Pillars (non-negotiables)</a></li><li class="lvl2"><a href="#architecture-3">1. Layers</a></li><li class="lvl2"><a href="#architecture-4">1.1 The adapter contract (revised)</a></li><li class="lvl2"><a href="#architecture-5">1.2 PF2e stage map (lives in the adapter, not core)</a></li><li class="lvl2"><a href="#architecture-6">2. Data model</a></li><li class="lvl3"><a href="#architecture-7">2.1 Where state lives</a></li><li class="lvl3"><a href="#architecture-8">2.2 Registry shape (sketch)</a></li><li class="lvl2"><a href="#architecture-9">3. The daily tick</a></li><li class="lvl3"><a href="#architecture-10">3.1 Triggers → one method (decoupled from world-time)</a></li><li class="lvl3"><a href="#architecture-11">3.2 runTick(targetDay) — day-interleaved, transactional, GM-only</a></li><li class="lvl2"><a href="#architecture-12">4. UI (ApplicationV2)</a></li><li class="lvl2"><a href="#architecture-13">5. Localization</a></li><li class="lvl2"><a href="#architecture-14">6. Extensibility</a></li><li class="lvl2"><a href="#architecture-15">7. File layout, manifest, tooling</a></li><li class="lvl2"><a href="#architecture-16">8. Migrations &amp;amp; risk register</a></li><li class="lvl2"><a href="#architecture-17">Part B — Implementation-level detail (finalized for build)</a></li><li class="lvl3"><a href="#architecture-18">B.1 v1 Abstract mode — data shapes and the read-model that hides Ledger</a></li><li class="lvl3"><a href="#architecture-19">B.2 Complete settings registry</a></li><li class="lvl3"><a href="#architecture-20">B.3 Socket message catalog</a></li><li class="lvl3"><a href="#architecture-21">B.4 The read-model (SurvivalEngine.readModel())</a></li><li class="lvl3"><a href="#architecture-22">B.5 runTick sequence including week / N-day advance</a></li><li class="lvl3"><a href="#architecture-23">B.6 Compendium seeding (packs/)</a></li><li class="lvl3"><a href="#architecture-24">B.7 Mount-as-consumer specifics (decision C)</a></li><li class="lvl3"><a href="#architecture-25">B.8 Test seams (pure, no live Foundry)</a></li><li class="lvl3"><a href="#architecture-26">B.9 — Corrections applied after review</a></li></ul></div><div class="toc-group"><a class="toc-doc" href="#doc-plan">Implementation Plan</a><ul><li class="lvl2"><a href="#plan-1">Guiding sequencing principle</a></li><li class="lvl2"><a href="#plan-2">M0 — Scaffold + tooling (the walking skeleton)</a></li><li class="lvl2"><a href="#plan-3">M1 — Caravan registry document + settings registry + read-model skeleton</a></li><li class="lvl2"><a href="#plan-4">M2 — The engine heart: daily tick + transactional resolver + Abstract pools + mount consumer + separation filter + WEEK/N-day advance</a></li><li class="lvl2"><a href="#plan-5">M3 — Consequence ladders + native pf2e conditions via reconcileConsequences + climate/warmth</a></li><li class="lvl2"><a href="#plan-6">M4 — GM Control Panel (ApplicationV2)</a></li><li class="lvl2"><a href="#plan-7">M5 — Players HUD + Upkeep card + green-day suppression + consolidated multi-day summary</a></li><li class="lvl2"><a href="#plan-8">M6 — Optional extras (foraging, hot meal)</a></li><li class="lvl2"><a href="#plan-9">M7 — i18n (en + ru)</a></li><li class="lvl2"><a href="#plan-10">M8 — Ledger mode (v2) + compendium seeding</a></li><li class="lvl2"><a href="#plan-11">M9 — Polish + release</a></li><li class="lvl2"><a href="#plan-12">Testing strategy</a></li><li class="lvl2"><a href="#plan-13">Definition of Done (template — apply per milestone/PR)</a></li><li class="lvl2"><a href="#plan-14">First three PRs (start immediately)</a></li></ul></div>
   </nav>
   <main class="content">
     <header class="page-head">
       <h1>The Shards — Survival System</h1>
       <div class="sub">A system-agnostic survival module for Foundry VTT · Pathfinder 2e first · draft for review</div>
     </header>
-    <section class="doc" id="doc-mechanics"><div class="doc-badge">Step 1 · Game design</div><h1 id="mechanics-1">Survival Mechanics — Design Spec (for review)</h1>
+    <section class="doc" id="doc-mechanics"><div class="doc-badge">Step 1 · Game design (locked)</div><h1 id="mechanics-1">Survival Mechanics — Design Spec (for review)</h1>
 <blockquote>
 <p><strong>Status: DRAFT for discussion.</strong> This is <strong>step 1</strong> — the game-design layer. Read, react, refine. Once we lock this, the <a href="architecture.md">architecture</a> (step 2) follows. Nothing here is implemented yet.</p>
 <p>First target: <strong>Pathfinder 2e (Remaster)</strong>, campaign <strong>The Shards</strong>. Default language English; localization-ready.</p>
@@ -659,9 +659,9 @@ blockquote p{margin:.35em 0}
 <p>These are now reflected throughout the spec above. Next: finalize the <a href="architecture.md">architecture</a> and begin implementation.</p>
 <hr>
 <p><em>One-line summary:</em> a one-click daily upkeep that <strong>vanishes on green days</strong>, separation enforced in the math (with a visible supply &quot;cliff&quot; and named-cause shortfalls), three native-PF2e condition ladders with <strong>visible per-character clocks and a capped penalty stack</strong>, a one-checkbox warmth model, Chiga-Biga as a dual mount/storage pool that must itself be fed, <strong>Abstract supply mode at launch</strong> and Ledger as the flagship next step — lean by default, rich when you turn the dials up.</p>
-</section><section class="doc" id="doc-architecture"><div class="doc-badge">Step 2 · Technical (preliminary)</div><h1 id="architecture-1">Technical Architecture — Draft (step 2)</h1>
+</section><section class="doc" id="doc-architecture"><div class="doc-badge">Step 2 · Technical (finalized)</div><h1 id="architecture-1">Technical Architecture (finalized — step 2)</h1>
 <blockquote>
-<p><strong>Status: PRELIMINARY.</strong> This is the <strong>step-2</strong> layer. It&#39;s provided so you can see the technical direction and judge that the system-agnostic / localization goals are achievable — but it will be finalized <em>after</em> the <a href="survival-mechanics.md">mechanics</a> are approved, since mechanics changes can ripple here. Read for direction, not for sign-off.</p>
+<p><strong>Status: FINALIZED (2026-06-30)</strong> against the locked decisions (<a href="survival-mechanics.md">mechanics §10</a>). <strong>Part A</strong> below is the architecture; <strong>Part B</strong> (appended) is the implementation-level detail — concrete data shapes, the full settings registry, the socket catalog, the <code>readModel()</code>, the <code>runTick</code> sequence (incl. week/N-day advance), compendium seeding, and unit-test seams; <strong>B.9</strong> lists the corrections applied after a verification pass. The phased build sequence lives in <a href="implementation-plan.md">implementation-plan.md</a>.</p>
 <p><strong>Module id:</strong> <code>shards-survival</code> · <strong>Stack:</strong> TypeScript + Vite · <strong>i18n:</strong> English default, locale-ready from day one.</p>
 </blockquote>
 <p><strong>Platform reconciliation:</strong> your saved environment targets <strong>Foundry v14.364 + pf2e v8.2.0</strong>. The architecture targets <code>minimum: 13</code>, <code>verified: 14</code>, <strong>no <code>maximum</code></strong> (a <code>maximum</code> would lock players out of future Foundry with no override). On v13+/v14 the sheet/app layer is fully ApplicationV2, which removes the v12-era pf2e-sheet caveats an earlier draft worried about.</p>
@@ -898,6 +898,945 @@ release lock
 </ul>
 <hr>
 <p><em>One-line summary:</em> a system-neutral <code>SurvivalEngine</code> (transactional <code>Resolver</code> + <code>LadderEngine</code> + <code>ClimateModel</code>) over a <strong>document-backed</strong> Caravan registry (separation = per-group <code>withParty</code> booleans enforced at the sourcing layer) and per-actor flags, all system specifics behind a registered <code>SurvivalSystemAdapter</code> whose <strong>one <code>reconcileConsequences</code> verb</strong> maps stages to native conditions (pf2e) or aggregate Exhaustion (5e), ticked once per survival-day on the primary GM client, players writing via <code>socketlib.executeAsGM</code>, four ApplicationV2 surfaces, and <code>Intl</code>-backed i18n — lean by default, rich when the dials turn up.</p>
+<hr>
+<h2 id="architecture-17">Part B — Implementation-level detail (finalized for build)</h2>
+<p>This appendix adds the concrete shapes, settings, sockets, read-model, tick sequence, seeding, and test seams needed to start coding. It does not revise Part A; where Part A sketched a type, this finalizes it.</p>
+<hr>
+<h3 id="architecture-18">B.1 v1 Abstract mode — data shapes and the read-model that hides Ledger</h3>
+<p><strong>Principle:</strong> Abstract and Ledger differ only in <em>where the numbers come from</em>. The Resolver, LadderEngine, ClimateModel, UI, and <code>readModel()</code> never branch on the mode. The split is entirely behind two adapter verbs (<code>getAvailable</code> / <code>consume</code>) plus one pool-storage shape.</p>
+<h4>B.1.1 Abstract pool storage</h4>
+<p>In Abstract mode there is <strong>no real Actor inventory to read</strong>. A pool&#39;s day-counts live directly on the <strong>Caravan document flags</strong>, keyed by the pool&#39;s logical id (the same UUID slot the registry already uses, but the value is a count map rather than a dereferenced actor inventory):</p>
+<pre><code class="language-ts">// Stored at: caravanDoc.flags[&quot;shards-survival&quot;].abstractPools[poolId]
+interface AbstractPoolCounts {
+  food: number;      // creature-days of rations
+  water: number;     // creature-days of water
+  firewood: number;  // bundles (camp-nights)
+}
+// caravanDoc.flags[&quot;shards-survival&quot;].abstractPools : Record&lt;string /*poolId*/, AbstractPoolCounts&gt;
+</code></pre>
+<p><code>poolId</code> = the pool/mount&#39;s registry key. For mounts (which are also pools) the same <code>poolId</code> carries the mount&#39;s own carried supply. PCs in Abstract v1 carry no per-PC inventory by default; a personal pack, if the GM wants one, is just another <code>AbstractPoolRef</code> with <code>personal: true</code> and an <code>ownerUuid</code>.</p>
+<h4>B.1.2 The Abstract adapter (used by core unchanged)</h4>
+<pre><code class="language-ts">// AbstractStore is injected; it reads/writes caravanDoc flags via executeAsGM-on-GM path.
+class AbstractAdapterShim {
+  getAvailable(poolId: string, kind: ResourceKind): number {
+    return this.store.abstractPools[poolId]?.[kind] ?? 0;
+  }
+  // consume() is virtual in Abstract: it returns a delta the AllocationLedger applies;
+  // the actual count write is the per-day batch commit (B.5), not a Foundry item update.
+  applyDelta(poolId: string, kind: ResourceKind, units: number): void {
+    this.store.abstractPools[poolId][kind] -= units;   // clamped ≥ 0 at commit
+  }
+}
+</code></pre>
+<p>The real <code>SurvivalSystemAdapter</code> (Part A §1.1) is still the seam for <strong>creature needs, grace, warmth, conditions</strong> — those are system facts (PF2e Con-mod, Cold-Weather Clothing, native conditions) and are identical in Abstract and Ledger. Only <code>getResourceLots</code>/<code>getAvailable</code>/<code>consume</code>/<code>grant</code> are sourced differently.</p>
+<h4>B.1.3 &quot;Days of supply&quot; headline (Abstract)</h4>
+<pre><code>daysOfSupply(kind, group) =
+   floor( sum over PRESENT pools of counts[poolId][kind]
+          / max(1, dailyGroupNeed(kind, group)) )
+
+dailyGroupNeed(food, group)  = Σ over present consumers c of ceil(ration(c).food  * sizeMult(c))
+dailyGroupNeed(water, group) = Σ over present consumers c of ceil(ration(c).water * sizeMult(c) * climateWaterMult(band))
+dailyGroupNeed(firewood,grp) = (band needs warmth &amp;&amp; not all-warm-by-clothing) ? bundlesPerNight(band) : 0
+</code></pre>
+<p><code>climateWaterMult</code>: temperate ×1, hot ×2, extremeHeat ×3. <code>bundlesPerNight</code>: cold 1, extremeCold 2, else 0. &quot;Present&quot; = <code>withParty[group] === true</code> (separation filter applied <strong>before</strong> the sum — a separated pool contributes 0, producing the visible cliff). Headline is recomputed in <code>readModel()</code>, never stored.</p>
+<h4>B.1.4 Click-the-number edit (Abstract write path)</h4>
+<p>GM clicks a pool count in <code>GmControlPanel</code> → edits inline → commits on <strong>blur/Enter</strong> → <code>requestEditPool{poolUuid,kind,value}</code> → GM handler writes <code>caravanDoc.update({&quot;flags.shards-survival.abstractPools.&lt;poolId&gt;.&lt;kind&gt;&quot;: value})</code>. One atomic document update; the <code>updateDocument</code> hook re-renders all surfaces. No tick runs. Negative values clamp to 0.</p>
+<h4>B.1.5 Where Ledger (v2) diverges — and where it does not</h4>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Abstract (v1)</th>
+<th>Ledger (v2)</th>
+<th>Visible to UI?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Source of counts</td>
+<td><code>abstractPools[poolId][kind]</code> on Caravan doc</td>
+<td><code>adapter.getResourceLots(actor, kind)</code> over the pool actor&#39;s real items</td>
+<td><strong>No</strong> — both feed <code>getAvailable</code>-shaped numbers</td>
+</tr>
+<tr>
+<td>Decrement</td>
+<td><code>applyDelta</code> on in-memory counts → batch write to flags</td>
+<td><code>adapter.consume(actor, kind, units)</code> → real item qty update + 7-ration decomposition</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Edit a number</td>
+<td>write flag count</td>
+<td>edit the underlying item quantity (or grant/consume to match)</td>
+<td><strong>No</strong> — same click-a-number affordance</td>
+</tr>
+<tr>
+<td>Personal packs</td>
+<td>optional <code>personal</code> AbstractPoolRef</td>
+<td>real PC inventory items</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Seeded items</td>
+<td>not needed</td>
+<td><code>packs/</code> &quot;Water (day)&quot;, &quot;Firewood (bundle)&quot; required</td>
+<td>Only in item sheets</td>
+</tr>
+</tbody></table></div>
+<p><strong>The read-model is the firewall.</strong> <code>readModel()</code> (B.4) calls a single <code>Sourcing</code> facade — <code>sourcing.available(poolId, kind)</code> — which Abstract backs with flag counts and Ledger backs with <code>adapter.getAvailable(resolve(poolId), kind)</code>. The three UI surfaces consume <code>readModel()</code> only; they are byte-for-byte identical across modes. The mode is a single world setting (<code>supplyDetail</code>) that selects which <code>Sourcing</code> implementation is constructed at <code>ready</code>.</p>
+<hr>
+<h3 id="architecture-19">B.2 Complete settings registry</h3>
+<p>All registered in <code>settings.ts</code>. Namespace <code>shards-survival</code>. <code>onChange</code> listed only where non-trivial. World scope unless noted. The-Shards defaults in the Default column.</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Scope</th>
+<th>Type</th>
+<th>Default (The Shards)</th>
+<th>config</th>
+<th>onChange</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>supplyDetail</code></td>
+<td>world</td>
+<td><code>&quot;abstract&quot;|&quot;ledger&quot;</code></td>
+<td><code>&quot;abstract&quot;</code></td>
+<td>true</td>
+<td>rebuild Sourcing; re-render panels</td>
+</tr>
+<tr>
+<td><code>trackedNeeds</code></td>
+<td>world</td>
+<td><code>{food:bool,water:bool,firewood:bool}</code> (object via menu)</td>
+<td><code>{food:true,water:true,firewood:true}</code></td>
+<td>false (menu)</td>
+<td>re-render</td>
+</tr>
+<tr>
+<td><code>upkeepPrompt</code></td>
+<td>world</td>
+<td><code>&quot;always&quot;|&quot;onlyWhenWrong&quot;</code></td>
+<td><code>&quot;onlyWhenWrong&quot;</code></td>
+<td>true</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>sourceMode</code></td>
+<td>world</td>
+<td><code>&quot;personalFirst&quot;|&quot;communalFirst&quot;</code></td>
+<td><code>&quot;communalFirst&quot;</code></td>
+<td>true</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>climateModel</code></td>
+<td>world</td>
+<td><code>&quot;off&quot;|&quot;manual&quot;|&quot;auto&quot;</code></td>
+<td><code>&quot;manual&quot;</code></td>
+<td>true</td>
+<td>re-render climate picker</td>
+</tr>
+<tr>
+<td><code>lethalDeprivation</code></td>
+<td>world</td>
+<td><code>&quot;capStage3&quot;|&quot;climbToDeath&quot;</code></td>
+<td><code>&quot;capStage3&quot;</code></td>
+<td>true</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>splitPartyMode</code></td>
+<td>world</td>
+<td><code>&quot;single&quot;|&quot;named&quot;</code></td>
+<td><code>&quot;single&quot;</code></td>
+<td>true</td>
+<td>re-render roster/pools</td>
+</tr>
+<tr>
+<td><code>foraging</code></td>
+<td>world</td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>true</td>
+<td>toggle extension</td>
+</tr>
+<tr>
+<td><code>extras</code></td>
+<td>world</td>
+<td><code>Record&lt;extraId,boolean&gt;</code> (menu)</td>
+<td>all <code>false</code></td>
+<td>false (menu)</td>
+<td>toggle extensions</td>
+</tr>
+<tr>
+<td><code>maxCatchUpDays</code></td>
+<td>world</td>
+<td><code>number</code></td>
+<td><code>14</code></td>
+<td>true</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>climatePresets</code></td>
+<td>world</td>
+<td><code>Record&lt;presetId,ClimateBand&gt;</code> (seeded)</td>
+<td>the 5 presets below</td>
+<td>false</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>itemMatchList</code></td>
+<td>world</td>
+<td><code>{food:string[],water:string[],firewood:string[]}</code></td>
+<td>seeded from config (B.6)</td>
+<td>false (menu)</td>
+<td>invalidate Ledger cache</td>
+</tr>
+<tr>
+<td><code>graceFormula</code></td>
+<td>world</td>
+<td><code>&quot;conModPlus1&quot;|&quot;flat&quot;</code> + <code>{flat:number}</code></td>
+<td><code>&quot;conModPlus1&quot;</code></td>
+<td>false (menu)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>thresholds</code></td>
+<td>world</td>
+<td><code>LadderThresholds</code> (B.2.1)</td>
+<td>the spec ladders</td>
+<td>false (menu)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>combinedCap</code></td>
+<td>world</td>
+<td><code>&quot;fatiguedPlusOne&quot;|&quot;uncapped&quot;</code></td>
+<td><code>&quot;fatiguedPlusOne&quot;</code></td>
+<td>false</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>mountDefaultApplyConsequences</code></td>
+<td>world</td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>true</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>dataVersionRegistry</code></td>
+<td>world</td>
+<td><code>number</code></td>
+<td>current</td>
+<td>false</td>
+<td>— (migration bookkeeping)</td>
+</tr>
+<tr>
+<td><code>dataVersionActorFlag</code></td>
+<td>world</td>
+<td><code>number</code></td>
+<td>current</td>
+<td>false</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>lastTickDay</code></td>
+<td>world</td>
+<td><code>number</code></td>
+<td><code>0</code></td>
+<td>false</td>
+<td>— (idempotency pointer)</td>
+</tr>
+<tr>
+<td><code>caravanDocUuid</code></td>
+<td>world</td>
+<td><code>string</code></td>
+<td><code>&quot;&quot;</code> (set on first init)</td>
+<td>false</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>panelCollapsed</code></td>
+<td><strong>client</strong></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>false</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>hudDensity</code></td>
+<td><strong>client</strong></td>
+<td><code>&quot;compact&quot;|&quot;full&quot;</code></td>
+<td><code>&quot;full&quot;</code></td>
+<td>true</td>
+<td>re-render HUD</td>
+</tr>
+<tr>
+<td><code>showGmClocksToPlayers</code></td>
+<td>world</td>
+<td><code>boolean</code></td>
+<td><code>true</code></td>
+<td>true</td>
+<td>re-render HUD</td>
+</tr>
+</tbody></table></div>
+<p>A <code>registerMenu(&quot;configApp&quot;)</code> opens the richer editor for the object-typed settings (<code>trackedNeeds</code>, <code>extras</code>, <code>itemMatchList</code>, <code>thresholds</code>, <code>graceFormula</code>).</p>
+<h4>B.2.1 Ladder thresholds shape (editable, defaults = the spec)</h4>
+<pre><code class="language-ts">interface LadderThresholds {
+  hunger: { graceExtra: 0; stageDays: [1, 2, 2]; }   // days from grace-end to S1,S2,S3
+  thirst: { graceExtra: 0; stageDays: [1, 1, 1]; heatGracePenalty: 1; }
+  cold:   { graceExtra: 0; stageDays: [1, 1, 1]; extremeColdStagePerNight: 1; }
+}
+</code></pre>
+<h4>B.2.2 Climate presets (seeded default)</h4>
+<pre><code class="language-ts">{ coast_temperate:&quot;temperate&quot;, desert_hot:&quot;hot&quot;, sunhills_temperate:&quot;temperate&quot;,
+  northern_cold:&quot;cold&quot;, default_temperate:&quot;temperate&quot; }
+</code></pre>
+<p>Band → effects table (<code>ClimateModel.forBand</code>): temperate <code>{waterMult:1,cold:false,bundles:0}</code>, hot <code>{2,false,0}</code>, extremeHeat <code>{3,false,0,thirstGracePenalty:1}</code>, cold <code>{1,true,1}</code>, extremeCold <code>{1,true,2,coldStagePerNight:1}</code>.</p>
+<hr>
+<h3 id="architecture-20">B.3 Socket message catalog</h3>
+<p>All registered in the <code>socketlib.ready</code> hook; all invoked via <code>socketlib.executeAsGM</code>. Direction is always <strong>player → GM</strong> (or GM → GM for uniformity). Each returns a result or a typed rejection (<code>{ok:false, reason}</code>); callers await and surface a &quot;no GM online&quot; rejection. <strong>Warmth is routed through the GM too</strong>, despite being an owner-writable flag, so there is exactly one write authority and no clobber special-case.</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Payload</th>
+<th>Direction</th>
+<th>GM-side handler</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>requestAdvanceTime</code></td>
+<td><code>{days:number}</code></td>
+<td>player/GM → GM</td>
+<td><code>SurvivalEngine.runTick(currentDay + days)</code>; returns the consolidated summary read-model delta</td>
+</tr>
+<tr>
+<td><code>requestSetWarm</code></td>
+<td><code>{actorUuid, warm:boolean}</code></td>
+<td>player → GM</td>
+<td>write <code>actor.flags[&quot;shards-survival&quot;].warmth = warm</code>; re-render; <strong>no tick</strong></td>
+</tr>
+<tr>
+<td><code>requestForage</code></td>
+<td><code>{actorUuid}</code></td>
+<td>player → GM</td>
+<td>if foraging on: <code>adapter.rollForage(actor, dc)</code>, apply result to communal pool / Fatigued; return outcome</td>
+</tr>
+<tr>
+<td><code>requestEditPool</code></td>
+<td><code>{poolUuid, kind, value:number}</code></td>
+<td>GM → GM</td>
+<td>Abstract: write <code>abstractPools[poolId][kind]</code>; Ledger: reconcile item qty; clamp ≥0; no tick</td>
+</tr>
+<tr>
+<td><code>requestToggleWithParty</code></td>
+<td><code>{poolUuid, group, withParty:boolean}</code></td>
+<td>GM → GM</td>
+<td>set <code>withParty[group]</code>; atomic doc update; re-render (headline cliff)</td>
+</tr>
+<tr>
+<td><code>requestDelvingPreset</code></td>
+<td><code>{group, setUnderground:boolean}</code></td>
+<td>GM → GM</td>
+<td>set every pool/mount <code>withParty[group]=false</code> in one update; if <code>setUnderground</code>, set delvers&#39; band → temperate</td>
+</tr>
+<tr>
+<td><code>requestSetClimate</code></td>
+<td><code>{group, band:ClimateBand}</code></td>
+<td>GM → GM</td>
+<td><code>store.climate[group]=band</code>; re-render</td>
+</tr>
+<tr>
+<td><code>requestToggleConsumer</code></td>
+<td><code>{actorUuid, group, enabled:boolean}</code></td>
+<td>GM → GM</td>
+<td>set <code>MemberRef.enabled</code> (&quot;Иримэ is fasting&quot;)</td>
+</tr>
+<tr>
+<td><code>requestSetMountConsumes</code></td>
+<td><code>{mountUuid, consumes}</code></td>
+<td>GM → GM</td>
+<td>set <code>MountRef.consumes</code> (size-mult or <code>&quot;offBooks&quot;</code>)</td>
+</tr>
+<tr>
+<td><code>requestSetMountApplyConsequences</code></td>
+<td><code>{mountUuid, on:boolean}</code></td>
+<td>GM → GM</td>
+<td>per-mount narrate-only ↔ auto-condition toggle</td>
+</tr>
+<tr>
+<td><code>requestConfirmUpkeep</code></td>
+<td><code>{group, overrides?}</code></td>
+<td>GM → GM</td>
+<td>commit the dialog&#39;s pre-filled resolution (only when a card opened)</td>
+</tr>
+<tr>
+<td><code>requestCargoDisposition</code></td>
+<td><code>{poolUuid, disposition}</code></td>
+<td>GM → GM</td>
+<td>dangling/dead-mount supplies: <code>&quot;lost&quot;|&quot;looted&quot;|&quot;dropped&quot;</code></td>
+</tr>
+<tr>
+<td><code>requestResetSurvival</code></td>
+<td><code>{scope:&quot;all&quot;|group}</code></td>
+<td>GM → GM</td>
+<td>cross-campaign reset: zero <code>lastTickDay</code> + per-actor counters</td>
+</tr>
+<tr>
+<td><code>notifyTickComplete</code></td>
+<td><code>{summaryByGroup}</code></td>
+<td>GM → all (broadcast)</td>
+<td>clients re-render PartyHud + show whispered per-player clock nudges</td>
+</tr>
+</tbody></table></div>
+<p><code>executeAsGM</code> for the GM→GM rows still runs on the primary GM (the panel may be open on a secondary GM client); routing everything through it keeps a single code path.</p>
+<hr>
+<h3 id="architecture-21">B.4 The read-model (<code>SurvivalEngine.readModel()</code>)</h3>
+<p>All three UI surfaces consume exactly this. Pure projection over the registry + adapter + Sourcing facade; no writes; safe to call on any client (it only reads).</p>
+<pre><code class="language-ts">type ResourceKind = &quot;food&quot; | &quot;water&quot; | &quot;firewood&quot;;
+type TrackKey = &quot;hunger&quot; | &quot;thirst&quot; | &quot;cold&quot;;
+type ClimateBand = &quot;temperate&quot;|&quot;hot&quot;|&quot;extremeHeat&quot;|&quot;cold&quot;|&quot;extremeCold&quot;;
+
+interface ReadModel {
+  supplyMode: &quot;abstract&quot; | &quot;ledger&quot;;
+  splitMode: &quot;single&quot; | &quot;named&quot;;
+  groups: GroupView[];
+  generatedAtDay: number;          // lastTickDay
+}
+
+interface GroupView {
+  group: string;                   // &quot;Main&quot;
+  climate: ClimateBand;
+  headline: {                      // creature-days, climate-adjusted, separation-filtered
+    food: number; water: number; firewood: number;
+  };
+  firewoodNeeded: boolean;         // band needs warmth this group
+  pools: PoolView[];
+  roster: RosterEntry[];
+  shortfalls: Shortfall[];
+}
+
+interface PoolView {
+  poolId: string; label: string;   // &quot;Chiga-Biga (base)&quot;
+  kind: { food: number; water: number; firewood: number };  // current counts
+  withParty: boolean;              // for THIS group
+  separated: boolean;              // !withParty — render greyed + tag
+  isMount: boolean;
+  handlerName?: string;            // &quot;Ракакак&quot;
+}
+
+interface RosterEntry {
+  actorUuid: string; name: string;
+  sizeMult: number;                // 1 | 2 | 4
+  isMount: boolean;
+  consumes: boolean;               // false ⇒ &quot;off the books&quot; / needs=0
+  zeroNeeds: boolean;              // needs===0 (mephits, Guenhwyvar) — shown as &quot;no needs&quot;
+  todayDraw: { food: number; water: number };   // what it pulled on the last tick
+  tracks: Record&lt;TrackKey, TrackView&gt;;
+}
+
+interface TrackView {
+  daysDeprived: number;
+  grace: number;                   // Con-mod + 1 (heat-adjusted for thirst)
+  stage: 0 | 1 | 2 | 3 | 4;
+  statusName: string;              // localized: &quot;Thirsty&quot;, &quot;Wasting&quot;, &quot;&quot; if stage 0
+  capped: boolean;                 // true if combined-cap clamped this track&#39;s condition
+}
+
+interface Shortfall {
+  actorUuid: string; name: string;
+  kind: ResourceKind;
+  namedCause: string;              // localized: &quot;the base is separated on the surface&quot;
+  clock: string;                   // &quot;Thirst clock → 2 of 3 days&quot;
+  isMountNarrateOnly: boolean;     // true ⇒ GM alert, no condition applied
+}
+</code></pre>
+<p><code>PoolView.kind</code> is sourced via the Sourcing facade (Abstract flags or Ledger lots) — identical shape either way. <code>RosterEntry.todayDraw</code> is read from per-actor flags written by the last tick; on a never-ticked world it is <code>{0,0}</code>.</p>
+<hr>
+<h3 id="architecture-22">B.5 <code>runTick</code> sequence including week / N-day advance</h3>
+<p><code>runTick(targetDay)</code> is the single code path (world-clock hook, Rest, and the Advance Day/Week/N control all converge here). GM-only, re-entrancy-locked.</p>
+<pre><code>runTick(targetDay):
+  guard isPrimaryGM() AND acquire world-backed re-entrancy lock
+  load CaravanStore, dials, adapter, Sourcing facade
+  firstDay = lastTickDay + 1
+  capDay   = lastTickDay + maxCatchUpDays
+  if targetDay &gt; capDay:                          // OVERFLOW
+     → prompt GM (UpkeepDialog overflow mode): &quot;montage to cap&quot; | &quot;lump deprivation summary&quot;
+       montage: process days firstDay..capDay normally, then jump lastTickDay=targetDay (no further consumption)
+       lump:    compute aggregate deprivation for (targetDay-lastTickDay) days in one ladder pass, set lastTickDay=targetDay
+     → emit summary, release lock, return
+  consolidated = new SummaryAccumulator()
+  for d in firstDay .. min(targetDay, capDay):     // DAY-INTERLEAVED
+     for each GROUP:
+        band       = ClimateModel.forBand(store.climate[group])
+        presentPools = pools/mounts where withParty[group]===true        // SEPARATION FILTER (at sourcing)
+        consumers  = members in group where enabled &amp;&amp; needsConsumption(actor) &amp;&amp; joinedDay&lt;=d
+        ledger     = new AllocationLedger(presentPools, Sourcing)         // transactional in-memory copy
+        // --- PC/NPC consumers ---
+        for c in consumers (size-sorted is irrelevant; order is source-priority per consumer):
+           need = climate-adjusted ration(c)                              // water ×waterMult, size ×mult
+           for kind in [food, water]:
+              drawn = ledger.draw(c, kind, need[kind], sourceOrder(c))    // decrements ledger immediately
+              record c.todayDraw[kind] = drawn
+              if drawn &lt; need[kind]: shortfall(c, kind, cause=whyDry(c,kind,group))   // after WHOLE chain dry
+        // --- MOUNTS as consumers (decision C) ---
+        for m in mounts in group where withParty[group] &amp;&amp; consumes !== &quot;offBooks&quot;:
+           mneed = sizeMult(m) × base ration, water ×waterMult            // Chiga-Biga ×4
+           draw STRICTLY from m&#39;s own poolId → storage (never a PC pack)
+           if short: if m.applyConsequences → ladder like a consumer
+                     else → narrate-only GM alert (Shortfall.isMountNarrateOnly=true)
+        // --- firewood / warmth (whole camp; BEFORE any cooking extra) ---
+        if band.bundles&gt;0: burn = camp warmth need; ledger.draw(camp, firewood, band.bundles)
+           per character: warm = isWarmSourceEquipped(actor) || campfireLit || warmShelter
+        // --- ladder advance, day d ---
+        for actor in consumers (and mounts with applyConsequences):
+           for track in [hunger, thirst, cold]:
+              satisfied = (track fed/watered/warm this day)
+              LadderEngine.advanceOrClear(actor, track, satisfied, grace, thresholds, band)
+                 satisfied → daysDeprived=0; stage steps toward 0 (recovery: −1/night)
+                 deprived  → daysDeprived++; stage = stageFor(daysDeprived, grace, thresholds), capped at lethal dial
+        consolidated.absorb(group, d, draws, shortfalls, clocks)
+     // --- per-day batch commit (so a GM hand-off mid-loop resumes) ---
+     commit: Sourcing.flush(ledger deltas)                                // Abstract: write abstractPools; Ledger: adapter.consume() batched
+           + write per-actor flags (daysDeprived/stage/todayDraw/warmth-consumed)
+           + reconcileConsequences(actor, unionStagesAcrossTracks)        // ONE call, combined-cap clamped
+     lastTickDay = d                                                      // committed per day
+  emit ONE consolidated whispered summary per group (named-cause shortfalls + per-character clocks)
+  if upkeepPrompt==&quot;onlyWhenWrong&quot; &amp;&amp; all-green: silent whisper, no dialog
+  else open UpkeepDialog (one Confirm, pre-filled)
+  broadcast notifyTickComplete{summaryByGroup}
+  release lock
+</code></pre>
+<p><strong>Key invariants enforced here:</strong></p>
+<ul>
+<li><strong>Transactional:</strong> <code>AllocationLedger.draw</code> decrements the working copy; <code>Σ draws ≤ initial availability</code> always; two consumers never both see the full pool.</li>
+<li><strong>Day-interleaved escalation:</strong> a 6-day advance that goes dry on day 4 reaches the correct late stage (e.g. Wasting), not Stage 1 ×6.</li>
+<li><strong><code>reconcileConsequences</code> union + cap:</strong> core computes the union of all tracks&#39; demanded conditions, clamps to &quot;Fatigued + one other,&quot; then calls reconcile <strong>once</strong> — so recovering thirst doesn&#39;t strip the Fatigued that hunger still demands.</li>
+<li><strong>Mounts draw own→storage only</strong>, never a PC pack; default narrate-only.</li>
+<li><strong>Rewind:</strong> <code>targetDay &lt; lastTickDay</code> sets the pointer back without refunding; a large backward jump prompts &quot;new campaign? reset survival tracking?&quot;.</li>
+<li><strong>Catch-up idempotency:</strong> <code>lastTickDay</code> committed per day; re-running the same span is a no-op.</li>
+</ul>
+<hr>
+<h3 id="architecture-23">B.6 Compendium seeding (<code>packs/</code>)</h3>
+<p>The module ships a compendium pack <code>shards-survival.survival-items</code> containing two Items: <strong>&quot;Water (day)&quot;</strong> (1 unit = one creature-day of water; full waterskin = qty 2) and <strong>&quot;Firewood (bundle)&quot;</strong> (1 unit = one camp-night). Native &quot;Rations&quot; (1 week) is decomposed to 7 day-units by the adapter — not seeded.</p>
+<ul>
+<li><strong>When:</strong> seeded <strong>lazily on first need in Ledger mode only.</strong> On <code>ready</code>, GM-only, if <code>supplyDetail === &quot;ledger&quot;</code> and the seed flag <code>flags[&quot;shards-survival&quot;].seeded !== dataVersion</code>, import the two Items into the world (or just leave them in the compendium and let <code>getResourceLots</code> resolve from the pack). Set the seed flag.</li>
+<li><strong>Abstract v1 does not need them</strong> — counts live on the Caravan doc, no Items exist. So seeding is skipped entirely while <code>supplyDetail === &quot;abstract&quot;</code>, and runs the first time the GM flips to Ledger.</li>
+<li>The seeded Item names are added to <code>itemMatchList</code> so <code>getResourceLots</code> recognizes them; the dropdown sheet-injection lets a GM tag any homebrew item as food/water/firewood via the per-item override flag (checked first, before the match list).</li>
+</ul>
+<hr>
+<h3 id="architecture-24">B.7 Mount-as-consumer specifics (decision C)</h3>
+<p>A mount is <strong>simultaneously a consumer and a pool</strong> (<code>MountRef extends PoolRef</code>). Chiga-Biga is the proof case: one Actor = mount + base + stockpile, one UUID, one <code>withParty</code> toggle.</p>
+<pre><code class="language-ts">interface MountRef extends PoolRef {
+  consumes: { food: number; water: number } | &quot;offBooks&quot;;  // default = size-based (Huge ⇒ ×4 base ration)
+  applyConsequences: boolean;          // default = setting mountDefaultApplyConsequences (false)
+  isStorage: boolean;                  // Chiga-Biga: true
+  handlerUuid?: string;                // Ракакак → whispers read &quot;Ракакак notes Chiga-Biga is hungry&quot;
+}
+</code></pre>
+<ul>
+<li><strong>As consumer:</strong> size mult drives need (Large ×2, <strong>Huge ×4</strong>); in <code>runTick</code> the mount draws from <strong>its own <code>poolId</code> → shared storage</strong>, never a PC pack. Chiga-Biga in Hot weather = 4 food + 8 water/day, visibly drawing the base down (16 Water → 8 → dry day 3) — the pressure decision C exists to add. <code>&quot;offBooks&quot;</code> opts a mount out of consumption entirely (one click).</li>
+<li><strong>As pool:</strong> the same <code>poolId</code> is in <code>presentPools</code>; the <code>withParty</code> toggle separates beast + entire stockpile at once.</li>
+<li><strong>Deprivation default = narrate-only:</strong> if <code>applyConsequences === false</code>, a shortfall on a mount produces <code>Shortfall.isMountNarrateOnly = true</code> — a GM alert (<em>&quot;Chiga-Biga is going hungry&quot;</em>, handler-attributed) and <strong>no</strong> native condition on the NPC. The per-mount <code>applyConsequences</code> toggle opts that single mount into the full ladder (then it runs through <code>LadderEngine</code> + <code>reconcileConsequences</code> like any consumer).</li>
+<li><strong>Single-point-of-failure:</strong> if the mount Actor UUID no longer resolves (died/looted), its pool is skipped with a cargo-disposition prompt (<code>requestCargoDisposition</code>) — never a crash.</li>
+</ul>
+<hr>
+<h3 id="architecture-25">B.8 Test seams (pure, no live Foundry)</h3>
+<p>These run under Vitest against a <strong>mock adapter</strong> (<code>MockAdapter implements SurvivalSystemAdapter</code>) and a <strong>mock Sourcing</strong> (in-memory count maps). No <code>game</code>, no <code>Actor</code>, no DOM.</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>Unit</th>
+<th>What&#39;s pure</th>
+<th>The property/assertion tested</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AllocationLedger / Resolver</strong></td>
+<td>yes — pure in-memory</td>
+<td><strong>Transactional invariant:</strong> for any pool set + consumer set + source order, <code>Σ draws[kind] ≤ Σ initialAvailability[kind]</code>; no consumer draws from a pool not in <code>presentPools</code> (separation); communal-first vs personal-first order respected.</td>
+</tr>
+<tr>
+<td><strong>LadderEngine.advanceOrClear</strong></td>
+<td>yes</td>
+<td>grace = <code>graceDays</code> honored (no stage before grace ends); deprived increments and <code>stageFor</code> matches thresholds; <strong>reset-on-satisfied</strong> zeroes <code>daysDeprived</code> and steps stage −1/night; recovery runs even after threat gone; lethal dial caps at 3 unless <code>climbToDeath</code>.</td>
+</tr>
+<tr>
+<td><strong>combined-cap clamp</strong></td>
+<td>yes</td>
+<td>union of three tracks&#39; demanded conditions clamps to &quot;Fatigued + one other&quot;; recovering one track never strips a condition the others still demand (diff against union, not per-track).</td>
+</tr>
+<tr>
+<td><strong>ClimateModel.forBand</strong></td>
+<td>yes</td>
+<td>band → <code>{waterMult, cold, bundles, thirstGracePenalty}</code> math; <code>dailyGroupNeed</code> water scales ×1/×2/×3; firewood need only when band warmth-relevant.</td>
+</tr>
+<tr>
+<td><strong>catch-up idempotency</strong></td>
+<td>yes</td>
+<td>running <code>runTick(d)</code> then <code>runTick(d)</code> again is a no-op; <code>runTick(d+6)</code> that goes dry on +4 reaches the correct late stage (day-interleaved); rewind sets pointer back without refund; overflow path picks montage/lump deterministically.</td>
+</tr>
+<tr>
+<td><strong>separation filter</strong></td>
+<td>yes</td>
+<td>a pool with <code>withParty[group]===false</code> is absent from <code>presentPools</code> and contributes 0 to both allocation and the headline (the &quot;cliff&quot;); a missing <code>withParty[newGroup]</code> key defaults to false (fail-loud).</td>
+</tr>
+<tr>
+<td><strong>Sourcing facade parity</strong></td>
+<td>yes</td>
+<td>the same consumer/pool scenario produces identical <code>readModel()</code> headline + draws whether backed by Abstract counts or Ledger lots (the firewall property).</td>
+</tr>
+</tbody></table></div>
+<p>The mock adapter returns fixed <code>getCreatureRation</code>, <code>getGraceDays</code>, <code>isWarmSourceEquipped</code>, and records <code>reconcileConsequences</code> calls for assertion. <code>MountRef</code>, <code>MemberRef</code>, and <code>AbstractPoolCounts</code> are plain data — constructible in tests without Foundry. The Foundry-coupled layers (document <code>update()</code>, socketlib, ApplicationV2 render, sheet injection) are the <strong>only</strong> parts requiring an integration harness and are kept thin so the core stays fully unit-testable.</p>
+<hr>
+<h3 id="architecture-26">B.9 — Corrections applied after review</h3>
+<p>A verification pass against the locked decisions caught the following; these <strong>supersede</strong> anything above that conflicts.</p>
+<ol>
+<li><p><strong>Heat thirst-grace has one home — the band.</strong> <code>effectiveGrace = getGraceDays(actor,&#39;thirst&#39;) − band.thirstGracePenalty</code> is computed inside the per-track step of B.5 (Extreme Heat → −1 day). The duplicate <code>thirst.heatGracePenalty</code> in <code>LadderThresholds</code> (B.2.1) is removed; the climate band is the single source.</p>
+</li>
+<li><p><strong>Extreme-cold acceleration is one field, consumed in the ladder.</strong> On an unwarmed cold night the ladder advances <code>daysDeprived += (1 + band.coldStagePerNight)</code> (Extreme Cold → +2/night). The duplicate <code>cold.extremeColdStagePerNight</code> in <code>LadderThresholds</code> is removed.</p>
+</li>
+<li><p><strong><code>trackedNeeds</code> actually gates the math.</strong> <code>dailyGroupNeed(kind)</code>, the headline, and <code>RosterEntry.tracks</code> skip a disabled need — turning <strong>Food</strong> off removes it from the headline, the resolver, and the ladders (not just the UI).</p>
+</li>
+<li><p><strong>The read-model carries the previously-missing fields:</strong></p>
+<ul>
+<li><code>RosterEntry.blockedHealing: boolean</code> (Decision D) — so the HUD can show <em>why</em> a healer&#39;s HP restoration isn&#39;t landing.</li>
+<li><code>Shortfall.handlerName?: string</code> — mount narrate-only attribution (<em>&quot;Ракакак notes Chiga-Biga is going hungry&quot;</em>).</li>
+<li><code>GroupView.extrasView</code> — a projection slot for extra-owned rows (the hot-meal &quot;cook?&quot; toggle, the desert &quot;next water in N days&quot; countdown) so extras render <strong>without</strong> polluting the core need rows.</li>
+<li><code>TrackView.capped</code> is defined as: <em>&quot;this track&#39;s demanded condition was suppressed by the combined cap.&quot;</em></li>
+</ul>
+</li>
+<li><p><strong>Lump catch-up is explicitly an approximation.</strong> On overflow beyond <code>maxCatchUpDays</code>: <strong>montage</strong> processes the cap exactly then skips the remainder; <strong>lump</strong> applies the end-state stage for the whole span in one pass (no day-interleaving). The two can therefore yield different stages — by design — and the overflow card says so.</p>
+</li>
+<li><p><strong>Personal waterskins exist in Abstract v1.</strong> The Shards fixture (plan <strong>M1</strong>) seeds a personal <code>AbstractPoolRef</code> (2 Water) per PC, so the canonical Ssir-Kat &quot;waterskins empty on day 2&quot; beat is reproducible under the locked Abstract defaults. Personal packs remain optional in general; the fixture turns them on.</p>
+</li>
+<li><p><strong><code>climateModel:&quot;auto&quot;</code> is an inert stub in v1</strong> (Decision H locks Manual band). It registers but does nothing until a weather-module reader lands; its <code>onChange</code> no-ops in v1.</p>
+</li>
+<li><p><strong><code>graceFormula.flat</code></strong> is retained as an intentional homebrew escape hatch; <code>conModPlus1</code> is the locked default and the only value the fixtures use.</p>
+</li>
+<li><p><strong>B.6 seeding trigger is singular:</strong> seed the <code>Water (day)</code> / <code>Firewood (bundle)</code> items <strong>once, on first Ledger enable</strong> (matches plan <strong>M8</strong>) — never at <code>ready</code> while <code>supplyDetail === &quot;abstract&quot;</code>.</p>
+</li>
+</ol>
+</section><section class="doc" id="doc-plan"><div class="doc-badge">Build sequence</div><p>﻿# Implementation Plan</p>
+<blockquote>
+<p><strong>Module:</strong> <code>shards-survival</code> · <strong>Stack:</strong> TypeScript + Vite · <strong>Target:</strong> Foundry v13+/v14, pf2e v8.2.0 · <strong>v1 scope:</strong> Abstract supply mode (Decision A).
+Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</code></a> + <a href="./architecture.md"><code>architecture.md</code></a>. This plan operationalizes both. Where they disagree, the docs win — flag and ask.</p>
+</blockquote>
+<p>This plan builds a <strong>walking skeleton first</strong>, then sequences the three differentiators — <strong>the separation rule</strong>, <strong>mount-as-consumer (Chiga-Biga ×4)</strong>, and <strong>week / N-day advance</strong> — to land in M2, the very first feature milestone after scaffold and registry. The engine heart is testable headless before any polished UI exists.</p>
+<hr>
+<h2 id="plan-1">Guiding sequencing principle</h2>
+<ol>
+<li><strong>M0–M1</strong> = it loads, registers, and persists a registry document. Nothing player-visible yet beyond &quot;the module is alive.&quot;</li>
+<li><strong>M2</strong> = the engine heart. Separation filter, AllocationLedger, mount consumer, and the day-interleaved N-day loop all exist and are <strong>proven by headless unit tests</strong> before any condition or UI work. This is where the architecture&#39;s hardest invariants live, so it gets exercised earliest.</li>
+<li><strong>M3</strong> = consequences become real (native pf2e conditions via <code>reconcileConsequences</code>, climate/warmth).</li>
+<li><strong>M4–M5</strong> = the human surfaces (GM panel, Player HUD, Upkeep card, green-day suppression, consolidated summary).</li>
+<li><strong>M6–M9</strong> = extras, i18n, the v2 Ledger groundwork, and release.</li>
+</ol>
+<p>A vertical slice is demoable from <strong>M2 onward</strong> via the dev console; from <strong>M4</strong> via the real UI.</p>
+<hr>
+<h2 id="plan-2">M0 — Scaffold + tooling (the walking skeleton)</h2>
+<p><strong>Goal:</strong> A module that installs in Foundry v14, loads with zero errors, registers one socket, and prints a visible &quot;alive&quot; banner + a stub <code>game.modules.get(&quot;shards-survival&quot;).api.ping()</code>. CI builds and a release action exists. This is the smallest end-to-end thing that loads and does something visible.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li>Init repo <code>shards-survival/</code> with <code>package.json</code>, <code>tsconfig.json</code> (strict), <code>vite.config.ts</code> (build → <code>scripts/module.js</code>; copy <code>public/</code> assets).</li>
+<li><code>module.json</code>: id <code>shards-survival</code>, <code>compatibility { minimum:&quot;13&quot;, verified:&quot;14&quot; }</code> — <strong>NO <code>maximum</code></strong>; <code>esmodules:[&quot;scripts/module.js&quot;]</code>; <code>relationships.requires:[socketlib]</code>, <code>systems:[pf2e advertised]</code>, <code>recommends:[simple-calendar, seasons-and-stars]</code>; <code>languages:[en, ru]</code>.</li>
+<li><code>src/module.ts</code>: <code>init</code>/<code>ready</code> hooks; register socketlib handler in the <strong><code>socketlib.ready</code></strong> hook (not <code>init</code> — it throws); expose <code>module.api</code> with a <code>ping()</code> stub; <code>ui.notifications.info</code> &quot;alive&quot; banner on <code>ready</code>.</li>
+<li>Empty <code>lang/en.json</code> + <code>lang/ru.json</code> with one key each (<code>SURVIVAL.Alive</code>).</li>
+<li><strong>ESLint rule</strong> banning <code>game.system.id</code> / <code>&quot;pf2e&quot;</code> outside <code>src/systems/</code> (Pillar 1 — wire it now so it guards every later PR).</li>
+<li>Vitest config + one trivial passing test (proves the headless harness works).</li>
+<li>GitHub Actions: <code>ci.yml</code> (lint + typecheck + test + build on PR) and <code>release.yml</code> (on tag: zip build, publish <code>module.json</code> + <code>module.zip</code> with manifest/download URLs).</li>
+</ul>
+<p><strong>Files created:</strong> <code>module.json</code>, <code>package.json</code>, <code>vite.config.ts</code>, <code>tsconfig.json</code>, <code>.eslintrc</code>, <code>src/module.ts</code>, <code>lang/en.json</code>, <code>lang/ru.json</code>, <code>vitest.config.ts</code>, <code>test/smoke.test.ts</code>, <code>.github/workflows/ci.yml</code>, <code>.github/workflows/release.yml</code>.</p>
+<p><strong>Acceptance:</strong> <code>npm run build</code> emits <code>scripts/module.js</code>; dropping the build into Foundry v14 loads with no console errors; <code>game.modules.get(&quot;shards-survival&quot;).api.ping()</code> returns <code>&quot;pong&quot;</code>; an &quot;alive&quot; notification shows on world load; CI is green on the first PR.</p>
+<p><strong>Dependencies:</strong> none.
+<strong>Size:</strong> M.
+<strong>Key risks:</strong> Vite asset-copy path mismatch vs the manifest <code>esmodules</code> path (mitigate: assert the output path in build); socketlib registered too early (use <code>socketlib.ready</code>).</p>
+<hr>
+<h2 id="plan-3">M1 — Caravan registry document + settings registry + read-model skeleton</h2>
+<p><strong>Goal:</strong> A <strong>dedicated Caravan document</strong> (Actor or JournalEntry) persists the registry in flags with atomic <code>update()</code>; the dials are registered as world settings; a read-model computes the at-a-glance headline (<code>Food N · Water N · 🔥 N</code>) from the registry. No tick yet.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li><code>src/core/Caravan.ts</code>: the <code>CaravanStore</code> shape (<code>groups</code>, per-group <code>climate</code>, <code>members</code>, <code>storage</code>, <code>mounts</code>) per architecture §2.2. CRUD via the document&#39;s flags; <strong>store UUID references, never embedded actors</strong>. Provide <code>load()</code>, <code>save()</code> (queued atomic <code>update()</code>), and a <code>Hooks.on(&quot;updateDocument&quot;)</code> re-render signal.</li>
+<li>Choose the document kind (recommend a hidden <strong>JournalEntry</strong> to avoid an Actor showing in the actors directory) and a &quot;find-or-create on first GM ready&quot; bootstrap.</li>
+<li><code>src/settings.ts</code>: declaratively register Dials 1–9 with the <strong>locked defaults</strong> (Supply=Abstract, needs=Food+Water+Firewood, Upkeep=&quot;only when wrong&quot;, Source=Communal-first, Climate=Manual band, Lethal=Cap@3, Split=Single-party, Foraging=off, extras=off) + <code>maxCatchUpDays=14</code>; a <code>registerMenu</code> stub for the richer config app.</li>
+<li>Per-actor flag schema stubs: <code>flags[&quot;shards-survival&quot;].state</code> (per-track <code>daysDeprived</code>/<code>stage</code>, <code>blockedHealing</code>, <code>joinedDay</code>) and a <strong>separate</strong> <code>.warmth</code> key (avoids the GM-write-clobbers-player-write race).</li>
+<li><code>dataVersion</code> on the registry; an empty <code>src/core/migrations.ts</code> with the <code>(old)→new</code> ordered-pass skeleton.</li>
+<li>Read-model: <code>getHeadline(group)</code> computing pool sums in <strong>Abstract mode</strong> (pools are day-count numbers). Wire it to <code>module.api</code> so it&#39;s console-demoable.</li>
+<li>Seed a <strong>fixture builder</strong> for The Shards party (5 PCs, Chiga-Biga Huge×4 storage+mount, Staf ×1, mephits/Guenhwyvar needs=0) — reused by every later test.</li>
+</ul>
+<p><strong>Files created:</strong> <code>src/core/Caravan.ts</code>, <code>src/settings.ts</code>, <code>src/core/migrations.ts</code>, <code>src/core/types.ts</code>, <code>test/fixtures/theShards.ts</code>, <code>test/caravan.test.ts</code>.
+<strong>Files touched:</strong> <code>src/module.ts</code> (bootstrap registry, register settings, expand <code>api</code>).</p>
+<p><strong>Acceptance:</strong> On first GM <code>ready</code> the Caravan document is created once; <code>api.getHeadline(&quot;Main&quot;)</code> returns the correct sums from a hand-seeded registry; editing a pool number and reloading the world persists; settings appear in Foundry&#39;s module-settings UI with the locked defaults.</p>
+<p><strong>Dependencies:</strong> M0.
+<strong>Size:</strong> M.
+<strong>Key risks:</strong> read-modify-write race on the registry (mitigate: document-backed queued <code>update()</code>, never a settings blob for the registry); choosing a doc kind that clutters the UI (use a hidden JournalEntry).</p>
+<hr>
+<h2 id="plan-4">M2 — The engine heart: daily tick + transactional resolver + Abstract pools + mount consumer + separation filter + WEEK/N-day advance</h2>
+<blockquote>
+<p><strong>The differentiator milestone.</strong> Everything that makes this module worth building is proven here, headless, before a single condition or pixel of polished UI.</p>
+</blockquote>
+<p><strong>Goal:</strong> <code>SurvivalEngine.runTick(targetDay)</code> runs the full day-interleaved loop: separation filter → per-consumer allocation against a transactional <code>AllocationLedger</code> → mount consumption (Chiga-Biga ×4) → shortfall recording with named cause → per-day <code>lastTickDay</code> commit, across an <strong>N-day jump in one call</strong> with <strong>one consolidated summary</strong>. Abstract mode: the resolver decrements day-count pool numbers.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li><code>src/systems/SurvivalSystemAdapter.ts</code> (the <strong>interface</strong> only) + <code>src/systems/registry.ts</code> (resolve adapter by <code>game.system.id</code>, fall back to Generic). Core imports the interface, never a concrete adapter.</li>
+<li>A <strong>minimal <code>Pf2eAdapter</code> stub</strong> implementing only the verbs M2 needs: <code>getCreatureRation</code> (size→×1/×2/×4), <code>getGraceDays</code> (Con-mod+1), <code>isMount</code>, <code>needsConsumption</code> (false for dead/HP0/needs=0), and Abstract-mode <code>getAvailable</code>/<code>consume</code>/<code>grant</code> that read and write the registry&#39;s day-count numbers (no real inventory yet). <code>reconcileConsequences</code> is a <strong>no-op stub</strong> in M2 (filled in M3).</li>
+<li><code>src/core/AllocationLedger.ts</code>: in-memory working copy of present pools; <code>draw(kind, units)</code> decrements immediately so two consumers can&#39;t both be told the pool is full. <strong>Invariant: Σ draws ≤ initial availability.</strong></li>
+<li><code>src/core/Resolver.ts</code>: source-order allocation (Communal-first default: mount/base → storage → own pack; Personal-first alternative). Mounts draw <strong>own carried supply → storage only</strong>, never a PC pack. Record shortfall (named cause) <strong>only after the whole chain is dry</strong>.</li>
+<li><code>src/core/SurvivalEngine.ts</code>: the <code>runTick(targetDay)</code> loop per architecture §3.2 — <code>isPrimaryGM()</code> guard + world-backed re-entrancy lock; <strong>day-interleaved</strong> <code>for d in (lastTickDay+1 .. min(targetDay, lastTickDay+maxCatchUpDays))</code>; <strong>per-group separation filter</strong> (<code>withParty[group]===true</code>) applied <em>before</em> allocation; mount consumers included; commit <code>lastTickDay</code> per-day; emit one summary object (no UI yet — return structured data).</li>
+<li><strong>Separation enforced at the sourcing layer:</strong> the filter removes separated pools from the allocation list before <code>new AllocationLedger(presentPools)</code>.</li>
+<li><strong>N-day / week advance:</strong> <code>runTick(currentDay + N)</code> accrues each day in order; <code>N=7</code> is just the same loop. <strong>Catch-up cap</strong> (<code>maxCatchUpDays=14</code>): on overflow, surface a decision flag in the summary (montage vs lump) rather than silently under-charging.</li>
+<li><strong>Rewind</strong> handling: backward clock move sets the pointer back without refunding; large backward jump emits a &quot;new campaign? reset?&quot; flag.</li>
+<li><strong>Dangling-UUID resilience:</strong> a pool whose actor no longer resolves is skipped with a &quot;supplies lost&quot; note + cargo-disposition flag — never a throw.</li>
+<li><code>src/core/LadderEngine.ts</code> <strong>counters only</strong> in M2: satisfied → reset <code>daysDeprived</code> to 0; deprived → increment and recompute <code>stage</code> (capped at 3 per Decision E). No condition application yet (that&#39;s M3) — but the stage numbers are computed and returned so M3 only has to map them.</li>
+</ul>
+<p><strong>Files created:</strong> <code>src/systems/SurvivalSystemAdapter.ts</code>, <code>src/systems/registry.ts</code>, <code>src/systems/Pf2eAdapter.ts</code> (partial), <code>src/core/AllocationLedger.ts</code>, <code>src/core/Resolver.ts</code>, <code>src/core/SurvivalEngine.ts</code>, <code>src/core/LadderEngine.ts</code>, <code>src/core/time.ts</code> (day arithmetic helpers), and tests: <code>test/ledger.test.ts</code>, <code>test/resolver.test.ts</code>, <code>test/engine.tick.test.ts</code>, <code>test/engine.separation.test.ts</code>, <code>test/engine.mount.test.ts</code>, <code>test/engine.multiday.test.ts</code>.
+<strong>Files touched:</strong> <code>src/module.ts</code> (resolve adapter on <code>ready</code>; expose <code>api.runTick</code>).</p>
+<p><strong>Acceptance (demoable from the dev console):</strong></p>
+<ul>
+<li><strong>Separation cliff:</strong> flip Chiga-Biga <code>withParty[&quot;Main&quot;]=false</code>, run a tick → personal packs only are drawn, the headline drops from &quot;Water 9&quot; to &quot;Water 2&quot;, and each shortfall states &quot;the base is separated.&quot;</li>
+<li><strong>Mount consumer:</strong> with the base present in <strong>Hot</strong>, one tick charges Chiga-Biga <strong>4 Rations + 8 Water</strong> (Huge×4 × Hot×2 water); the base stockpile visibly drops.</li>
+<li><strong>Week advance:</strong> <code>runTick(day+7)</code> against the Ssir-Kat fixture (base separated) returns <strong>one</strong> consolidated summary; a PC that goes dry on day 2 reaches the correct <strong>stage 2/3</strong> by day 7, not stage 1 (proves day-interleaving).</li>
+<li><strong>No double-spend:</strong> a property test confirms Σ draws ≤ initial availability across randomized consumer orders.</li>
+<li><strong>Catch-up cap:</strong> <code>runTick(day+40)</code> flags the montage/lump decision instead of charging 40 days silently.</li>
+</ul>
+<p><strong>Dependencies:</strong> M1.
+<strong>Size:</strong> L.
+<strong>Key risks:</strong> double-spend if the ledger isn&#39;t the single source of truth during a tick (mitigate: all draws go through <code>AllocationLedger</code>, property-tested); two-pointer desync on rewind (mitigate: single global <code>lastTickDay</code> + <code>joinedDay</code>, per architecture); re-entrancy from the Rest + world-time hooks (mitigate: world-state-backed lock — even though hooks land in M3, build the lock now).</p>
+<hr>
+<h2 id="plan-5">M3 — Consequence ladders + native pf2e conditions via <code>reconcileConsequences</code> + climate/warmth</h2>
+<p><strong>Goal:</strong> Stages become real native PF2e conditions through the <strong>one idempotent <code>reconcileConsequences(actor, allTracks)</code></strong> verb; the combined cap (Fatigued + one other) is enforced in core before reconcile; climate multipliers and the one-checkbox warmth model drive the thirst/cold tracks.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li>Complete <code>Pf2eAdapter.reconcileConsequences</code>: implement the <code>STAGE_MAP</code> (hunger/thirst/cold → fatigued/enfeebled/drained/sickened/clumsy per mechanics §4); compute the <strong>union</strong> of demanded specs across all active tracks; diff against <strong>only module-applied conditions</strong> (provenance flag — never strip a Doomed from a curse/crit); call <code>increaseCondition</code>/<code>decreaseCondition</code> to reach the target. Implement <code>isWarmSourceEquipped</code> (auto-detect pf2e Cold-Weather Clothing).</li>
+<li><strong>Combined cap in core:</strong> clamp the demanded set to &quot;Fatigued + one other&quot; <em>before</em> calling reconcile (architecture §1.2).</li>
+<li><strong>Stage-3 unhealable HP</strong> (Decision D): set/clear <code>blockedHealing</code> flag at hunger/thirst stage 3; clears on fed/watered.</li>
+<li><strong>Decision E:</strong> stages cap at 3 by default; stage 4 only when Dial 6 = &quot;Climb to death.&quot;</li>
+<li><code>src/core/ClimateModel.ts</code>: the 5-band table (Temperate/Hot/ExtremeHeat/Cold/ExtremeCold) → water ×1/×2/×3, thirst-grace −1 in Extreme Heat, cold-track on for Cold/ExtremeCold, firewood-per-night. Ship presets <code>coast_temperate</code>, <code>desert_hot</code>, <code>sunhills_temperate</code>, <code>northern_cold</code>, <code>default_temperate</code>. Per-group climate (a delve = Temperate under a desert).</li>
+<li><strong>Warmth resolution</strong> in the tick: per-character &quot;kept warm?&quot; satisfied by warm clothing (auto) OR campfire (1 firewood for the whole camp) OR warm shelter (one click); zero firewood removes only the campfire option — never freezes a PC in warm clothing. Resolve warmth strictly <strong>before</strong> any cooking extra.</li>
+<li>Wire <code>LadderEngine</code> (M2 counters) → <code>reconcileConsequences</code> at commit time; recovery mirrors PF2e (step −1 per rested night).</li>
+<li><strong>Trigger wiring:</strong> <code>updateWorldTime</code> hook → boundary math → <code>runTick</code>; Rest-for-the-Night + the Advance control → <code>runTick(current+N)</code> directly (do <strong>not</strong> route through <code>game.time.advance()</code>); the re-entrancy lock built in M2 now guards real concurrent triggers.</li>
+</ul>
+<p><strong>Files created:</strong> <code>src/core/ClimateModel.ts</code>, <code>test/adapter.reconcile.test.ts</code>, <code>test/ladder.test.ts</code>, <code>test/climate.test.ts</code>, <code>test/engine.warmth.test.ts</code>.
+<strong>Files touched:</strong> <code>src/systems/Pf2eAdapter.ts</code> (complete), <code>src/core/LadderEngine.ts</code> (cap + recovery + blockedHealing), <code>src/core/SurvivalEngine.ts</code> (warmth step, reconcile at commit), <code>src/core/time.ts</code> (world-time boundary math), <code>src/module.ts</code> (register <code>updateWorldTime</code>/Rest hooks).</p>
+<p><strong>Acceptance:</strong></p>
+<ul>
+<li>A Con +0 PC unwatered in Hot for 2 days shows native <strong>Fatigued → Sickened 1</strong> on the token HUD; recovering strips only what the other tracks don&#39;t still demand (shared-Fatigued bug fixed).</li>
+<li>A PC suffering hunger + thirst + cold simultaneously carries at most <strong>Fatigued + one other</strong>, never three stacks.</li>
+<li>Hunger/thirst stage 3 sets unhealable HP; eating/drinking clears it.</li>
+<li>A &quot;kept warm&quot; PC in a Cold band accrues <strong>no</strong> cold stage even with zero firewood; an unwarmed one does.</li>
+<li>Advancing the world clock a day fires exactly one tick (no double-advance against a calendar module).</li>
+</ul>
+<p><strong>Dependencies:</strong> M2.
+<strong>Size:</strong> L.
+<strong>Key risks:</strong> reconcile stripping conditions it didn&#39;t apply (mitigate: provenance flag, tested); pf2e <code>increaseCondition</code> API drift on v8.2.0 (mitigate: thin adapter wrapper, smoke-tested in a live world); double-advance via conflating survival-day with <code>game.time.advance</code> (mitigate: Rest/Advance call <code>runTick</code> directly).</p>
+<hr>
+<h2 id="plan-6">M4 — GM Control Panel (ApplicationV2)</h2>
+<p><strong>Goal:</strong> The GM can do everything the engine supports from a real ApplicationV2 panel: read the headline, toggle <code>With party?</code> per pool, hit the <strong>Delving preset</strong>, edit pool numbers, set climate, see per-consumer <strong>visible clocks</strong>, and click <strong>Advance Day / Week / N days</strong>.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li><code>src/apps/GmControlPanel.ts</code> (<code>HandlebarsApplicationMixin(ApplicationV2)</code>): headline readout; per-pool <code>With party?</code> toggles + one-click <strong>Delving preset</strong> (flips every mount+storage <code>withParty=false</code> atomically, offers Temperate for delvers); roster with per-consumer status, <strong>visible clocks</strong> (&quot;Иримэ — unwatered, 2 of 3 grace days&quot;), needs override, a red &quot;no reachable supply&quot; badge for mis-configured consumers; climate picker; <strong>Advance Day / Week / N days</strong> control.</li>
+<li>Click-a-number pool edits commit on <strong>blur/Enter</strong> (not per-keystroke); all writes route through <code>socketlib.executeAsGM</code> (uniform path).</li>
+<li><code>src/net/socket.ts</code>: <code>executeAsGM</code> handlers for <code>runTick</code>, <code>setWithParty</code>, <code>editPool</code>, <code>setClimate</code>, <code>applyDelvingPreset</code>; each call awaited, &quot;no GM online&quot; rejection caught and surfaced.</li>
+<li>Templates + CSS.</li>
+</ul>
+<p><strong>Files created:</strong> <code>src/apps/GmControlPanel.ts</code>, <code>src/net/socket.ts</code>, <code>templates/gm-panel.hbs</code>, <code>styles/survival.css</code>.
+<strong>Files touched:</strong> <code>src/module.ts</code> (open-panel control / scene control button).</p>
+<p><strong>Acceptance:</strong> GM opens the panel; clicking <strong>Delving</strong> greys out Chiga-Biga and the headline recomputes the cliff live; <strong>Advance Week</strong> runs the M2/M3 engine and the roster clocks update; editing &quot;Water 16 → 20&quot; persists and re-renders. All mutations survive a reload.</p>
+<p><strong>Dependencies:</strong> M3 (needs real ticks + conditions to display).
+<strong>Size:</strong> L.
+<strong>Key risks:</strong> ApplicationV2 render/hook churn on v13 vs v14 (mitigate: target v13+ AppV2 only, smoke-test both); socket round-trips feeling laggy (mitigate: optimistic re-render + reconcile on confirm).</p>
+<hr>
+<h2 id="plan-7">M5 — Players HUD + Upkeep card + green-day suppression + consolidated multi-day summary</h2>
+<p><strong>Goal:</strong> Players get a read-mostly HUD with their own &quot;Kept warm?&quot; checkbox; the daily Upkeep card appears <strong>only on a shortfall or real choice</strong> (green days are a silent whisper from day one — Decision F); a multi-day advance shows <strong>one</strong> card with the consolidated summary.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li><code>src/apps/PartyHud.ts</code>: pool headline + per-PC track icons + each player&#39;s own <strong>&quot;Kept warm tonight?&quot;</strong> checkbox (writes the separate <code>.warmth</code> flag via <code>executeAsGM</code>). Separated pools render greyed with a tag.</li>
+<li><code>src/apps/UpkeepDialog.ts</code>: the single card — need vs available vs source used, every shortfall with named cause, firewood row only when relevant, warmth row, one <strong>Confirm</strong> pre-filled with the auto-resolution. Split parties = <strong>one card, two sections, single Confirm</strong> (Dial 7).</li>
+<li><strong>Green-day suppression:</strong> when Dial 3 = &quot;only when wrong&quot; AND all-green, emit a silent whisper and <strong>never open</strong> the dialog (Decision F, on from day one).</li>
+<li><strong>Consolidated summary:</strong> the M2 N-day summary object renders as one card/whisper, not seven; named-cause shortfalls + visible per-character clocks.</li>
+<li>Private per-player nudges (whispers), never public shaming.</li>
+<li>Sheet injection (<code>renderActorSheetV2</code>/<code>renderItemSheetV2</code>): &quot;Kept warm&quot; checkbox on PCs; (item dropdown deferred to M8 Ledger).</li>
+</ul>
+<p><strong>Files created:</strong> <code>src/apps/PartyHud.ts</code>, <code>src/apps/UpkeepDialog.ts</code>, <code>src/apps/sheet-injection.ts</code>, <code>templates/party-hud.hbs</code>, <code>templates/upkeep.hbs</code>.
+<strong>Files touched:</strong> <code>src/core/SurvivalEngine.ts</code> (emit summary → UI hook), <code>src/net/socket.ts</code> (warmth + confirm handlers), <code>styles/survival.css</code>.</p>
+<p><strong>Acceptance:</strong> A fully-green Advance-a-Day produces <strong>no dialog</strong> (only a whisper); a shortfall day opens exactly one Upkeep card with the named cause; <strong>Advance Week</strong> with a mid-week shortfall opens <strong>one</strong> consolidated card; a player toggling &quot;Kept warm&quot; updates their own warmth without the GM&#39;s <code>state</code> write clobbering it.</p>
+<p><strong>Dependencies:</strong> M4.
+<strong>Size:</strong> L.
+<strong>Key risks:</strong> player owner-write clobbering GM state (mitigate: separate <code>.warmth</code> flag key + all writes via <code>executeAsGM</code>); whisper spam on multi-day (mitigate: single consolidated emit).</p>
+<hr>
+<h2 id="plan-8">M6 — Optional extras (foraging, hot meal)</h2>
+<p><strong>Goal:</strong> The Dial-9 extras framework + the two most useful extras, off by default, on for wilderness/desert arcs.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li><code>src/core/extensions/</code> framework: each extra is a <code>SurvivalExtension</code> (<code>onTick</code>, <code>onUpkeepDialog</code>, <code>registerSettings</code>) the engine iterates <strong>when enabled</strong>; discretionary extras carry <code>runForCatchUp:false</code> (a 14-day montage doesn&#39;t roll 14 foraging checks).</li>
+<li><strong>Foraging</strong> (Dial 8): once/day Survival check via the adapter&#39;s optional <code>rollForage</code> (crit feeds 2, success 1, fail = Fatigued); replenishes the communal pool.</li>
+<li><strong>Hot meal:</strong> +1 firewood upgrades the day&#39;s rations into a small expiring buff; <strong>warmth always wins the firewood</strong> if both compete.</li>
+<li>Optional &quot;Next water in N days&quot; desert countdown (pure display) — cheap, high value for the current desert hero scenario.</li>
+</ul>
+<p><strong>Files created:</strong> <code>src/core/extensions/index.ts</code>, <code>src/core/extensions/foraging.ts</code>, <code>src/core/extensions/hotMeal.ts</code>, <code>test/extensions.test.ts</code>.
+<strong>Files touched:</strong> <code>src/core/SurvivalEngine.ts</code> (iterate enabled extensions), <code>src/systems/Pf2eAdapter.ts</code> (<code>rollForage</code>), <code>src/settings.ts</code> (extra toggles).</p>
+<p><strong>Acceptance:</strong> With foraging on, a tick rolls one Survival check and credits the pool; a 7-day advance rolls foraging <strong>zero</strong> times for catch-up days (<code>runForCatchUp:false</code>); enabling hot meal consumes the extra firewood only after warmth is satisfied.</p>
+<p><strong>Dependencies:</strong> M3 (tick), M5 (upkeep card hooks).
+<strong>Size:</strong> M.
+<strong>Key risks:</strong> extras leaking into the catch-up loop (mitigate: <code>runForCatchUp</code> flag, tested); firewood contention order (mitigate: warmth-before-cooking invariant, tested).</p>
+<hr>
+<h2 id="plan-9">M7 — i18n (en + ru)</h2>
+<p><strong>Goal:</strong> Full <code>en</code> + <code>ru</code> locales shipped together (Decision I), with whole-sentence keys, Russian plural rules, and a missing-key guard.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li>Extract every user-facing string to <code>SURVIVAL.</code>-prefixed keys; <strong>whole sentences with placeholders</strong>, never concatenated fragments (Russian word order). <code>game.i18n.format(&quot;SURVIVAL.Shortfall.separated&quot;, {name, kind, pool})</code>.</li>
+<li><code>src/util/i18n.ts</code>: <code>Intl.PluralRules</code> / <code>Intl.NumberFormat</code> helper keyed to <code>game.i18n.lang</code> (Russian <code>one/few/many/other</code>); use <code>game.i18n.has</code> to detect misses (not <code>??</code>).</li>
+<li>Fill <code>lang/en.json</code> + <code>lang/ru.json</code>; honest-scope note in docs: module <em>flavor</em> labels localized, the underlying pf2e condition name shows in pf2e&#39;s own localization.</li>
+<li><strong>Item-match list</strong> stays a locale-independent world setting, <strong>not</strong> in <code>lang/*.json</code>.</li>
+</ul>
+<p><strong>Files created:</strong> <code>src/util/i18n.ts</code>, <code>test/i18n.test.ts</code>.
+<strong>Files touched:</strong> <code>lang/en.json</code>, <code>lang/ru.json</code>, every <code>apps/*</code> template + string call site.</p>
+<p><strong>Acceptance:</strong> Switching Foundry&#39;s core language to Russian renders all module UI in Russian with correct plurals (1 день / 2 дня / 5 дней); a deliberately removed key surfaces the key name (caught by the <code>has</code> guard), not a silent blank.</p>
+<p><strong>Dependencies:</strong> M4–M6 (strings must exist to extract).
+<strong>Size:</strong> M.
+<strong>Key risks:</strong> fragmented strings breaking ru word order (mitigate: whole-sentence keys, reviewed); <code>??</code>-on-miss masking gaps (mitigate: <code>game.i18n.has</code>).</p>
+<hr>
+<h2 id="plan-10">M8 — Ledger mode (v2) + compendium seeding</h2>
+<p><strong>Goal:</strong> The flagship <strong>Ledger</strong> mode — pools are real Actor inventories the adapter decrements — behind Dial 1, with the same headline and UI. Seed the <code>Water (day)</code> / <code>Firewood (bundle)</code> compendium items.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li>Complete <code>Pf2eAdapter</code> inventory verbs against real items: <code>getResourceLots</code>/<code>getAvailable</code> reading actor inventory; <code>consume</code> handling the <strong>7-ration decomposition</strong> + per-system quantity path (batched); <code>grant</code>; honor the <strong>per-item override flag first</strong>, then slug/trait/type heuristic, then the configurable match list.</li>
+<li><code>packs/</code>: seeded compendium items &quot;Water (day)&quot;, &quot;Firewood (bundle)&quot;; module seeds them on first Ledger enable.</li>
+<li>Item-sheet dropdown (<code>renderItemSheetV2</code>): &quot;Survival resource: food/water/firewood&quot; sets the per-item override flag (homebrew escape hatch).</li>
+<li>Dial 1 toggles Abstract ↔ Ledger with <strong>no UI change</strong> — same <code>getHeadline</code>, same panel; only the adapter&#39;s read/write path differs.</li>
+<li>Migration: Abstract day-counts → seeded Ledger items on switch (GM-confirmed).</li>
+<li><strong>Single-point-of-failure handling</strong> hardened: &quot;the mount died with all supplies on it&quot; → lost/looted/dropped GM prompt (the dangling-UUID path from M2 gets its real cargo-disposition UI here).</li>
+</ul>
+<p><strong>Files created:</strong> <code>packs/survival-items/…</code>, <code>test/adapter.ledger.test.ts</code>, <code>test/adapter.decompose.test.ts</code>.
+<strong>Files touched:</strong> <code>src/systems/Pf2eAdapter.ts</code> (real inventory), <code>src/apps/sheet-injection.ts</code> (item dropdown), <code>src/settings.ts</code> (Ledger seeding), <code>src/core/migrations.ts</code> (Abstract→Ledger).</p>
+<p><strong>Acceptance:</strong> Flipping Dial 1 to Ledger keeps the headline identical but now a tick decrements a real &quot;Rations&quot; item (a 1-week ration becomes 7 day-units); a homebrew &quot;Canteen&quot; tagged via the item dropdown counts as water; the mount dying prompts cargo disposition rather than crashing.</p>
+<p><strong>Dependencies:</strong> M2–M5 (Abstract engine + UI), M7.
+<strong>Size:</strong> L.
+<strong>Key risks:</strong> ration decomposition off-by-one against pf2e item quantity semantics (mitigate: <code>adapter.decompose</code> unit tests); double-decrement vs the in-memory ledger (mitigate: ledger computes net deltas, single batch-commit).</p>
+<hr>
+<h2 id="plan-11">M9 — Polish + release</h2>
+<p><strong>Goal:</strong> Migrations hardened, accessibility/UX pass, docs, and a tagged release with auto-update.</p>
+<p><strong>Tasks</strong></p>
+<ul>
+<li>Two-level <code>dataVersion</code> migrations tested from <strong>empty and populated</strong> worlds; lazy per-actor flag migration; <code>ready</code> reconciliation (catch up to current world-day if a day passed with no GM online); <strong>cross-campaign reset action</strong> (zeroes <code>lastTickDay</code> + every actor&#39;s counters — the vault is reused).</li>
+<li>Rewind UX: large backward jump → &quot;new campaign? reset survival tracking?&quot; prompt.</li>
+<li>A11y/keyboard pass on all four AppV2 surfaces; HUD density client setting; panel-collapsed client setting.</li>
+<li>README, GM quickstart, the dnd5e-adapter &quot;replaces SRD survival&quot; caveat doc, the honest-scope localization note.</li>
+<li>Bump <code>version</code> + <code>compatibility.verified</code> together; tag → <code>release.yml</code> zips, publishes manifest/download pair.</li>
+<li>End the release report with the <strong>at-a-glance ✅ status-line block</strong> (per the saved version-report format).</li>
+</ul>
+<p><strong>Files touched:</strong> <code>src/core/migrations.ts</code>, <code>src/module.ts</code> (ready reconciliation + reset action), all <code>apps/*</code>, <code>README.md</code>, <code>module.json</code>.</p>
+<p><strong>Acceptance:</strong> A populated v1 world migrates clean; a day passing with no GM online catches up on next GM <code>ready</code>; the cross-campaign reset zeroes everything; a tagged release auto-updates in Foundry&#39;s package manager.</p>
+<p><strong>Dependencies:</strong> all prior.
+<strong>Size:</strong> M.
+<strong>Key risks:</strong> migration data loss (mitigate: backup-before-migrate + empty-and-populated tests); ready-reconciliation double-charging (mitigate: idempotent <code>lastTickDay</code>).</p>
+<hr>
+<h2 id="plan-12">Testing strategy</h2>
+<p><strong>Headless unit / property tests (Vitest) — the engine is fully testable without Foundry.</strong> Adapter/Foundry boundaries are mocked; core takes plain data.</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Tests</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>AllocationLedger</code></td>
+<td>Σ draws ≤ initial availability (property test, randomized consumer order); no double-spend; exact-drain edge.</td>
+</tr>
+<tr>
+<td><code>Resolver</code></td>
+<td>Communal-first vs Personal-first order; mount draws own→storage only, never a PC pack; shortfall recorded only after full chain dry, with named cause.</td>
+</tr>
+<tr>
+<td><code>SurvivalEngine.runTick</code></td>
+<td>day-interleaved escalation (dry on day 2 → correct stage by day 7); single consolidated summary; <code>lastTickDay</code> committed per-day; catch-up cap flags montage/lump; rewind sets pointer without refund; dangling-UUID skipped not thrown; re-entrancy lock serializes.</td>
+</tr>
+<tr>
+<td><strong>Separation filter</strong></td>
+<td>a <code>withParty=false</code> pool is absent from the allocation list (sourcing-layer, not UI); Delving preset flips all atomically; headline cliff recomputes.</td>
+</tr>
+<tr>
+<td><strong>Mount consumer</strong></td>
+<td>Chiga-Biga Huge×4 × Hot×2 = 4 food / 8 water; mount deprivation defaults narrate-only; per-mount opt-in to auto-conditions.</td>
+</tr>
+<tr>
+<td><code>LadderEngine</code></td>
+<td>grace = Con-mod+1; thirst faster than hunger; cap at stage 3 (Decision E); recovery steps −1/night; blockedHealing set/clear at stage 3.</td>
+</tr>
+<tr>
+<td><code>reconcileConsequences</code></td>
+<td>union across tracks; shared-Fatigued not stripped on partial recovery; provenance — never strips non-module conditions; combined cap = Fatigued + one other.</td>
+</tr>
+<tr>
+<td><code>ClimateModel</code></td>
+<td>water ×1/×2/×3; thirst-grace −1 in Extreme Heat; cold track on for Cold/ExtremeCold; per-group climate.</td>
+</tr>
+<tr>
+<td>Warmth</td>
+<td>warm clothing/campfire/shelter each suppress cold; zero firewood doesn&#39;t freeze a clothed PC.</td>
+</tr>
+<tr>
+<td>Extensions</td>
+<td><code>runForCatchUp:false</code> skips montage days; warmth-before-cooking firewood order.</td>
+</tr>
+<tr>
+<td>i18n</td>
+<td>ru plural categories; <code>game.i18n.has</code> miss detection.</td>
+</tr>
+<tr>
+<td>Ledger adapter (M8)</td>
+<td>7-ration decomposition; per-item override precedence; net-delta single commit.</td>
+</tr>
+<tr>
+<td>Migrations (M9)</td>
+<td>empty + populated worlds; cross-campaign reset.</td>
+</tr>
+</tbody></table></div>
+<p><strong>Manual Foundry smoke tests (per milestone — a live v14 + pf2e v8.2.0 world):</strong></p>
+<ul>
+<li><strong>M0:</strong> module loads, no console errors, <code>api.ping()</code>, alive banner.</li>
+<li><strong>M1:</strong> Caravan document created once; settings show locked defaults; pool edit persists across reload.</li>
+<li><strong>M2:</strong> from the console — separation cliff, Chiga-Biga ×4 charge, <code>runTick(day+7)</code> one summary.</li>
+<li><strong>M3:</strong> native Fatigued→Sickened on a token HUD; combined cap holds; world-clock day fires exactly one tick (no double-advance).</li>
+<li><strong>M4:</strong> Delving preset greys the base + headline cliff; Advance Week updates clocks; pool edit re-renders.</li>
+<li><strong>M5:</strong> green day = no dialog (whisper only); shortfall day = one named-cause card; player &quot;Kept warm&quot; not clobbered by GM write.</li>
+<li><strong>M6:</strong> foraging rolls once/day, zero on catch-up; hot meal consumes firewood after warmth.</li>
+<li><strong>M7:</strong> core language → Russian renders all UI with correct plurals.</li>
+<li><strong>M8:</strong> Ledger mode decrements a real Rations item; homebrew item via dropdown counts; mount-death cargo prompt.</li>
+<li><strong>M9:</strong> populated-world migration clean; GM-offline day catches up on ready; cross-campaign reset zeroes.</li>
+</ul>
+<hr>
+<h2 id="plan-13">Definition of Done (template — apply per milestone/PR)</h2>
+<ul>
+<li><input disabled="" type="checkbox"> All acceptance criteria for the milestone demonstrably pass (console or UI as specified).</li>
+<li><input disabled="" type="checkbox"> Unit/property tests added for new core logic; full suite green in CI.</li>
+<li><input disabled="" type="checkbox"> <code>npm run lint</code> clean — including the <strong>no-<code>pf2e</code>-outside-<code>src/systems/</code></strong> rule (Pillar 1).</li>
+<li><input disabled="" type="checkbox"> <code>npm run typecheck</code> clean (adapter contract fully implemented — TS proves it).</li>
+<li><input disabled="" type="checkbox"> Manual Foundry smoke test for this milestone performed on v14 + pf2e v8.2.0; result noted in the PR.</li>
+<li><input disabled="" type="checkbox"> No new console errors/warnings on world load or during a tick.</li>
+<li><input disabled="" type="checkbox"> All player-facing strings are <code>SURVIVAL.</code>-prefixed keys (no hardcoded literals) — en + ru present once M7 lands.</li>
+<li><input disabled="" type="checkbox"> Shared-state writes route through <code>executeAsGM</code>; no direct owner-write of <code>state</code>.</li>
+<li><input disabled="" type="checkbox"> Locked decisions respected (Abstract-only in v1; cap at stage 3; green-day suppression; mount narrate-only default; waterskin=2; maxCatchUpDays=14).</li>
+<li><input disabled="" type="checkbox"> Docs/CHANGELOG updated; PR description lists files touched + the demo.</li>
+<li><input disabled="" type="checkbox"> Ends with the at-a-glance ✅ status-line block.</li>
+</ul>
+<hr>
+<h2 id="plan-14">First three PRs (start immediately)</h2>
+<p><strong>PR #1 — &quot;Scaffold loads in Foundry&quot; (M0).</strong>
+Repo init; <code>module.json</code> (no <code>maximum</code>); Vite build → <code>scripts/module.js</code>; <code>src/module.ts</code> with <code>ready</code> banner + <code>api.ping()</code>; socketlib registered in <code>socketlib.ready</code>; ESLint <code>no-pf2e-outside-systems</code> rule; Vitest + one passing test; <code>ci.yml</code> + <code>release.yml</code>.
+<em>Done when:</em> the module loads clean in v14, <code>api.ping()</code> returns <code>&quot;pong&quot;</code>, CI is green.</p>
+<p><strong>PR #2 — &quot;Caravan registry + dials + headline&quot; (M1).</strong>
+<code>CaravanStore</code> on a hidden JournalEntry (UUID refs, queued atomic <code>update()</code>); <code>settings.ts</code> with all dials at locked defaults + <code>maxCatchUpDays=14</code>; per-actor <code>state</code>/<code>warmth</code> flag schemas; <code>getHeadline(group)</code> in Abstract mode wired to <code>api</code>; The Shards fixture builder + <code>caravan.test.ts</code>.
+<em>Done when:</em> registry auto-creates once, <code>api.getHeadline(&quot;Main&quot;)</code> is correct, a pool edit persists across reload.</p>
+<p><strong>PR #3 — &quot;Engine heart: ledger + resolver + separation + mount + tick, headless&quot; (M2 core slice).</strong>
+<code>SurvivalSystemAdapter</code> interface + registry + minimal Abstract <code>Pf2eAdapter</code> stub; <code>AllocationLedger</code>; <code>Resolver</code> (Communal-first + mount own→storage); <code>SurvivalEngine.runTick</code> with the day-interleaved N-day loop, <strong>separation filter at the sourcing layer</strong>, per-day <code>lastTickDay</code> commit, catch-up cap; <code>LadderEngine</code> counters (cap 3, no conditions yet). Tests: ledger property test, separation, mount ×4, multi-day escalation.
+<em>Done when (console-demoable):</em> the separation cliff, the Chiga-Biga ×4 Hot charge, and <code>runTick(day+7)</code> → one consolidated summary all pass headlessly — the three differentiators are exercised on day three of building.</p>
+<hr>
+<p><em>Sequencing rationale:</em> the walking skeleton (M0) proves the pipeline; the registry (M1) gives state; then the <strong>differentiators land in M2/PR #3</strong> — separation, mount-as-consumer, and N-day advance are unit-tested before any condition or UI exists, so the riskiest, most distinctive logic is validated first and everything after it is incremental.</p>
 </section>
     <div class="footer">Draft for discussion — read the mechanics first, then react. Open decisions are in <em>Survival Mechanics §10</em>.</div>
   </main>
