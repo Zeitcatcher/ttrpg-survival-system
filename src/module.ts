@@ -1,11 +1,19 @@
-import { MODULE_ID, registerSettings } from "./settings";
 import { computeTick, DEFAULT_TICK_OPTIONS } from "./core";
-import { GenericAdapter } from "./systems/generic";
+import { MODULE_ID, registerSettings } from "./settings";
+import type { SurvivalSystemAdapter } from "./systems/adapter";
+import { resolveActiveAdapter } from "./systems/registry";
 import { readHeadline, runTickViaFoundry } from "./state/bridge";
 
-// Foundry entry point. Wiring only — all survival logic lives in the system-neutral core
-// (src/core) and the adapter seam (src/systems). The registry document, UI surfaces, tick
-// triggers, and the pf2e adapter land in later milestones.
+// Foundry entry point. Wiring only — survival logic lives in the system-neutral core (src/core)
+// and the adapter seam (src/systems). The registry document, UI surfaces, and Rest trigger land
+// across the remaining milestones.
+
+const SECS_PER_DAY = 86400;
+let activeAdapter: SurvivalSystemAdapter | undefined;
+
+function isPrimaryGM(): boolean {
+  return game.users?.activeGM?.isSelf === true;
+}
 
 Hooks.once("init", () => {
   registerSettings();
@@ -13,23 +21,34 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-  // Resolve the active adapter (M3 adds a pf2e adapter keyed by game.system.id; generic for now).
-  const adapter = new GenericAdapter();
+  activeAdapter = resolveActiveAdapter();
 
   const mod = game.modules.get(MODULE_ID);
   if (mod) {
-    // Public API; expands as milestones land. runTick/getHeadline persist via the Caravan registry.
     mod.api = {
       ping: () => "pong",
       computeTick,
       defaultTickOptions: DEFAULT_TICK_OPTIONS,
-      adapter,
-      getHeadline: (group?: string) => readHeadline(adapter, group),
-      runTick: (targetDay: number) => runTickViaFoundry(targetDay, adapter),
+      adapter: activeAdapter,
+      getHeadline: (group?: string) => readHeadline(activeAdapter!, group),
+      runTick: (targetDay: number) => runTickViaFoundry(targetDay, activeAdapter!),
     };
   }
+
+  // One survival day per world-clock day-boundary crossing, primary GM only. Rest and an
+  // "Advance Day/Week" control will call runTick directly in later milestones.
+  Hooks.on("updateWorldTime", (worldTime: number, dt: number) => {
+    if (!isPrimaryGM() || !activeAdapter) return;
+    const prevDay = Math.floor((worldTime - dt) / SECS_PER_DAY);
+    const newDay = Math.floor(worldTime / SECS_PER_DAY);
+    if (newDay === prevDay) return;
+    runTickViaFoundry(newDay, activeAdapter).catch((e: unknown) =>
+      console.error(`${MODULE_ID} | tick failed`, e),
+    );
+  });
+
   ui.notifications?.info(game.i18n?.localize("SURVIVAL.Loaded") ?? "Survival module loaded.");
-  console.log(`${MODULE_ID} | ready`);
+  console.log(`${MODULE_ID} | ready (system adapter: ${activeAdapter.systemId})`);
 });
 
 // socketlib must be registered in ITS ready hook, not core `init` (registering early throws).
