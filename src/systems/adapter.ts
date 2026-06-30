@@ -30,6 +30,8 @@ export interface SurvivalSystemAdapter {
   // CREATURE NEEDS / LIVENESS
   getCreatureRation(actor: any): { food: number; water: number };
   getGraceDays(actor: any, track: TrackKey): number;
+  /** 1 (Medium/Small), 2 (Large), 4 (Huge) — derived from the system's size trait. */
+  getSizeMult(actor: any): number;
   isMount(actor: any): boolean;
   needsConsumption(actor: any): boolean;
 
