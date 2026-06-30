@@ -25,7 +25,7 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 
 **Tasks**
 - Init repo `shards-survival/` with `package.json`, `tsconfig.json` (strict), `vite.config.ts` (build → `scripts/module.js`; copy `public/` assets).
-- `module.json`: id `shards-survival`, `compatibility { minimum:"13", verified:"14" }` — **NO `maximum`**; `esmodules:["scripts/module.js"]`; `relationships.requires:[socketlib]`, `systems:[pf2e advertised]`, `recommends:[simple-calendar, seasons-and-stars]`; `languages:[en, ru]`.
+- `module.json`: id `shards-survival`, `compatibility { minimum:"13", verified:"14" }` — **NO `maximum`**; `esmodules:["scripts/module.js"]`; `relationships.requires:[socketlib]`, `systems:[pf2e advertised]` (no calendar dependency — the tick runs off core `updateWorldTime`); `languages:[en, ru]`.
 - `src/module.ts`: `init`/`ready` hooks; register socketlib handler in the **`socketlib.ready`** hook (not `init` — it throws); expose `module.api` with a `ping()` stub; `ui.notifications.info` "alive" banner on `ready`.
 - Empty `lang/en.json` + `lang/ru.json` with one key each (`SURVIVAL.Alive`).
 - **ESLint rule** banning `game.system.id` / `"pf2e"` outside `src/systems/` (Pillar 1 — wire it now so it guards every later PR).
