@@ -2,7 +2,7 @@
 
 A **system-agnostic survival module for [Foundry VTT](https://foundryvtt.com/)** that automatically tracks survival resources for a party and applies graded consequences — kept lightweight and immersive, never a spreadsheet.
 
-> **Status: Design phase.** Mechanics and architecture are being designed and reviewed before implementation begins. Nothing here is final.
+> **Status: Design phase.** Mechanics and architecture are being designed and reviewed before implementation begins. Nothing here is final. See [`docs/`](docs/README.md) — start with [`docs/survival-mechanics.md`](docs/survival-mechanics.md).
 
 ## What it does (planned)
 
