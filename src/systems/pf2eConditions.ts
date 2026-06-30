@@ -8,8 +8,6 @@ export interface ConditionSpec {
   value?: number;
 }
 
-export type CombinedCap = "fatiguedPlusOne" | "uncapped";
-
 // The full set of conditions demanded AT each stage (Fatigued carries through every active stage).
 // Mirrors survival-mechanics §4. Stage 4 is only reached when the lethal dial = climbToDeath.
 const STAGE_MAP: Record<TrackKey, Record<number, ConditionSpec[]>> = {
@@ -33,16 +31,14 @@ const STAGE_MAP: Record<TrackKey, Record<number, ConditionSpec[]>> = {
   },
 };
 
-// Higher = nastier; used to pick the single "one other" condition under the combined cap.
-const SEVERITY: Record<string, number> = {
-  doomed: 6, drained: 5, enfeebled: 4, sickened: 3, clumsy: 2, fatigued: 1,
-};
-
 function signature(track: TrackKey, stage: number): ConditionSpec[] {
   return stage >= 1 ? (STAGE_MAP[track][Math.min(stage, 4)] ?? []) : [];
 }
 
-/** Merge specs, taking the MAX value for a repeated slug (same-type conditions don't stack). */
+/** Merge condition specs the PF2e-correct way: different condition TYPES coexist, but the SAME
+ *  type from multiple tracks does NOT stack — the HIGHEST value wins (PF2e: "when you have the
+ *  same condition from two sources, the higher value applies"). So hunger-Drained-1 + cold-Drained-1
+ *  is Drained 1, not Drained 2; while Fatigued + Clumsy 2 + Drained 1 all coexist. */
 function unionSpecs(specs: ConditionSpec[]): ConditionSpec[] {
   const bySlug = new Map<string, number | undefined>();
   for (const s of specs) {
@@ -52,25 +48,14 @@ function unionSpecs(specs: ConditionSpec[]): ConditionSpec[] {
   return [...bySlug.entries()].map(([slug, value]) => (value === undefined ? { slug } : { slug, value }));
 }
 
-/** Resolve the per-track stages to the set of native conditions to assert on the actor.
- *  - `uncapped`: the union of every active track's signature.
- *  - `fatiguedPlusOne`: Fatigued (if any track is active) + the single most-severe other condition,
- *    so a deprived character never carries more than two module debuffs at once. */
-export function planConditions(stages: Record<TrackKey, number>, cap: CombinedCap): ConditionSpec[] {
-  const union = unionSpecs([
+/** The native conditions to assert on an actor for its current per-track stages: the union of
+ *  every active track's full stage signature. Nothing is ever dropped to thin the list — a deeply
+ *  deprived character genuinely carries each track's effects (up to three conditions at once at the
+ *  worst stages). Recovery removes them only as the stages themselves step down. */
+export function planConditions(stages: Record<TrackKey, number>): ConditionSpec[] {
+  return unionSpecs([
     ...signature("hunger", stages.hunger),
     ...signature("thirst", stages.thirst),
     ...signature("cold", stages.cold),
   ]);
-  if (cap === "uncapped") return union;
-
-  const fatigued = union.find((s) => s.slug === "fatigued");
-  const others = union
-    .filter((s) => s.slug !== "fatigued")
-    .sort((a, b) => (SEVERITY[b.slug] ?? 0) - (SEVERITY[a.slug] ?? 0) || (b.value ?? 0) - (a.value ?? 0));
-
-  const out: ConditionSpec[] = [];
-  if (fatigued) out.push(fatigued);
-  if (others[0]) out.push(others[0]);
-  return out;
 }

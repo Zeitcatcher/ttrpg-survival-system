@@ -1,6 +1,6 @@
 import { MODULE_ID } from "../settings";
 import type { DegreeOfSuccess, ResourceLot, SurvivalSystemAdapter } from "./adapter";
-import { type CombinedCap, type ConditionSpec, planConditions } from "./pf2eConditions";
+import { type ConditionSpec, planConditions } from "./pf2eConditions";
 
 interface AppliedRec {
   slug: string;
@@ -69,8 +69,7 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
 
   // --- Consequences (Foundry; smoke-tested in a live world) ---
   async reconcileConsequences(actor: any, stages: Record<"hunger" | "thirst" | "cold", number>): Promise<void> {
-    const cap = (game.settings.get(MODULE_ID, "combinedCap") as CombinedCap) ?? "fatiguedPlusOne";
-    const target: ConditionSpec[] = planConditions(stages, cap);
+    const target: ConditionSpec[] = planConditions(stages);
     const prev: AppliedRec[] = actor.getFlag?.(MODULE_ID, "applied") ?? [];
     const next: AppliedRec[] = [];
 

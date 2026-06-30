@@ -102,11 +102,11 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 
 ## M3 — Consequence ladders + native pf2e conditions via `reconcileConsequences` + climate/warmth
 
-**Goal:** Stages become real native PF2e conditions through the **one idempotent `reconcileConsequences(actor, allTracks)`** verb; the combined cap (Fatigued + one other) is enforced in core before reconcile; climate multipliers and the one-checkbox warmth model drive the thirst/cold tracks.
+**Goal:** Stages become real native PF2e conditions through the **one idempotent `reconcileConsequences(actor, allTracks)`** verb; conditions follow PF2e stacking (full union of stage signatures, highest value per repeated type — nothing dropped); climate multipliers and the one-checkbox warmth model drive the thirst/cold tracks.
 
 **Tasks**
 - Complete `Pf2eAdapter.reconcileConsequences`: implement the `STAGE_MAP` (hunger/thirst/cold → fatigued/enfeebled/drained/sickened/clumsy per mechanics §4); compute the **union** of demanded specs across all active tracks; diff against **only module-applied conditions** (provenance flag — never strip a Doomed from a curse/crit); call `increaseCondition`/`decreaseCondition` to reach the target. Implement `isWarmSourceEquipped` (auto-detect pf2e Cold-Weather Clothing).
-- **Combined cap in core:** clamp the demanded set to "Fatigued + one other" *before* calling reconcile (architecture §1.2).
+- **Condition union (no cap):** union all active tracks' full stage signatures, taking the highest value for a repeated type (same-type never double-stacks); nothing is dropped to thin the list (architecture §1.2).
 - **Stage-3 unhealable HP** (Decision D): set/clear `blockedHealing` flag at hunger/thirst stage 3; clears on fed/watered.
 - **Decision E:** stages cap at 3 by default; stage 4 only when Dial 6 = "Climb to death."
 - `src/core/ClimateModel.ts`: the 5-band table (Temperate/Hot/ExtremeHeat/Cold/ExtremeCold) → water ×1/×2/×3, thirst-grace −1 in Extreme Heat, cold-track on for Cold/ExtremeCold, firewood-per-night. Ship presets `coast_temperate`, `desert_hot`, `sunhills_temperate`, `northern_cold`, `default_temperate`. Per-group climate (a delve = Temperate under a desert).
@@ -119,7 +119,7 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 
 **Acceptance:**
 - A Con +0 PC unwatered in Hot for 2 days shows native **Fatigued → Sickened 1** on the token HUD; recovering strips only what the other tracks don't still demand (shared-Fatigued bug fixed).
-- A PC suffering hunger + thirst + cold simultaneously carries at most **Fatigued + one other**, never three stacks.
+- A PC suffering hunger + thirst + cold carries each active track's conditions at once, same-type taking the highest value (no double-stacked Drained) — up to three conditions at the worst stages.
 - Hunger/thirst stage 3 sets unhealable HP; eating/drinking clears it.
 - A "kept warm" PC in a Cold band accrues **no** cold stage even with zero firewood; an unwarmed one does.
 - Advancing the world clock a day fires exactly one tick (no double-advance against a calendar module).
@@ -273,7 +273,7 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 | **Separation filter** | a `withParty=false` pool is absent from the allocation list (sourcing-layer, not UI); Delving preset flips all atomically; headline cliff recomputes. |
 | **Mount consumer** | Chiga-Biga Huge×4 × Hot×2 = 4 food / 8 water; mount deprivation defaults narrate-only; per-mount opt-in to auto-conditions. |
 | `LadderEngine` | grace = Con-mod+1; thirst faster than hunger; cap at stage 3 (Decision E); recovery steps −1/night; blockedHealing set/clear at stage 3. |
-| `reconcileConsequences` | union across tracks; shared-Fatigued not stripped on partial recovery; provenance — never strips non-module conditions; combined cap = Fatigued + one other. |
+| `reconcileConsequences` | union across tracks; shared-Fatigued not stripped on partial recovery; provenance — never strips non-module conditions; same-type takes highest value (no double-stack). |
 | `ClimateModel` | water ×1/×2/×3; thirst-grace −1 in Extreme Heat; cold track on for Cold/ExtremeCold; per-group climate. |
 | Warmth | warm clothing/campfire/shelter each suppress cold; zero firewood doesn't freeze a clothed PC. |
 | Extensions | `runForCatchUp:false` skips montage days; warmth-before-cooking firewood order. |
@@ -285,7 +285,7 @@ A vertical slice is demoable from **M2 onward** via the dev console; from **M4**
 - **M0:** module loads, no console errors, `api.ping()`, alive banner.
 - **M1:** Caravan document created once; settings show locked defaults; pool edit persists across reload.
 - **M2:** from the console — separation cliff, Chiga-Biga ×4 charge, `runTick(day+7)` one summary.
-- **M3:** native Fatigued→Sickened on a token HUD; combined cap holds; world-clock day fires exactly one tick (no double-advance).
+- **M3:** native Fatigued→Sickened on a token HUD; full-signature stacking holds (Frostbitten = Fatigued + Clumsy 2 + Drained 1); world-clock day fires exactly one tick (no double-advance).
 - **M4:** Delving preset greys the base + headline cliff; Advance Week updates clocks; pool edit re-renders.
 - **M5:** green day = no dialog (whisper only); shortfall day = one named-cause card; player "Kept warm" not clobbered by GM write.
 - **M6:** foraging rolls once/day, zero on catch-up; hot meal consumes firewood after warmth.

@@ -306,7 +306,7 @@ blockquote p{margin:.35em 0}
 <li><strong>Grace period = Constitution modifier + 1 days</strong> (PF2e canon), read automatically per actor. Thirst grace is shortened by heat (§5).</li>
 <li><strong>The clock is always visible per character</strong> — <em>&quot;Иримэ — unwatered, 2 of 3 grace days used.&quot;</em> A clock the player can&#39;t see is a gotcha, not tension.</li>
 <li><strong>Three stages by default.</strong> Stage 1 is a <em>visible warning + minor condition</em>, not the hammer; the real bite lands at Stage 3. A terminal Stage 4 exists <strong>only if Dial 6 = &quot;Climb to death.&quot;</strong></li>
-<li><strong>Combined cap:</strong> deprivation conditions from this module never stack to more than <strong>Fatigued + one other</strong> at once. One bad week reads as &quot;you&#39;re suffering,&quot; not as three simultaneous diseases. (This is the single biggest revision from the first draft, which could pile five penalties on one PC.)</li>
+<li><strong>No silent replacement — conditions follow PF2e stacking.</strong> Each active track applies its <strong>full</strong> stage signature, and the tracks union together: different condition <em>types</em> coexist, while the <em>same</em> type from multiple tracks does <strong>not</strong> stack — the <strong>highest value applies</strong> (hunger-Drained 1 + cold-Drained 1 = Drained 1, not 2). So a deeply deprived character genuinely carries up to <strong>three</strong> conditions at once at the worst stages (e.g. Frostbitten = Fatigued + Clumsy 2 + Drained 1), and nothing is ever dropped to thin the list — conditions clear only as their stage recovers. <em>(Revised 2026-06-30: an earlier draft capped this to &quot;Fatigued + one other,&quot; which wrongly made conditions vanish; the GM chose mechanical consistency.)</em></li>
 <li><strong>Recovery mirrors PF2e:</strong> eat/drink/get warm → escalation stops, the counter resets to 0, and stages step down (Fatigued clears on a fed/watered/warm night&#39;s rest; valued conditions step −1 per night). Recovery runs whenever the condition exists, even after the threat is gone.</li>
 </ul>
 <p>Thirst escalates faster than hunger and bites harder in heat — mirroring PF2e&#39;s own 1d4/hour (thirst) vs 1/day (starvation) asymmetry. <strong>Cold is the most forgiving</strong> — one warm night resets it — so cold is <em>fun pressure</em>, not a death spiral.</p>
@@ -658,7 +658,7 @@ blockquote p{margin:.35em 0}
 </tbody></table></div>
 <p>These are now reflected throughout the spec above. Next: finalize the <a href="architecture.md">architecture</a> and begin implementation.</p>
 <hr>
-<p><em>One-line summary:</em> a one-click daily upkeep that <strong>vanishes on green days</strong>, separation enforced in the math (with a visible supply &quot;cliff&quot; and named-cause shortfalls), three native-PF2e condition ladders with <strong>visible per-character clocks and a capped penalty stack</strong>, a one-checkbox warmth model, Chiga-Biga as a dual mount/storage pool that must itself be fed, <strong>Abstract supply mode at launch</strong> and Ledger as the flagship next step — lean by default, rich when you turn the dials up.</p>
+<p><em>One-line summary:</em> a one-click daily upkeep that <strong>vanishes on green days</strong>, separation enforced in the math (with a visible supply &quot;cliff&quot; and named-cause shortfalls), three native-PF2e condition ladders with <strong>visible per-character clocks and PF2e-correct condition stacking</strong> (full signatures, highest-value-per-type), a one-checkbox warmth model, Chiga-Biga as a dual mount/storage pool that must itself be fed, <strong>Abstract supply mode at launch</strong> and Ledger as the flagship next step — lean by default, rich when you turn the dials up.</p>
 </section><section class="doc" id="doc-architecture"><div class="doc-badge">Step 2 · Technical (finalized)</div><h1 id="architecture-1">Technical Architecture (finalized — step 2)</h1>
 <blockquote>
 <p><strong>Status: FINALIZED (2026-06-30)</strong> against the locked decisions (<a href="survival-mechanics.md">mechanics §10</a>). <strong>Part A</strong> below is the architecture; <strong>Part B</strong> (appended) is the implementation-level detail — concrete data shapes, the full settings registry, the socket catalog, the <code>readModel()</code>, the <code>runTick</code> sequence (incl. week/N-day advance), compendium seeding, and unit-test seams; <strong>B.9</strong> lists the corrections applied after a verification pass. The phased build sequence lives in <a href="implementation-plan.md">implementation-plan.md</a>.</p>
@@ -730,7 +730,7 @@ export interface SurvivalSystemAdapter {
 // currently module-applied conditions, and calls increaseCondition/decreaseCondition to reach it.
 // Provenance: it only ever touches conditions IT applied — never strips a Doomed from a curse/crit.
 </code></pre>
-<p>The <strong>combined-cap</strong> mechanic from the spec (never more than Fatigued + one other) is applied in core <em>before</em> calling reconcile, by clamping the demanded set.</p>
+<p>Conditions follow PF2e stacking: the adapter unions every active track&#39;s full stage signature, taking the <strong>highest value</strong> for a repeated condition type (same-type doesn&#39;t stack). Nothing is clamped or dropped — a deeply deprived actor can carry up to three conditions, which clear only as their stages recover.</p>
 <hr>
 <h2 id="architecture-6">2. Data model</h2>
 <h3 id="architecture-7">2.1 Where state lives</h3>
@@ -1110,22 +1110,6 @@ dailyGroupNeed(firewood,grp) = (band needs warmth &amp;&amp; not all-warm-by-clo
 <td>—</td>
 </tr>
 <tr>
-<td><code>combinedCap</code></td>
-<td>world</td>
-<td><code>&quot;fatiguedPlusOne&quot;|&quot;uncapped&quot;</code></td>
-<td><code>&quot;fatiguedPlusOne&quot;</code></td>
-<td>false</td>
-<td>—</td>
-</tr>
-<tr>
-<td><code>mountDefaultApplyConsequences</code></td>
-<td>world</td>
-<td><code>boolean</code></td>
-<td><code>false</code></td>
-<td>true</td>
-<td>—</td>
-</tr>
-<tr>
 <td><code>dataVersionRegistry</code></td>
 <td>world</td>
 <td><code>number</code></td>
@@ -1342,9 +1326,7 @@ interface TrackView {
   daysDeprived: number;
   grace: number;                   // Con-mod + 1 (heat-adjusted for thirst)
   stage: 0 | 1 | 2 | 3 | 4;
-  statusName: string;              // localized: &quot;Thirsty&quot;, &quot;Wasting&quot;, &quot;&quot; if stage 0
-  capped: boolean;                 // true if combined-cap clamped this track&#39;s condition
-}
+  statusName: string;              // localized: &quot;Thirsty&quot;, &quot;Wasting&quot;, &quot;&quot; if stage 0}
 
 interface Shortfall {
   actorUuid: string; name: string;
@@ -1402,7 +1384,7 @@ interface Shortfall {
      // --- per-day batch commit (so a GM hand-off mid-loop resumes) ---
      commit: Sourcing.flush(ledger deltas)                                // Abstract: write abstractPools; Ledger: adapter.consume() batched
            + write per-actor flags (daysDeprived/stage/todayDraw/warmth-consumed)
-           + reconcileConsequences(actor, unionStagesAcrossTracks)        // ONE call, combined-cap clamped
+           + reconcileConsequences(actor, unionStagesAcrossTracks)        // ONE call, full union (highest value per type)
      lastTickDay = d                                                      // committed per day
   emit ONE consolidated whispered summary per group (named-cause shortfalls + per-character clocks)
   if upkeepPrompt==&quot;onlyWhenWrong&quot; &amp;&amp; all-green: silent whisper, no dialog
@@ -1414,7 +1396,7 @@ interface Shortfall {
 <ul>
 <li><strong>Transactional:</strong> <code>AllocationLedger.draw</code> decrements the working copy; <code>Σ draws ≤ initial availability</code> always; two consumers never both see the full pool.</li>
 <li><strong>Day-interleaved escalation:</strong> a 6-day advance that goes dry on day 4 reaches the correct late stage (e.g. Wasting), not Stage 1 ×6.</li>
-<li><strong><code>reconcileConsequences</code> union + cap:</strong> core computes the union of all tracks&#39; demanded conditions, clamps to &quot;Fatigued + one other,&quot; then calls reconcile <strong>once</strong> — so recovering thirst doesn&#39;t strip the Fatigued that hunger still demands.</li>
+<li><strong><code>reconcileConsequences</code> union:</strong> core computes the union of all tracks&#39; demanded conditions (full stage signatures; highest value per repeated type, so same-type never double-stacks) and calls reconcile <strong>once</strong> — so recovering thirst doesn&#39;t strip the Fatigued that hunger still demands.</li>
 <li><strong>Mounts draw own→storage only</strong>, never a PC pack; default narrate-only.</li>
 <li><strong>Rewind:</strong> <code>targetDay &lt; lastTickDay</code> sets the pointer back without refunding; a large backward jump prompts &quot;new campaign? reset survival tracking?&quot;.</li>
 <li><strong>Catch-up idempotency:</strong> <code>lastTickDay</code> committed per day; re-running the same span is a no-op.</li>
@@ -1465,9 +1447,9 @@ interface Shortfall {
 <td>grace = <code>graceDays</code> honored (no stage before grace ends); deprived increments and <code>stageFor</code> matches thresholds; <strong>reset-on-satisfied</strong> zeroes <code>daysDeprived</code> and steps stage −1/night; recovery runs even after threat gone; lethal dial caps at 3 unless <code>climbToDeath</code>.</td>
 </tr>
 <tr>
-<td><strong>combined-cap clamp</strong></td>
+<td><strong>condition union</strong></td>
 <td>yes</td>
-<td>union of three tracks&#39; demanded conditions clamps to &quot;Fatigued + one other&quot;; recovering one track never strips a condition the others still demand (diff against union, not per-track).</td>
+<td>union of three tracks&#39; full signatures; same-type takes the highest value (no double-stack); recovering one track never strips a condition the others still demand (diff against union, not per-track).</td>
 </tr>
 <tr>
 <td><strong>ClimateModel.forBand</strong></td>
@@ -1506,7 +1488,6 @@ interface Shortfall {
 <li><code>RosterEntry.blockedHealing: boolean</code> (Decision D) — so the HUD can show <em>why</em> a healer&#39;s HP restoration isn&#39;t landing.</li>
 <li><code>Shortfall.handlerName?: string</code> — mount narrate-only attribution (<em>&quot;Ракакак notes Chiga-Biga is going hungry&quot;</em>).</li>
 <li><code>GroupView.extrasView</code> — a projection slot for extra-owned rows (the hot-meal &quot;cook?&quot; toggle, the desert &quot;next water in N days&quot; countdown) so extras render <strong>without</strong> polluting the core need rows.</li>
-<li><code>TrackView.capped</code> is defined as: <em>&quot;this track&#39;s demanded condition was suppressed by the combined cap.&quot;</em></li>
 </ul>
 </li>
 <li><p><strong>Lump catch-up is explicitly an approximation.</strong> On overflow beyond <code>maxCatchUpDays</code>: <strong>montage</strong> processes the cap exactly then skips the remainder; <strong>lump</strong> applies the end-state stage for the whole span in one pass (no day-interleaving). The two can therefore yield different stages — by design — and the overflow card says so.</p>
@@ -1607,11 +1588,11 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 <strong>Key risks:</strong> double-spend if the ledger isn&#39;t the single source of truth during a tick (mitigate: all draws go through <code>AllocationLedger</code>, property-tested); two-pointer desync on rewind (mitigate: single global <code>lastTickDay</code> + <code>joinedDay</code>, per architecture); re-entrancy from the Rest + world-time hooks (mitigate: world-state-backed lock — even though hooks land in M3, build the lock now).</p>
 <hr>
 <h2 id="plan-5">M3 — Consequence ladders + native pf2e conditions via <code>reconcileConsequences</code> + climate/warmth</h2>
-<p><strong>Goal:</strong> Stages become real native PF2e conditions through the <strong>one idempotent <code>reconcileConsequences(actor, allTracks)</code></strong> verb; the combined cap (Fatigued + one other) is enforced in core before reconcile; climate multipliers and the one-checkbox warmth model drive the thirst/cold tracks.</p>
+<p><strong>Goal:</strong> Stages become real native PF2e conditions through the <strong>one idempotent <code>reconcileConsequences(actor, allTracks)</code></strong> verb; conditions follow PF2e stacking (full union of stage signatures, highest value per repeated type — nothing dropped); climate multipliers and the one-checkbox warmth model drive the thirst/cold tracks.</p>
 <p><strong>Tasks</strong></p>
 <ul>
 <li>Complete <code>Pf2eAdapter.reconcileConsequences</code>: implement the <code>STAGE_MAP</code> (hunger/thirst/cold → fatigued/enfeebled/drained/sickened/clumsy per mechanics §4); compute the <strong>union</strong> of demanded specs across all active tracks; diff against <strong>only module-applied conditions</strong> (provenance flag — never strip a Doomed from a curse/crit); call <code>increaseCondition</code>/<code>decreaseCondition</code> to reach the target. Implement <code>isWarmSourceEquipped</code> (auto-detect pf2e Cold-Weather Clothing).</li>
-<li><strong>Combined cap in core:</strong> clamp the demanded set to &quot;Fatigued + one other&quot; <em>before</em> calling reconcile (architecture §1.2).</li>
+<li><strong>Condition union (no cap):</strong> union all active tracks&#39; full stage signatures, taking the highest value for a repeated type (same-type never double-stacks); nothing is dropped to thin the list (architecture §1.2).</li>
 <li><strong>Stage-3 unhealable HP</strong> (Decision D): set/clear <code>blockedHealing</code> flag at hunger/thirst stage 3; clears on fed/watered.</li>
 <li><strong>Decision E:</strong> stages cap at 3 by default; stage 4 only when Dial 6 = &quot;Climb to death.&quot;</li>
 <li><code>src/core/ClimateModel.ts</code>: the 5-band table (Temperate/Hot/ExtremeHeat/Cold/ExtremeCold) → water ×1/×2/×3, thirst-grace −1 in Extreme Heat, cold-track on for Cold/ExtremeCold, firewood-per-night. Ship presets <code>coast_temperate</code>, <code>desert_hot</code>, <code>sunhills_temperate</code>, <code>northern_cold</code>, <code>default_temperate</code>. Per-group climate (a delve = Temperate under a desert).</li>
@@ -1624,7 +1605,7 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 <p><strong>Acceptance:</strong></p>
 <ul>
 <li>A Con +0 PC unwatered in Hot for 2 days shows native <strong>Fatigued → Sickened 1</strong> on the token HUD; recovering strips only what the other tracks don&#39;t still demand (shared-Fatigued bug fixed).</li>
-<li>A PC suffering hunger + thirst + cold simultaneously carries at most <strong>Fatigued + one other</strong>, never three stacks.</li>
+<li>A PC suffering hunger + thirst + cold carries each active track&#39;s conditions at once, same-type taking the highest value (no double-stacked Drained) — up to three conditions at the worst stages.</li>
 <li>Hunger/thirst stage 3 sets unhealable HP; eating/drinking clears it.</li>
 <li>A &quot;kept warm&quot; PC in a Cold band accrues <strong>no</strong> cold stage even with zero firewood; an unwarmed one does.</li>
 <li>Advancing the world clock a day fires exactly one tick (no double-advance against a calendar module).</li>
@@ -1769,7 +1750,7 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 </tr>
 <tr>
 <td><code>reconcileConsequences</code></td>
-<td>union across tracks; shared-Fatigued not stripped on partial recovery; provenance — never strips non-module conditions; combined cap = Fatigued + one other.</td>
+<td>union across tracks; shared-Fatigued not stripped on partial recovery; provenance — never strips non-module conditions; same-type takes highest value (no double-stack).</td>
 </tr>
 <tr>
 <td><code>ClimateModel</code></td>
@@ -1801,7 +1782,7 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 <li><strong>M0:</strong> module loads, no console errors, <code>api.ping()</code>, alive banner.</li>
 <li><strong>M1:</strong> Caravan document created once; settings show locked defaults; pool edit persists across reload.</li>
 <li><strong>M2:</strong> from the console — separation cliff, Chiga-Biga ×4 charge, <code>runTick(day+7)</code> one summary.</li>
-<li><strong>M3:</strong> native Fatigued→Sickened on a token HUD; combined cap holds; world-clock day fires exactly one tick (no double-advance).</li>
+<li><strong>M3:</strong> native Fatigued→Sickened on a token HUD; full-signature stacking holds (Frostbitten = Fatigued + Clumsy 2 + Drained 1); world-clock day fires exactly one tick (no double-advance).</li>
 <li><strong>M4:</strong> Delving preset greys the base + headline cliff; Advance Week updates clocks; pool edit re-renders.</li>
 <li><strong>M5:</strong> green day = no dialog (whisper only); shortfall day = one named-cause card; player &quot;Kept warm&quot; not clobbered by GM write.</li>
 <li><strong>M6:</strong> foraging rolls once/day, zero on catch-up; hot meal consumes firewood after warmth.</li>

@@ -6,41 +6,43 @@ const val = (specs: ConditionSpec[], slug: string) => specs.find((s) => s.slug =
 
 describe("planConditions (pf2e stage → conditions)", () => {
   it("nothing when no track is active", () => {
-    expect(planConditions({ hunger: 0, thirst: 0, cold: 0 }, "fatiguedPlusOne")).toEqual([]);
+    expect(planConditions({ hunger: 0, thirst: 0, cold: 0 })).toEqual([]);
   });
 
   it("stage 1 of any track is just Fatigued", () => {
-    expect(planConditions({ hunger: 1, thirst: 0, cold: 0 }, "fatiguedPlusOne")).toEqual([{ slug: "fatigued" }]);
+    expect(planConditions({ hunger: 1, thirst: 0, cold: 0 })).toEqual([{ slug: "fatigued" }]);
   });
 
-  it("capped: a deprived character never carries more than Fatigued + one other", () => {
-    const capped = planConditions({ hunger: 2, thirst: 2, cold: 2 }, "fatiguedPlusOne");
-    expect(capped.length).toBe(2);
-    expect(capped.some((s) => s.slug === "fatigued")).toBe(true);
-    // enfeebled (sev 4) beats sickened (3) and clumsy (2) for the single "other" slot
-    expect(val(capped, "enfeebled")).toBe(1);
+  it("keeps a track's FULL stage signature — Frostbitten = Fatigued + Clumsy 2 + Drained 1", () => {
+    const cold3 = planConditions({ hunger: 0, thirst: 0, cold: 3 });
+    expect(slugs(cold3)).toEqual(["clumsy", "drained", "fatigued"]);
+    expect(val(cold3, "clumsy")).toBe(2);
+    expect(val(cold3, "drained")).toBe(1);
   });
 
-  it("capped: the most severe condition wins the 'other' slot (cold stage 3 → drained, not clumsy)", () => {
-    const capped = planConditions({ hunger: 0, thirst: 0, cold: 3 }, "fatiguedPlusOne");
-    expect(slugs(capped)).toEqual(["drained", "fatigued"]);
-    expect(val(capped, "drained")).toBe(1);
+  it("unions across tracks — every active track's effects coexist", () => {
+    const all = planConditions({ hunger: 2, thirst: 2, cold: 2 });
+    expect(slugs(all)).toEqual(["clumsy", "enfeebled", "fatigued", "sickened"]);
+    expect(val(all, "enfeebled")).toBe(1);
+    expect(val(all, "sickened")).toBe(1);
+    expect(val(all, "clumsy")).toBe(1);
   });
 
-  it("uncapped: the full union of every active track stacks", () => {
-    const full = planConditions({ hunger: 2, thirst: 2, cold: 2 }, "uncapped");
-    expect(slugs(full)).toEqual(["clumsy", "enfeebled", "fatigued", "sickened"]);
+  it("same-type conditions do NOT stack — highest value wins (Drained 1 + Drained 1 = Drained 1)", () => {
+    const both = planConditions({ hunger: 3, thirst: 3, cold: 0 });
+    expect(slugs(both)).toEqual(["drained", "fatigued"]);
+    expect(val(both, "drained")).toBe(1);
   });
 
-  it("uncapped: same-slug conditions take the max value (no double-stacking Drained)", () => {
-    const full = planConditions({ hunger: 3, thirst: 3, cold: 0 }, "uncapped");
-    expect(slugs(full)).toEqual(["drained", "fatigued"]);
-    expect(val(full, "drained")).toBe(1);
+  it("takes the higher Drained when stages differ (hunger 4 + cold 3 = Drained 2)", () => {
+    const mixed = planConditions({ hunger: 4, thirst: 0, cold: 3 });
+    expect(val(mixed, "drained")).toBe(2);
+    expect(val(mixed, "clumsy")).toBe(2);
+    expect(mixed.some((s) => s.slug === "doomed")).toBe(true);
   });
 
-  it("terminal stage 4 reaches Doomed", () => {
-    const full = planConditions({ hunger: 4, thirst: 0, cold: 0 }, "uncapped");
-    expect(full.some((s) => s.slug === "doomed")).toBe(true);
-    expect(val(full, "drained")).toBe(2);
+  it("Fatigued is never duplicated even when every track demands it", () => {
+    const all = planConditions({ hunger: 1, thirst: 1, cold: 1 });
+    expect(all).toEqual([{ slug: "fatigued" }]);
   });
 });
