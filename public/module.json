@@ -1,0 +1,28 @@
+{
+  "id": "shards-survival",
+  "title": "The Shards — Survival",
+  "description": "System-agnostic survival tracking for Foundry VTT: water, food, and firewood across party, storage, and mounts, with graded hunger/thirst/cold and climate. Pathfinder 2e first.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "esmodules": ["scripts/module.js"],
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" },
+    { "lang": "ru", "name": "Русский", "path": "lang/ru.json" }
+  ],
+  "relationships": {
+    "requires": [
+      { "id": "socketlib", "type": "module" }
+    ],
+    "systems": [
+      { "id": "pf2e", "type": "system" }
+    ],
+    "recommends": [
+      { "id": "foundryvtt-simple-calendar", "type": "module" }
+    ]
+  },
+  "authors": [{ "name": "Zeitcatcher" }],
+  "license": "TBD"
+}
