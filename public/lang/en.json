@@ -19,6 +19,8 @@
   "SURVIVAL.Settings.maxCatchUpDays.hint": "A single advance processes at most this many days before asking how to handle a long skip.",
   "SURVIVAL.Settings.mountDefaultApplyConsequences.name": "Mounts suffer conditions",
   "SURVIVAL.Settings.mountDefaultApplyConsequences.hint": "Off: a hungry mount is a GM alert. On: deprivation applies real conditions to it.",
+  "SURVIVAL.Settings.combinedCap.name": "Stacking cap",
+  "SURVIVAL.Settings.combinedCap.hint": "Fatigued + one other: deprivation never piles on more than two debuffs at once. Uncapped: the full ladder stacks.",
   "SURVIVAL.Settings.hudDensity.name": "HUD density",
   "SURVIVAL.Settings.hudDensity.hint": "How compact the player party HUD is.",
   "SURVIVAL.Days.one": "{n} day",

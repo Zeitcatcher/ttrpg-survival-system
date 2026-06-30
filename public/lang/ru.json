@@ -19,6 +19,8 @@
   "SURVIVAL.Settings.maxCatchUpDays.hint": "Одно продвижение обрабатывает не более стольких дней, прежде чем спросить о длинном пропуске.",
   "SURVIVAL.Settings.mountDefaultApplyConsequences.name": "Ездовые получают состояния",
   "SURVIVAL.Settings.mountDefaultApplyConsequences.hint": "Off: голодное животное — это оповещение ГМу. On: лишения применяют реальные состояния.",
+  "SURVIVAL.Settings.combinedCap.name": "Предел наложения",
+  "SURVIVAL.Settings.combinedCap.hint": "Fatigued + одно другое: лишения не накладывают больше двух дебаффов сразу. Uncapped: полная лестница складывается.",
   "SURVIVAL.Settings.hudDensity.name": "Плотность HUD",
   "SURVIVAL.Settings.hudDensity.hint": "Насколько компактна панель отряда для игроков.",
   "SURVIVAL.Days.one": "{n} день",

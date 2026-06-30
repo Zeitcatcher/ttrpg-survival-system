@@ -35,6 +35,8 @@ export const SETTINGS: readonly SettingDef[] = [
   { key: "foraging", scope: "world", type: "Boolean", default: false, config: true },
   { key: "maxCatchUpDays", scope: "world", type: "Number", default: 14, config: true },
   { key: "mountDefaultApplyConsequences", scope: "world", type: "Boolean", default: false, config: true },
+  { key: "combinedCap", scope: "world", type: "String", default: "fatiguedPlusOne", config: true,
+    choices: { fatiguedPlusOne: "Fatigued + one other", uncapped: "Uncapped (full ladder)" } },
   { key: "hudDensity", scope: "client", type: "String", default: "full", config: true,
     choices: { full: "Full", compact: "Compact" } },
   // Internal bookkeeping (not shown in the config UI).
