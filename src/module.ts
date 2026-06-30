@@ -1,8 +1,9 @@
+import { openGmPanel, setPanelAdapter } from "./apps/GmControlPanel";
 import { computeTick, DEFAULT_TICK_OPTIONS } from "./core";
 import { MODULE_ID, registerSettings } from "./settings";
 import type { SurvivalSystemAdapter } from "./systems/adapter";
 import { resolveActiveAdapter } from "./systems/registry";
-import { readHeadline, runTickViaFoundry } from "./state/bridge";
+import { addSelectedTokens, readHeadline, readModel, runTickViaFoundry } from "./state/bridge";
 
 // Foundry entry point. Wiring only — survival logic lives in the system-neutral core (src/core)
 // and the adapter seam (src/systems). The registry document, UI surfaces, and Rest trigger land
@@ -22,6 +23,7 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   activeAdapter = resolveActiveAdapter();
+  setPanelAdapter(activeAdapter);
 
   const mod = game.modules.get(MODULE_ID);
   if (mod) {
@@ -31,9 +33,35 @@ Hooks.once("ready", () => {
       defaultTickOptions: DEFAULT_TICK_OPTIONS,
       adapter: activeAdapter,
       getHeadline: (group?: string) => readHeadline(activeAdapter!, group),
+      readModel: () => readModel(activeAdapter!),
       runTick: (targetDay: number) => runTickViaFoundry(targetDay, activeAdapter!),
+      addSelected: () => addSelectedTokens(),
+      openPanel: () => openGmPanel(),
     };
   }
+
+  // A GM-only toolbar button to open the panel (defensive across v12 array / v13 object controls).
+  Hooks.on("getSceneControlButtons", (controls: any) => {
+    if (!game.user?.isGM) return;
+    const tool = {
+      name: "shards-survival",
+      title: "SURVIVAL.Panel.Title",
+      icon: "fa-solid fa-campground",
+      button: true,
+      onClick: () => openGmPanel(),
+      onChange: () => openGmPanel(),
+    };
+    try {
+      const tokens = Array.isArray(controls)
+        ? controls.find((c: any) => c.name === "token" || c.name === "tokens")
+        : (controls.tokens ?? controls.token);
+      if (!tokens) return;
+      if (Array.isArray(tokens.tools)) tokens.tools.push(tool);
+      else if (tokens.tools) tokens.tools[tool.name] = tool;
+    } catch (e) {
+      console.warn(`${MODULE_ID} | could not add scene control`, e);
+    }
+  });
 
   // One survival day per world-clock day-boundary crossing, primary GM only. Rest and an
   // "Advance Day/Week" control will call runTick directly in later milestones.

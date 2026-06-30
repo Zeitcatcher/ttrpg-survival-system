@@ -1,0 +1,84 @@
+{{#if hasData}}
+<div class="ss-panel">
+
+  <div class="ss-header">
+    <div class="ss-climate">
+      <span class="ss-lbl">{{localize "SURVIVAL.Panel.Climate"}}</span>
+      <div class="ss-bands">
+        {{#each bands}}
+        <button type="button" class="ss-band {{#if active}}active{{/if}}" data-action="setClimate" data-band="{{band}}">{{label}}</button>
+        {{/each}}
+      </div>
+    </div>
+    <div class="ss-advance">
+      <span class="ss-lbl">{{localize "SURVIVAL.Panel.Advance"}}</span>
+      <button type="button" class="ss-btn primary" data-action="advance" data-days="1">{{localize "SURVIVAL.Panel.Day"}}</button>
+      <button type="button" class="ss-btn" data-action="advance" data-days="7">{{localize "SURVIVAL.Panel.Week"}}</button>
+    </div>
+  </div>
+
+  <div class="ss-headline">
+    <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.food"}}</span><span class="v">{{headline.food}}</span></div>
+    <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.water"}}</span><span class="v">{{headline.water}}</span></div>
+    <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.firewood"}}</span><span class="v">{{#if firewoodNeeded}}{{headline.firewood}}{{else}}—{{/if}}</span></div>
+  </div>
+
+  <div class="ss-section">
+    <div class="ss-section-h">
+      <span>{{localize "SURVIVAL.Panel.Pools"}}</span>
+      <button type="button" class="ss-btn delve" data-action="delving">{{localize "SURVIVAL.Panel.Delving"}}</button>
+    </div>
+    {{#each pools}}
+    <div class="ss-pool {{#if separated}}separated{{/if}}">
+      <div class="ss-pool-top">
+        <span class="ss-pool-name">{{label}}</span>
+        {{#if isMount}}<span class="ss-tag">mount</span>{{/if}}
+        {{#if separated}}<span class="ss-tag warn">{{localize "SURVIVAL.Panel.Separated"}}</span>{{/if}}
+        <button type="button" class="ss-toggle {{#unless separated}}on{{/unless}}" data-action="toggleParty" data-pool="{{id}}" data-with="{{withNext}}">{{localize "SURVIVAL.Panel.WithParty"}}</button>
+      </div>
+      <div class="ss-pool-counts">
+        <button type="button" class="ss-num" data-action="editPool" data-pool="{{id}}" data-kind="food" data-current="{{food}}">🍖 {{food}}</button>
+        <button type="button" class="ss-num" data-action="editPool" data-pool="{{id}}" data-kind="water" data-current="{{water}}">💧 {{water}}</button>
+        <button type="button" class="ss-num" data-action="editPool" data-pool="{{id}}" data-kind="firewood" data-current="{{firewood}}">🔥 {{firewood}}</button>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+
+  <div class="ss-section">
+    <div class="ss-section-h">
+      <span>{{localize "SURVIVAL.Panel.Roster"}}</span>
+      <button type="button" class="ss-btn" data-action="addSelected">{{localize "SURVIVAL.Panel.AddSelected"}}</button>
+    </div>
+    <table class="ss-roster">
+      <thead>
+        <tr>
+          <th>{{localize "SURVIVAL.Panel.Name"}}</th>
+          <th>{{localize "SURVIVAL.Panel.Size"}}</th>
+          <th>{{localize "SURVIVAL.Status.hunger.label"}}</th>
+          <th>{{localize "SURVIVAL.Status.thirst.label"}}</th>
+          <th>{{localize "SURVIVAL.Status.cold.label"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each roster}}
+        <tr class="{{#if zeroNeeds}}zero{{/if}}">
+          <td class="nm">{{name}}</td>
+          <td>{{size}}</td>
+          {{#if zeroNeeds}}
+          <td colspan="3" class="muted">{{localize "SURVIVAL.Panel.NoNeeds"}}</td>
+          {{else}}
+          <td class="{{hunger.cls}}">{{hunger.label}} <span class="clk">{{hunger.clock}}</span></td>
+          <td class="{{thirst.cls}}">{{thirst.label}} <span class="clk">{{thirst.clock}}</span></td>
+          <td class="{{cold.cls}}">{{cold.label}} <span class="clk">{{cold.clock}}</span></td>
+          {{/if}}
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{{else}}
+<div class="ss-empty">{{localize "SURVIVAL.Panel.Empty"}}</div>
+{{/if}}
