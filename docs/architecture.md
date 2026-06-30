@@ -223,8 +223,7 @@ shards-survival/
   "esmodules": ["scripts/module.js"],
   "relationships": {
     "systems":    [ { "id": "pf2e", "type": "system" } ],     // advertised, not hard-required
-    "requires":   [ { "id": "socketlib" } ],                  // the one hard dep
-    "recommends": [ { "id": "foundryvtt-simple-calendar" }, { "id": "seasons-and-stars" } ]
+    "requires":   [ { "id": "socketlib" } ]                   // the one hard dep; no calendar dependency
   }
 }
 ```

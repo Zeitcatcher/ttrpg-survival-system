@@ -169,7 +169,7 @@ blockquote p{margin:.35em 0}
 <td><strong>Climate model</strong></td>
 <td><code>Off</code> / <code>Manual band</code> / <code>Read weather module</code></td>
 <td><strong>Manual band</strong></td>
-<td><code>Off</code> disables water-scaling and the cold track (temperate campaigns). Manual = GM picks a band per region/group. Auto = read Simple Weather / Seasons &amp; Stars if installed.</td>
+<td><code>Off</code> disables water-scaling and the cold track (temperate campaigns). Manual = GM picks a band per region/group. Auto = read a weather/calendar module (e.g. Seasons &amp; Stars, v13/v14) if installed.</td>
 </tr>
 <tr>
 <td>6</td>
@@ -879,8 +879,7 @@ release lock
   &quot;esmodules&quot;: [&quot;scripts/module.js&quot;],
   &quot;relationships&quot;: {
     &quot;systems&quot;:    [ { &quot;id&quot;: &quot;pf2e&quot;, &quot;type&quot;: &quot;system&quot; } ],     // advertised, not hard-required
-    &quot;requires&quot;:   [ { &quot;id&quot;: &quot;socketlib&quot; } ],                  // the one hard dep
-    &quot;recommends&quot;: [ { &quot;id&quot;: &quot;foundryvtt-simple-calendar&quot; }, { &quot;id&quot;: &quot;seasons-and-stars&quot; } ]
+    &quot;requires&quot;:   [ { &quot;id&quot;: &quot;socketlib&quot; } ]                   // the one hard dep; no calendar dependency
   }
 }
 </code></pre>
@@ -1523,7 +1522,7 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 <p><strong>Tasks</strong></p>
 <ul>
 <li>Init repo <code>shards-survival/</code> with <code>package.json</code>, <code>tsconfig.json</code> (strict), <code>vite.config.ts</code> (build → <code>scripts/module.js</code>; copy <code>public/</code> assets).</li>
-<li><code>module.json</code>: id <code>shards-survival</code>, <code>compatibility { minimum:&quot;13&quot;, verified:&quot;14&quot; }</code> — <strong>NO <code>maximum</code></strong>; <code>esmodules:[&quot;scripts/module.js&quot;]</code>; <code>relationships.requires:[socketlib]</code>, <code>systems:[pf2e advertised]</code>, <code>recommends:[simple-calendar, seasons-and-stars]</code>; <code>languages:[en, ru]</code>.</li>
+<li><code>module.json</code>: id <code>shards-survival</code>, <code>compatibility { minimum:&quot;13&quot;, verified:&quot;14&quot; }</code> — <strong>NO <code>maximum</code></strong>; <code>esmodules:[&quot;scripts/module.js&quot;]</code>; <code>relationships.requires:[socketlib]</code>, <code>systems:[pf2e advertised]</code> (no calendar dependency — the tick runs off core <code>updateWorldTime</code>); <code>languages:[en, ru]</code>.</li>
 <li><code>src/module.ts</code>: <code>init</code>/<code>ready</code> hooks; register socketlib handler in the <strong><code>socketlib.ready</code></strong> hook (not <code>init</code> — it throws); expose <code>module.api</code> with a <code>ping()</code> stub; <code>ui.notifications.info</code> &quot;alive&quot; banner on <code>ready</code>.</li>
 <li>Empty <code>lang/en.json</code> + <code>lang/ru.json</code> with one key each (<code>SURVIVAL.Alive</code>).</li>
 <li><strong>ESLint rule</strong> banning <code>game.system.id</code> / <code>&quot;pf2e&quot;</code> outside <code>src/systems/</code> (Pillar 1 — wire it now so it guards every later PR).</li>

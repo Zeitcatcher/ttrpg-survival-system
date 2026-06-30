@@ -21,9 +21,6 @@
     ],
     "systems": [
       { "id": "pf2e", "type": "system" }
-    ],
-    "recommends": [
-      { "id": "foundryvtt-simple-calendar", "type": "module" }
     ]
   },
   "authors": [{ "name": "Zeitcatcher" }],
