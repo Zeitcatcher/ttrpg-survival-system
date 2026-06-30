@@ -9,6 +9,9 @@ declare const ui: any;
 declare const socketlib: any;
 declare const CONFIG: any;
 declare const foundry: any;
+declare const JournalEntry: any;
+declare function fromUuid(uuid: string): Promise<any>;
+declare function fromUuidSync(uuid: string): any;
 
 interface Window {
   game: any;

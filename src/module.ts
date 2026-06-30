@@ -1,5 +1,7 @@
 import { MODULE_ID, registerSettings } from "./settings";
 import { computeTick, DEFAULT_TICK_OPTIONS } from "./core";
+import { GenericAdapter } from "./systems/generic";
+import { readHeadline, runTickViaFoundry } from "./state/bridge";
 
 // Foundry entry point. Wiring only — all survival logic lives in the system-neutral core
 // (src/core) and the adapter seam (src/systems). The registry document, UI surfaces, tick
@@ -11,16 +13,22 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
+  // Resolve the active adapter (M3 adds a pf2e adapter keyed by game.system.id; generic for now).
+  const adapter = new GenericAdapter();
+
   const mod = game.modules.get(MODULE_ID);
   if (mod) {
-    // Minimal public API; expands as milestones land.
+    // Public API; expands as milestones land. runTick/getHeadline persist via the Caravan registry.
     mod.api = {
       ping: () => "pong",
       computeTick,
       defaultTickOptions: DEFAULT_TICK_OPTIONS,
+      adapter,
+      getHeadline: (group?: string) => readHeadline(adapter, group),
+      runTick: (targetDay: number) => runTickViaFoundry(targetDay, adapter),
     };
   }
-  ui.notifications?.info("Survival module loaded.");
+  ui.notifications?.info(game.i18n?.localize("SURVIVAL.Loaded") ?? "Survival module loaded.");
   console.log(`${MODULE_ID} | ready`);
 });
 
