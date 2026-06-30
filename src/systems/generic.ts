@@ -1,3 +1,4 @@
+import { MODULE_ID } from "../settings";
 import type { DegreeOfSuccess, ResourceLot, SurvivalSystemAdapter } from "./adapter";
 
 // Minimal system-neutral fallback adapter. Provides sane defaults so the bridge runs in any
@@ -32,7 +33,7 @@ export class GenericAdapter implements SurvivalSystemAdapter {
     return 1;
   }
   isMount(actor: any): boolean {
-    return !!actor?.getFlag?.("shards-survival", "isMount");
+    return !!actor?.getFlag?.(MODULE_ID, "isMount");
   }
   needsConsumption(actor: any): boolean {
     const hp = actor?.system?.attributes?.hp?.value;

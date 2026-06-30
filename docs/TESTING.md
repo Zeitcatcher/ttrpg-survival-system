@@ -7,15 +7,15 @@ This is the **first build with a UI** (engine M0–M3 + the GM panel M4). The en
 2. Install **socketlib** (required): Add-on Modules → Install Module → search "socketlib".
 3. Install this module by **Manifest URL**:
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
-4. In the world: **Game Settings → Manage Modules** → enable **socketlib** and **The Shards — Survival** → Save.
+4. In the world: **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
 > If you'd installed an earlier build, click **Update** (or uninstall + reinstall) so you get v0.1.2.
 
 ## 2. Sanity check (1 min)
 - Open the browser console (**F12**). On load you should see:
-  `shards-survival | init — settings registered`, then `shards-survival | ready (system adapter: pf2e)`, and a toast **"Survival module loaded."**
-- **Game Settings → Configure Settings → The Shards — Survival**: the dials should be there (Supply detail, Upkeep prompt, Source priority, Climate, Lethal deprivation, Split party, Foraging, Catch-up cap…).
-- **Open the panel:** the **campground icon** in the left token toolbar, or run a macro / console: `game.modules.get("shards-survival").api.openPanel()`. It should open and say *"No caravan yet."*
+  `ttrpg-survival-system | init — settings registered`, then `ttrpg-survival-system | ready (system adapter: pf2e)`, and a toast **"Survival module loaded."**
+- **Game Settings → Configure Settings → TTRPG Survival System**: the dials should be there (Supply detail, Upkeep prompt, Source priority, Climate, Lethal deprivation, Split party, Foraging, Catch-up cap…).
+- **Open the panel:** the **campground icon** in the left token toolbar, or run a macro / console: `game.modules.get("ttrpg-survival-system").api.openPanel()`. It should open and say *"No caravan yet."*
 
 ## 3. Core loop (the important one)
 1. Put **2–3 PC tokens** on a scene and **select them**.
@@ -33,7 +33,7 @@ This is the **first build with a UI** (engine M0–M3 + the GM panel M4). The en
 
 ## 5. Separation + mounts (optional, advanced)
 - **Mounts / shared base** need an actor flagged as a mount. Before adding it, run this macro once (script macro) with the mount token selected:
-  `canvas.tokens.controlled[0].actor.setFlag("shards-survival","isMount",true)`
+  `canvas.tokens.controlled[0].actor.setFlag("ttrpg-survival-system","isMount",true)`
   Then **Add selected tokens** — it becomes a **mount/storage** pool. A **Huge** creature auto-consumes **×4** (size-based; no flag needed for that).
 - Put supplies on the mount's pool, then toggle its **With party** off (or hit **Delving**): the pool greys out, the headline **drops** (the "cliff"), and shortfalls are attributed to the separated base.
 

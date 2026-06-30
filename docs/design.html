@@ -106,7 +106,7 @@ blockquote p{margin:.35em 0}
   </nav>
   <main class="content">
     <header class="page-head">
-      <h1>The Shards — Survival System</h1>
+      <h1>TTRPG Survival System</h1>
       <div class="sub">A system-agnostic survival module for Foundry VTT · Pathfinder 2e first · draft for review</div>
     </header>
     <section class="doc" id="doc-mechanics"><div class="doc-badge">Step 1 · Game design (locked)</div><h1 id="mechanics-1">Survival Mechanics — Design Spec (for review)</h1>
@@ -662,7 +662,7 @@ blockquote p{margin:.35em 0}
 </section><section class="doc" id="doc-architecture"><div class="doc-badge">Step 2 · Technical (finalized)</div><h1 id="architecture-1">Technical Architecture (finalized — step 2)</h1>
 <blockquote>
 <p><strong>Status: FINALIZED (2026-06-30)</strong> against the locked decisions (<a href="survival-mechanics.md">mechanics §10</a>). <strong>Part A</strong> below is the architecture; <strong>Part B</strong> (appended) is the implementation-level detail — concrete data shapes, the full settings registry, the socket catalog, the <code>readModel()</code>, the <code>runTick</code> sequence (incl. week/N-day advance), compendium seeding, and unit-test seams; <strong>B.9</strong> lists the corrections applied after a verification pass. The phased build sequence lives in <a href="implementation-plan.md">implementation-plan.md</a>.</p>
-<p><strong>Module id:</strong> <code>shards-survival</code> · <strong>Stack:</strong> TypeScript + Vite · <strong>i18n:</strong> English default, locale-ready from day one.</p>
+<p><strong>Module id:</strong> <code>ttrpg-survival-system</code> · <strong>Stack:</strong> TypeScript + Vite · <strong>i18n:</strong> English default, locale-ready from day one.</p>
 </blockquote>
 <p><strong>Platform reconciliation:</strong> your saved environment targets <strong>Foundry v14.364 + pf2e v8.2.0</strong>. The architecture targets <code>minimum: 13</code>, <code>verified: 14</code>, <strong>no <code>maximum</code></strong> (a <code>maximum</code> would lock players out of future Foundry with no override). On v13+/v14 the sheet/app layer is fully ApplicationV2, which removes the v12-era pf2e-sheet caveats an earlier draft worried about.</p>
 <hr>
@@ -716,7 +716,7 @@ export interface SurvivalSystemAdapter {
   rollForage?(actor: Actor, dc: number): Promise&lt;DegreeOfSuccess | null&gt;;
 }
 </code></pre>
-<p><strong>Why <code>reconcileConsequences(actor, allTracks)</code> and not per-track <code>applyStage</code></strong> (the most important fix from review): a per-track call bakes in PF2e&#39;s <em>independent multi-condition</em> model. dnd5e&#39;s sink is a <strong>single 0–6 Exhaustion scalar</strong> that all three tracks collapse onto — so the adapter must see all tracks at once to compute the aggregate. A single reconcile call also fixes the <strong>shared-<code>Fatigued</code> bug</strong>: hunger, thirst, and cold all want Fatigued at Stage 1, but it&#39;s one non-stacking flag — recovering one track must not strip a condition the other two still demand. The adapter computes the <strong>union</strong> of demanded conditions and diffs to it. pf2e diffs to native conditions via a declarative <code>STAGE_MAP</code>; generic uses module ActiveEffects tagged <code>flags[&quot;shards-survival&quot;].track</code>; dnd5e maps the aggregate to one Exhaustion value (and branches 2014 vs 2024 on <code>game.system.version</code>).</p>
+<p><strong>Why <code>reconcileConsequences(actor, allTracks)</code> and not per-track <code>applyStage</code></strong> (the most important fix from review): a per-track call bakes in PF2e&#39;s <em>independent multi-condition</em> model. dnd5e&#39;s sink is a <strong>single 0–6 Exhaustion scalar</strong> that all three tracks collapse onto — so the adapter must see all tracks at once to compute the aggregate. A single reconcile call also fixes the <strong>shared-<code>Fatigued</code> bug</strong>: hunger, thirst, and cold all want Fatigued at Stage 1, but it&#39;s one non-stacking flag — recovering one track must not strip a condition the other two still demand. The adapter computes the <strong>union</strong> of demanded conditions and diffs to it. pf2e diffs to native conditions via a declarative <code>STAGE_MAP</code>; generic uses module ActiveEffects tagged <code>flags[&quot;ttrpg-survival-system&quot;].track</code>; dnd5e maps the aggregate to one Exhaustion value (and branches 2014 vs 2024 on <code>game.system.version</code>).</p>
 <blockquote>
 <p>Honest caveat: for dnd5e this <strong>replaces</strong> the SRD&#39;s save-based survival rules with our deterministic ladder, rather than honoring them. That&#39;s a deliberate design choice (we impose one consistent survival model across systems), and it should be stated in the 5e adapter&#39;s docs.</p>
 </blockquote>
@@ -754,12 +754,12 @@ export interface SurvivalSystemAdapter {
 </tr>
 <tr>
 <td><strong>Per-actor survival counters</strong> (per-track <code>daysDeprived</code> + <code>stage</code>, <code>blockedHealing</code>, <code>joinedDay</code>)</td>
-<td><code>actor.flags[&quot;shards-survival&quot;].state</code></td>
+<td><code>actor.flags[&quot;ttrpg-survival-system&quot;].state</code></td>
 <td>Travels with the actor across scenes and <strong>campaigns</strong> (the vault is reused).</td>
 </tr>
 <tr>
 <td><strong>&quot;Kept warm tonight&quot;</strong></td>
-<td><code>actor.flags[&quot;shards-survival&quot;].warmth</code> — a <strong>separate key</strong></td>
+<td><code>actor.flags[&quot;ttrpg-survival-system&quot;].warmth</code> — a <strong>separate key</strong></td>
 <td>Must be its own key so a player&#39;s owner-write doesn&#39;t get clobbered by the GM&#39;s wholesale <code>state</code> write (or vice-versa).</td>
 </tr>
 <tr>
@@ -858,7 +858,7 @@ release lock
 </ul>
 <hr>
 <h2 id="architecture-15">7. File layout, manifest, tooling</h2>
-<pre><code>shards-survival/
+<pre><code>ttrpg-survival-system/
 ├─ module.json · package.json · vite.config.ts · tsconfig.json
 ├─ src/
 │  ├─ module.ts                 # init/ready: settings, adapter resolve, hooks; socket register in socketlib.ready
@@ -874,7 +874,7 @@ release lock
 </code></pre>
 <pre><code class="language-jsonc">// module.json essentials
 {
-  &quot;id&quot;: &quot;shards-survival&quot;,
+  &quot;id&quot;: &quot;ttrpg-survival-system&quot;,
   &quot;compatibility&quot;: { &quot;minimum&quot;: &quot;13&quot;, &quot;verified&quot;: &quot;14&quot; },   // NO maximum
   &quot;esmodules&quot;: [&quot;scripts/module.js&quot;],
   &quot;relationships&quot;: {
@@ -905,13 +905,13 @@ release lock
 <p><strong>Principle:</strong> Abstract and Ledger differ only in <em>where the numbers come from</em>. The Resolver, LadderEngine, ClimateModel, UI, and <code>readModel()</code> never branch on the mode. The split is entirely behind two adapter verbs (<code>getAvailable</code> / <code>consume</code>) plus one pool-storage shape.</p>
 <h4>B.1.1 Abstract pool storage</h4>
 <p>In Abstract mode there is <strong>no real Actor inventory to read</strong>. A pool&#39;s day-counts live directly on the <strong>Caravan document flags</strong>, keyed by the pool&#39;s logical id (the same UUID slot the registry already uses, but the value is a count map rather than a dereferenced actor inventory):</p>
-<pre><code class="language-ts">// Stored at: caravanDoc.flags[&quot;shards-survival&quot;].abstractPools[poolId]
+<pre><code class="language-ts">// Stored at: caravanDoc.flags[&quot;ttrpg-survival-system&quot;].abstractPools[poolId]
 interface AbstractPoolCounts {
   food: number;      // creature-days of rations
   water: number;     // creature-days of water
   firewood: number;  // bundles (camp-nights)
 }
-// caravanDoc.flags[&quot;shards-survival&quot;].abstractPools : Record&lt;string /*poolId*/, AbstractPoolCounts&gt;
+// caravanDoc.flags[&quot;ttrpg-survival-system&quot;].abstractPools : Record&lt;string /*poolId*/, AbstractPoolCounts&gt;
 </code></pre>
 <p><code>poolId</code> = the pool/mount&#39;s registry key. For mounts (which are also pools) the same <code>poolId</code> carries the mount&#39;s own carried supply. PCs in Abstract v1 carry no per-PC inventory by default; a personal pack, if the GM wants one, is just another <code>AbstractPoolRef</code> with <code>personal: true</code> and an <code>ownerUuid</code>.</p>
 <h4>B.1.2 The Abstract adapter (used by core unchanged)</h4>
@@ -939,7 +939,7 @@ dailyGroupNeed(firewood,grp) = (band needs warmth &amp;&amp; not all-warm-by-clo
 </code></pre>
 <p><code>climateWaterMult</code>: temperate ×1, hot ×2, extremeHeat ×3. <code>bundlesPerNight</code>: cold 1, extremeCold 2, else 0. &quot;Present&quot; = <code>withParty[group] === true</code> (separation filter applied <strong>before</strong> the sum — a separated pool contributes 0, producing the visible cliff). Headline is recomputed in <code>readModel()</code>, never stored.</p>
 <h4>B.1.4 Click-the-number edit (Abstract write path)</h4>
-<p>GM clicks a pool count in <code>GmControlPanel</code> → edits inline → commits on <strong>blur/Enter</strong> → <code>requestEditPool{poolUuid,kind,value}</code> → GM handler writes <code>caravanDoc.update({&quot;flags.shards-survival.abstractPools.&lt;poolId&gt;.&lt;kind&gt;&quot;: value})</code>. One atomic document update; the <code>updateDocument</code> hook re-renders all surfaces. No tick runs. Negative values clamp to 0.</p>
+<p>GM clicks a pool count in <code>GmControlPanel</code> → edits inline → commits on <strong>blur/Enter</strong> → <code>requestEditPool{poolUuid,kind,value}</code> → GM handler writes <code>caravanDoc.update({&quot;flags.ttrpg-survival-system.abstractPools.&lt;poolId&gt;.&lt;kind&gt;&quot;: value})</code>. One atomic document update; the <code>updateDocument</code> hook re-renders all surfaces. No tick runs. Negative values clamp to 0.</p>
 <h4>B.1.5 Where Ledger (v2) diverges — and where it does not</h4>
 <div class="tbl-wrap"><table>
 <thead>
@@ -984,7 +984,7 @@ dailyGroupNeed(firewood,grp) = (band needs warmth &amp;&amp; not all-warm-by-clo
 <p><strong>The read-model is the firewall.</strong> <code>readModel()</code> (B.4) calls a single <code>Sourcing</code> facade — <code>sourcing.available(poolId, kind)</code> — which Abstract backs with flag counts and Ledger backs with <code>adapter.getAvailable(resolve(poolId), kind)</code>. The three UI surfaces consume <code>readModel()</code> only; they are byte-for-byte identical across modes. The mode is a single world setting (<code>supplyDetail</code>) that selects which <code>Sourcing</code> implementation is constructed at <code>ready</code>.</p>
 <hr>
 <h3 id="architecture-19">B.2 Complete settings registry</h3>
-<p>All registered in <code>settings.ts</code>. Namespace <code>shards-survival</code>. <code>onChange</code> listed only where non-trivial. World scope unless noted. The-Shards defaults in the Default column.</p>
+<p>All registered in <code>settings.ts</code>. Namespace <code>ttrpg-survival-system</code>. <code>onChange</code> listed only where non-trivial. World scope unless noted. The-Shards defaults in the Default column.</p>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -1200,7 +1200,7 @@ dailyGroupNeed(firewood,grp) = (band needs warmth &amp;&amp; not all-warm-by-clo
 <td><code>requestSetWarm</code></td>
 <td><code>{actorUuid, warm:boolean}</code></td>
 <td>player → GM</td>
-<td>write <code>actor.flags[&quot;shards-survival&quot;].warmth = warm</code>; re-render; <strong>no tick</strong></td>
+<td>write <code>actor.flags[&quot;ttrpg-survival-system&quot;].warmth = warm</code>; re-render; <strong>no tick</strong></td>
 </tr>
 <tr>
 <td><code>requestForage</code></td>
@@ -1402,9 +1402,9 @@ interface Shortfall {
 </ul>
 <hr>
 <h3 id="architecture-23">B.6 Compendium seeding (<code>packs/</code>)</h3>
-<p>The module ships a compendium pack <code>shards-survival.survival-items</code> containing two Items: <strong>&quot;Water (day)&quot;</strong> (1 unit = one creature-day of water; full waterskin = qty 2) and <strong>&quot;Firewood (bundle)&quot;</strong> (1 unit = one camp-night). Native &quot;Rations&quot; (1 week) is decomposed to 7 day-units by the adapter — not seeded.</p>
+<p>The module ships a compendium pack <code>ttrpg-survival-system.survival-items</code> containing two Items: <strong>&quot;Water (day)&quot;</strong> (1 unit = one creature-day of water; full waterskin = qty 2) and <strong>&quot;Firewood (bundle)&quot;</strong> (1 unit = one camp-night). Native &quot;Rations&quot; (1 week) is decomposed to 7 day-units by the adapter — not seeded.</p>
 <ul>
-<li><strong>When:</strong> seeded <strong>lazily on first need in Ledger mode only.</strong> On <code>ready</code>, GM-only, if <code>supplyDetail === &quot;ledger&quot;</code> and the seed flag <code>flags[&quot;shards-survival&quot;].seeded !== dataVersion</code>, import the two Items into the world (or just leave them in the compendium and let <code>getResourceLots</code> resolve from the pack). Set the seed flag.</li>
+<li><strong>When:</strong> seeded <strong>lazily on first need in Ledger mode only.</strong> On <code>ready</code>, GM-only, if <code>supplyDetail === &quot;ledger&quot;</code> and the seed flag <code>flags[&quot;ttrpg-survival-system&quot;].seeded !== dataVersion</code>, import the two Items into the world (or just leave them in the compendium and let <code>getResourceLots</code> resolve from the pack). Set the seed flag.</li>
 <li><strong>Abstract v1 does not need them</strong> — counts live on the Caravan doc, no Items exist. So seeding is skipped entirely while <code>supplyDetail === &quot;abstract&quot;</code>, and runs the first time the GM flips to Ledger.</li>
 <li>The seeded Item names are added to <code>itemMatchList</code> so <code>getResourceLots</code> recognizes them; the dropdown sheet-injection lets a GM tag any homebrew item as food/water/firewood via the per-item override flag (checked first, before the match list).</li>
 </ul>
@@ -1502,7 +1502,7 @@ interface Shortfall {
 </ol>
 </section><section class="doc" id="doc-plan"><div class="doc-badge">Build sequence</div><p>﻿# Implementation Plan</p>
 <blockquote>
-<p><strong>Module:</strong> <code>shards-survival</code> · <strong>Stack:</strong> TypeScript + Vite · <strong>Target:</strong> Foundry v13+/v14, pf2e v8.2.0 · <strong>v1 scope:</strong> Abstract supply mode (Decision A).
+<p><strong>Module:</strong> <code>ttrpg-survival-system</code> · <strong>Stack:</strong> TypeScript + Vite · <strong>Target:</strong> Foundry v13+/v14, pf2e v8.2.0 · <strong>v1 scope:</strong> Abstract supply mode (Decision A).
 Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</code></a> + <a href="./architecture.md"><code>architecture.md</code></a>. This plan operationalizes both. Where they disagree, the docs win — flag and ask.</p>
 </blockquote>
 <p>This plan builds a <strong>walking skeleton first</strong>, then sequences the three differentiators — <strong>the separation rule</strong>, <strong>mount-as-consumer (Chiga-Biga ×4)</strong>, and <strong>week / N-day advance</strong> — to land in M2, the very first feature milestone after scaffold and registry. The engine heart is testable headless before any polished UI exists.</p>
@@ -1518,11 +1518,11 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 <p>A vertical slice is demoable from <strong>M2 onward</strong> via the dev console; from <strong>M4</strong> via the real UI.</p>
 <hr>
 <h2 id="plan-2">M0 — Scaffold + tooling (the walking skeleton)</h2>
-<p><strong>Goal:</strong> A module that installs in Foundry v14, loads with zero errors, registers one socket, and prints a visible &quot;alive&quot; banner + a stub <code>game.modules.get(&quot;shards-survival&quot;).api.ping()</code>. CI builds and a release action exists. This is the smallest end-to-end thing that loads and does something visible.</p>
+<p><strong>Goal:</strong> A module that installs in Foundry v14, loads with zero errors, registers one socket, and prints a visible &quot;alive&quot; banner + a stub <code>game.modules.get(&quot;ttrpg-survival-system&quot;).api.ping()</code>. CI builds and a release action exists. This is the smallest end-to-end thing that loads and does something visible.</p>
 <p><strong>Tasks</strong></p>
 <ul>
-<li>Init repo <code>shards-survival/</code> with <code>package.json</code>, <code>tsconfig.json</code> (strict), <code>vite.config.ts</code> (build → <code>scripts/module.js</code>; copy <code>public/</code> assets).</li>
-<li><code>module.json</code>: id <code>shards-survival</code>, <code>compatibility { minimum:&quot;13&quot;, verified:&quot;14&quot; }</code> — <strong>NO <code>maximum</code></strong>; <code>esmodules:[&quot;scripts/module.js&quot;]</code>; <code>relationships.requires:[socketlib]</code>, <code>systems:[pf2e advertised]</code> (no calendar dependency — the tick runs off core <code>updateWorldTime</code>); <code>languages:[en, ru]</code>.</li>
+<li>Init repo <code>ttrpg-survival-system/</code> with <code>package.json</code>, <code>tsconfig.json</code> (strict), <code>vite.config.ts</code> (build → <code>scripts/module.js</code>; copy <code>public/</code> assets).</li>
+<li><code>module.json</code>: id <code>ttrpg-survival-system</code>, <code>compatibility { minimum:&quot;13&quot;, verified:&quot;14&quot; }</code> — <strong>NO <code>maximum</code></strong>; <code>esmodules:[&quot;scripts/module.js&quot;]</code>; <code>relationships.requires:[socketlib]</code>, <code>systems:[pf2e advertised]</code> (no calendar dependency — the tick runs off core <code>updateWorldTime</code>); <code>languages:[en, ru]</code>.</li>
 <li><code>src/module.ts</code>: <code>init</code>/<code>ready</code> hooks; register socketlib handler in the <strong><code>socketlib.ready</code></strong> hook (not <code>init</code> — it throws); expose <code>module.api</code> with a <code>ping()</code> stub; <code>ui.notifications.info</code> &quot;alive&quot; banner on <code>ready</code>.</li>
 <li>Empty <code>lang/en.json</code> + <code>lang/ru.json</code> with one key each (<code>SURVIVAL.Alive</code>).</li>
 <li><strong>ESLint rule</strong> banning <code>game.system.id</code> / <code>&quot;pf2e&quot;</code> outside <code>src/systems/</code> (Pillar 1 — wire it now so it guards every later PR).</li>
@@ -1530,7 +1530,7 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 <li>GitHub Actions: <code>ci.yml</code> (lint + typecheck + test + build on PR) and <code>release.yml</code> (on tag: zip build, publish <code>module.json</code> + <code>module.zip</code> with manifest/download URLs).</li>
 </ul>
 <p><strong>Files created:</strong> <code>module.json</code>, <code>package.json</code>, <code>vite.config.ts</code>, <code>tsconfig.json</code>, <code>.eslintrc</code>, <code>src/module.ts</code>, <code>lang/en.json</code>, <code>lang/ru.json</code>, <code>vitest.config.ts</code>, <code>test/smoke.test.ts</code>, <code>.github/workflows/ci.yml</code>, <code>.github/workflows/release.yml</code>.</p>
-<p><strong>Acceptance:</strong> <code>npm run build</code> emits <code>scripts/module.js</code>; dropping the build into Foundry v14 loads with no console errors; <code>game.modules.get(&quot;shards-survival&quot;).api.ping()</code> returns <code>&quot;pong&quot;</code>; an &quot;alive&quot; notification shows on world load; CI is green on the first PR.</p>
+<p><strong>Acceptance:</strong> <code>npm run build</code> emits <code>scripts/module.js</code>; dropping the build into Foundry v14 loads with no console errors; <code>game.modules.get(&quot;ttrpg-survival-system&quot;).api.ping()</code> returns <code>&quot;pong&quot;</code>; an &quot;alive&quot; notification shows on world load; CI is green on the first PR.</p>
 <p><strong>Dependencies:</strong> none.
 <strong>Size:</strong> M.
 <strong>Key risks:</strong> Vite asset-copy path mismatch vs the manifest <code>esmodules</code> path (mitigate: assert the output path in build); socketlib registered too early (use <code>socketlib.ready</code>).</p>
@@ -1542,7 +1542,7 @@ Ground truth: <a href="./survival-mechanics.md"><code>survival-mechanics.md</cod
 <li><code>src/core/Caravan.ts</code>: the <code>CaravanStore</code> shape (<code>groups</code>, per-group <code>climate</code>, <code>members</code>, <code>storage</code>, <code>mounts</code>) per architecture §2.2. CRUD via the document&#39;s flags; <strong>store UUID references, never embedded actors</strong>. Provide <code>load()</code>, <code>save()</code> (queued atomic <code>update()</code>), and a <code>Hooks.on(&quot;updateDocument&quot;)</code> re-render signal.</li>
 <li>Choose the document kind (recommend a hidden <strong>JournalEntry</strong> to avoid an Actor showing in the actors directory) and a &quot;find-or-create on first GM ready&quot; bootstrap.</li>
 <li><code>src/settings.ts</code>: declaratively register Dials 1–9 with the <strong>locked defaults</strong> (Supply=Abstract, needs=Food+Water+Firewood, Upkeep=&quot;only when wrong&quot;, Source=Communal-first, Climate=Manual band, Lethal=Cap@3, Split=Single-party, Foraging=off, extras=off) + <code>maxCatchUpDays=14</code>; a <code>registerMenu</code> stub for the richer config app.</li>
-<li>Per-actor flag schema stubs: <code>flags[&quot;shards-survival&quot;].state</code> (per-track <code>daysDeprived</code>/<code>stage</code>, <code>blockedHealing</code>, <code>joinedDay</code>) and a <strong>separate</strong> <code>.warmth</code> key (avoids the GM-write-clobbers-player-write race).</li>
+<li>Per-actor flag schema stubs: <code>flags[&quot;ttrpg-survival-system&quot;].state</code> (per-track <code>daysDeprived</code>/<code>stage</code>, <code>blockedHealing</code>, <code>joinedDay</code>) and a <strong>separate</strong> <code>.warmth</code> key (avoids the GM-write-clobbers-player-write race).</li>
 <li><code>dataVersion</code> on the registry; an empty <code>src/core/migrations.ts</code> with the <code>(old)→new</code> ordered-pass skeleton.</li>
 <li>Read-model: <code>getHeadline(group)</code> computing pool sums in <strong>Abstract mode</strong> (pools are day-count numbers). Wire it to <code>module.api</code> so it&#39;s console-demoable.</li>
 <li>Seed a <strong>fixture builder</strong> for The Shards party (5 PCs, Chiga-Biga Huge×4 storage+mount, Staf ×1, mephits/Guenhwyvar needs=0) — reused by every later test.</li>
