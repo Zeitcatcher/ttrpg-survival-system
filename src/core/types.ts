@@ -3,6 +3,7 @@
 // from Actors and writes back. This is what makes the core fully unit-testable headless.
 
 export type ResourceKind = "food" | "water" | "firewood";
+export type DegreeOfSuccess = "critFail" | "fail" | "success" | "critSuccess";
 export type TrackKey = "hunger" | "thirst" | "cold";
 export type ClimateBand = "temperate" | "hot" | "extremeHeat" | "cold" | "extremeCold";
 export type SourceMode = "communalFirst" | "personalFirst";

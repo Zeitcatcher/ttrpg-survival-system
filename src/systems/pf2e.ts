@@ -1,3 +1,4 @@
+import { computeDegree } from "../core/foraging";
 import { MODULE_ID } from "../settings";
 import type { DegreeOfSuccess, ResourceLot, SurvivalSystemAdapter } from "./adapter";
 import { type ConditionSpec, planConditions } from "./pf2eConditions";
@@ -102,7 +103,12 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     await actor.setFlag?.(MODULE_ID, "applied", next);
   }
 
-  async rollForage(): Promise<DegreeOfSuccess | null> {
-    return null; // M6
+  async rollForage(actor: any, dc: number): Promise<DegreeOfSuccess | null> {
+    const stat = actor?.getStatistic?.("survival");
+    if (!stat?.roll) return null;
+    const roll = await stat.roll({ dc, action: "subsist", label: "Subsist (Survival)" });
+    if (!roll) return null; // rolled but cancelled
+    const d20 = roll.dice?.[0]?.results?.[0]?.result ?? 10;
+    return computeDegree(roll.total, d20, dc);
   }
 }
