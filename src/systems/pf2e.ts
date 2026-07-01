@@ -1,7 +1,55 @@
 import { computeDegree } from "../core/foraging";
+import type { ResourceKind } from "../core/types";
 import { MODULE_ID } from "../settings";
 import type { DegreeOfSuccess, ResourceLot, SurvivalSystemAdapter } from "./adapter";
+import { type Lot, planConsume, totalAvailable } from "./ledgerMath";
 import { type ConditionSpec, planConditions } from "./pf2eConditions";
+
+// Day-unit supply items the module seeds / grants in Ledger mode.
+const SUPPLY_SLUG: Record<ResourceKind, string> = {
+  food: "survival-ration-day",
+  water: "survival-water-day",
+  firewood: "survival-firewood-bundle",
+};
+const SUPPLY_NAME: Record<ResourceKind, string> = {
+  food: "Ration (day)",
+  water: "Water (day)",
+  firewood: "Firewood (bundle)",
+};
+
+export function supplyItemData(kind: ResourceKind, quantity: number): any {
+  return {
+    name: SUPPLY_NAME[kind],
+    type: "consumable",
+    system: {
+      slug: SUPPLY_SLUG[kind],
+      quantity,
+      category: "other",
+      description: { value: "" },
+      traits: { value: [], rarity: "common" },
+    },
+  };
+}
+
+/** Classify a physical item as a survival resource: per-item override flag first, then the module
+ *  day-item slugs, then native pf2e Rations (a week = 7 food-days), then a name-keyword fallback. */
+function matchKind(item: any): { kind: ResourceKind; daysPerUnit: number } | null {
+  const override = item.getFlag?.(MODULE_ID, "resource");
+  if (override === "none") return null;
+  const slug: string = item.slug ?? item.system?.slug ?? "";
+  if (override === "food" || override === "water" || override === "firewood") {
+    return { kind: override, daysPerUnit: slug === "rations" ? 7 : 1 };
+  }
+  if (slug === SUPPLY_SLUG.food) return { kind: "food", daysPerUnit: 1 };
+  if (slug === SUPPLY_SLUG.water) return { kind: "water", daysPerUnit: 1 };
+  if (slug === SUPPLY_SLUG.firewood) return { kind: "firewood", daysPerUnit: 1 };
+  if (slug === "rations") return { kind: "food", daysPerUnit: 7 };
+  const name = String(item.name ?? "").toLowerCase();
+  if (/water|waterskin|canteen|flask/.test(name)) return { kind: "water", daysPerUnit: 1 };
+  if (/firewood|kindling|\bfuel\b|\blogs?\b/.test(name)) return { kind: "firewood", daysPerUnit: 1 };
+  if (/ration|provision/.test(name)) return { kind: "food", daysPerUnit: 1 };
+  return null;
+}
 
 interface AppliedRec {
   slug: string;
@@ -16,18 +64,58 @@ interface AppliedRec {
 export class Pf2eAdapter implements SurvivalSystemAdapter {
   readonly systemId = "pf2e";
 
-  // --- Ledger inventory (v2 / M8); unused in Abstract mode ---
-  getResourceLots(): ResourceLot[] {
-    return [];
+  // --- Ledger inventory (v2 / M8) ---
+  #lots(actor: any, kind: ResourceKind): Lot[] {
+    const lots: Lot[] = [];
+    for (const item of actor?.items ?? []) {
+      if (!item?.isOfType?.("physical") && !item?.system?.quantity && item?.system?.quantity !== 0) continue;
+      const m = matchKind(item);
+      if (!m || m.kind !== kind) continue;
+      const quantity = item.quantity ?? item.system?.quantity ?? 0;
+      if (quantity <= 0) continue;
+      lots.push({
+        itemId: item.id,
+        quantity,
+        daysPerUnit: m.daysPerUnit,
+        daysUsed: item.getFlag?.(MODULE_ID, "daysUsed") ?? 0,
+      });
+    }
+    return lots;
   }
-  getAvailable(): number {
-    return 0;
+
+  getResourceLots(actor: any, kind: ResourceKind): ResourceLot[] {
+    return this.#lots(actor, kind).map((l) => ({
+      kind,
+      available: Math.max(0, l.quantity * l.daysPerUnit - l.daysUsed),
+      itemId: l.itemId,
+      label: SUPPLY_NAME[kind],
+    }));
   }
-  async consume(): Promise<number> {
-    return 0;
+
+  getAvailable(actor: any, kind: ResourceKind): number {
+    return totalAvailable(this.#lots(actor, kind));
   }
-  async grant(): Promise<void> {
-    /* M8 */
+
+  async consume(actor: any, kind: ResourceKind, units: number): Promise<number> {
+    const plan = planConsume(this.#lots(actor, kind), units);
+    const updates = plan.changes
+      .filter((c) => !c.delete)
+      .map((c) => ({ _id: c.itemId, "system.quantity": c.newQuantity, [`flags.${MODULE_ID}.daysUsed`]: c.newDaysUsed }));
+    const deletes = plan.changes.filter((c) => c.delete).map((c) => c.itemId);
+    if (updates.length) await actor.updateEmbeddedDocuments?.("Item", updates);
+    if (deletes.length) await actor.deleteEmbeddedDocuments?.("Item", deletes);
+    return plan.drawn;
+  }
+
+  async grant(actor: any, kind: ResourceKind, units: number): Promise<void> {
+    if (units <= 0) return;
+    const existing = (actor?.items ?? []).find?.((i: any) => (i.slug ?? i.system?.slug) === SUPPLY_SLUG[kind]);
+    if (existing) {
+      const q = existing.quantity ?? existing.system?.quantity ?? 0;
+      await actor.updateEmbeddedDocuments?.("Item", [{ _id: existing.id, "system.quantity": q + units }]);
+    } else {
+      await actor.createEmbeddedDocuments?.("Item", [supplyItemData(kind, units)]);
+    }
   }
 
   // --- Creature inspection (pure; testable with mock actors) ---
@@ -131,6 +219,13 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     const level = actor.level ?? actor.system?.details?.level?.value ?? 1;
     const current = actor.system?.attributes?.hp?.temp ?? 0;
     if (level > current) await actor.update?.({ "system.attributes.hp.temp": level });
+  }
+
+  async seedSupplies(): Promise<void> {
+    for (const kind of ["food", "water", "firewood"] as const) {
+      const has = (game.items ?? []).some?.((i: any) => (i.slug ?? i.system?.slug) === SUPPLY_SLUG[kind]);
+      if (!has) await Item.create?.(supplyItemData(kind, 1));
+    }
   }
 
   #hotMealEffect(): any {

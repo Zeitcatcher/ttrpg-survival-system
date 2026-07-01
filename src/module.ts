@@ -1,5 +1,6 @@
 import { openGmPanel, refreshGmPanel, setPanelAdapter } from "./apps/GmControlPanel";
 import { openPartyHud, refreshPartyHud, setHudAdapter } from "./apps/PartyHud";
+import { registerSheetInjection } from "./apps/sheet-injection";
 import { postUpkeepCard } from "./apps/upkeepCard";
 import { computeTick, DEFAULT_TICK_OPTIONS } from "./core";
 import { registerSocket } from "./net/socket";
@@ -28,6 +29,12 @@ Hooks.once("ready", () => {
   activeAdapter = resolveActiveAdapter();
   setPanelAdapter(activeAdapter);
   setHudAdapter(activeAdapter);
+  registerSheetInjection();
+
+  // Ledger mode: seed the day-unit supply items once (GM only, if missing).
+  if (game.user?.isGM && game.settings.get(MODULE_ID, "supplyDetail") === "ledger" && activeAdapter.seedSupplies) {
+    activeAdapter.seedSupplies().catch((e: unknown) => console.warn(`${MODULE_ID} | seed supplies failed`, e));
+  }
 
   const mod = game.modules.get(MODULE_ID);
   if (mod) {
@@ -40,6 +47,7 @@ Hooks.once("ready", () => {
       readModel: () => readModel(activeAdapter!),
       runTick: (targetDay: number) => runTickViaFoundry(targetDay, activeAdapter!),
       addSelected: () => addSelectedTokens(),
+      seedSupplies: () => activeAdapter?.seedSupplies?.() ?? Promise.resolve(),
       openPanel: () => openGmPanel(),
       openHud: () => openPartyHud(),
     };

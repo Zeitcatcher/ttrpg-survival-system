@@ -45,4 +45,7 @@ export interface SurvivalSystemAdapter {
 
   // HOT MEAL (optional extra): grant a "well-fed" buff (temp HP + a 1-day marker effect).
   applyHotMeal?(actor: any): Promise<void>;
+
+  // LEDGER MODE: seed the module's day-unit supply items into the world (GM convenience).
+  seedSupplies?(): Promise<void>;
 }
