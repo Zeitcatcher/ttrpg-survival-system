@@ -4,7 +4,7 @@ import { MODULE_ID } from "../settings";
 // override flag FIRST (before slug/name heuristics), so a GM can point homebrew items at food/
 // water/firewood without touching code. Defensive across v13 (HTMLElement) and v1 (jQuery) sheets.
 
-const KINDS = ["auto", "food", "water", "firewood", "none"] as const;
+const KINDS = ["auto", "food", "water", "provision", "firewood", "none"] as const;
 
 export function registerSheetInjection(): void {
   Hooks.on("renderItemSheetV2", onRender);

@@ -1,6 +1,7 @@
 import type { ClimateBand } from "../core/types";
 import { MODULE_ID } from "../settings";
 import {
+  addBasePool,
   addSelectedTokens,
   advanceDays,
   applyDelvingPreset,
@@ -8,7 +9,9 @@ import {
   editPool,
   forage,
   readModel,
+  resetSurvival,
   setClimate,
+  setMemberRole,
   setWithParty,
 } from "../state/bridge";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
@@ -47,12 +50,38 @@ async function onSetClimate(this: any, _e: Event, target: HTMLElement): Promise<
 async function onEditPool(this: any, _e: Event, target: HTMLElement): Promise<void> {
   const value = await promptNumber(Number(target.dataset.current ?? "0"));
   if (value === null) return;
-  await editPool(target.dataset.pool!, target.dataset.kind as "food" | "water" | "firewood", value, panelAdapter);
+  await editPool(
+    target.dataset.pool!,
+    target.dataset.kind as "food" | "water" | "firewood" | "provision",
+    value,
+    panelAdapter,
+  );
   this.render();
 }
 async function onAddSelected(this: any): Promise<void> {
   const n = await addSelectedTokens();
   ui.notifications?.info(game.i18n.format("SURVIVAL.Panel.Added", { n }));
+  this.render();
+}
+async function onSetRole(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  await setMemberRole(target.dataset.actor!, target.dataset.mount === "true");
+  this.render();
+}
+async function onAddBase(this: any): Promise<void> {
+  const name = await promptText(game.i18n.localize("SURVIVAL.Panel.BaseNameDefault"));
+  if (name === null) return;
+  await addBasePool(name);
+  this.render();
+}
+async function onReset(this: any): Promise<void> {
+  if (!panelAdapter) return;
+  const ok = await foundry.applications.api.DialogV2.confirm({
+    window: { title: game.i18n.localize("SURVIVAL.Panel.Reset") },
+    content: `<p>${game.i18n.localize("SURVIVAL.Panel.ResetConfirm")}</p>`,
+  }).catch(() => false);
+  if (!ok) return;
+  const n = await resetSurvival(panelAdapter, "Main");
+  ui.notifications?.info(game.i18n.format("SURVIVAL.Panel.ResetDone", { n }));
   this.render();
 }
 async function onCook(this: any): Promise<void> {
@@ -99,6 +128,22 @@ async function promptNumber(current: number): Promise<number | null> {
   }
 }
 
+async function promptText(initial: string): Promise<string | null> {
+  try {
+    const value = await foundry.applications.api.DialogV2.prompt({
+      window: { title: game.i18n.localize("SURVIVAL.Panel.BaseName") },
+      content: `<input type="text" name="value" value="${initial}" autofocus style="width:100%">`,
+      ok: {
+        label: game.i18n.localize("SURVIVAL.Panel.Set"),
+        callback: (_ev: Event, button: any) => String(button.form.elements.value.value ?? "").trim(),
+      },
+    });
+    return typeof value === "string" ? value : null;
+  } catch {
+    return null; // dialog dismissed
+  }
+}
+
 function fmtClock(t: { stage: number; daysDeprived: number; grace: number; statusKey: string | null }) {
   return {
     label: t.statusKey ? game.i18n.localize(t.statusKey) : "—",
@@ -123,6 +168,9 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       setClimate: onSetClimate,
       editPool: onEditPool,
       addSelected: onAddSelected,
+      addBase: onAddBase,
+      setRole: onSetRole,
+      reset: onReset,
       forage: onForage,
       cook: onCook,
     },
@@ -160,11 +208,14 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         food: p.counts.food,
         water: p.counts.water,
         firewood: p.counts.firewood,
+        provision: p.counts.provision,
       })),
       roster: g.roster.map((r) => ({
         id: r.id,
         name: r.name,
         size: r.isMount ? `Huge ×${r.sizeMult}` : r.sizeMult > 1 ? `×${r.sizeMult}` : "×1",
+        isMount: r.isMount,
+        roleNext: (!r.isMount).toString(),
         zeroNeeds: r.zeroNeeds,
         hunger: fmtClock(r.tracks.hunger),
         thirst: fmtClock(r.tracks.thirst),

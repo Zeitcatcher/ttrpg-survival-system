@@ -8,7 +8,7 @@ import type { CaravanState, ClimateBand, TrackKey } from "../core/types";
 export interface PoolView {
   id: string;
   label: string;
-  counts: { food: number; water: number; firewood: number };
+  counts: { food: number; water: number; firewood: number; provision: number };
   withParty: boolean;
   separated: boolean;
   isMount: boolean;

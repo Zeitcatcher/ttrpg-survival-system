@@ -37,6 +37,23 @@ export class AllocationLedger {
     return need - remaining;
   }
 
+  /** Draw `kind` (food/water) first, then top up any shortfall from the shared `provision`
+   *  reserve along the same order. Provision decrements as it's spent, so food and water (and
+   *  every consumer) share one fungible pool — the transactional invariant still holds. */
+  drawWithProvision(orderedPoolIds: readonly string[], kind: "food" | "water", need: number): number {
+    const got = this.draw(orderedPoolIds, kind, need);
+    let remaining = need - got;
+    for (const id of orderedPoolIds) {
+      if (remaining <= 0) break;
+      const c = this.counts.get(id);
+      if (!c || c.provision <= 0) continue;
+      const take = Math.min(c.provision, remaining);
+      c.provision -= take;
+      remaining -= take;
+    }
+    return need - remaining;
+  }
+
   /** Current counts per pool (to write back to the registry after the day commits). */
   snapshot(): Record<string, Counts> {
     const out: Record<string, Counts> = {};
