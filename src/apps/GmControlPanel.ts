@@ -4,6 +4,7 @@ import {
   addSelectedTokens,
   advanceDays,
   applyDelvingPreset,
+  cookHotMeal,
   editPool,
   forage,
   readModel,
@@ -52,6 +53,19 @@ async function onEditPool(this: any, _e: Event, target: HTMLElement): Promise<vo
 async function onAddSelected(this: any): Promise<void> {
   const n = await addSelectedTokens();
   ui.notifications?.info(game.i18n.format("SURVIVAL.Panel.Added", { n }));
+  this.render();
+}
+async function onCook(this: any): Promise<void> {
+  if (!panelAdapter) return;
+  const n = await cookHotMeal(panelAdapter, "Main");
+  if (n === -1) ui.notifications?.warn(game.i18n.localize("SURVIVAL.HotMeal.NoWood"));
+  else if (n === 0) ui.notifications?.warn(game.i18n.localize("SURVIVAL.HotMeal.CantCook"));
+  else {
+    await ChatMessage.create({
+      content: `<p>${game.i18n.format("SURVIVAL.HotMeal.Cooked", { n })}</p>`,
+      speaker: { alias: game.i18n.localize("SURVIVAL.Panel.Title") },
+    });
+  }
   this.render();
 }
 async function onForage(this: any, _e: Event, target: HTMLElement): Promise<void> {
@@ -110,6 +124,7 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       editPool: onEditPool,
       addSelected: onAddSelected,
       forage: onForage,
+      cook: onCook,
     },
   };
 
@@ -129,6 +144,7 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       firewoodNeeded: g.firewoodNeeded,
       headline: g.headline,
       foragingOn: game.settings.get(MODULE_ID, "foraging") === true,
+      hotMealOn: game.settings.get(MODULE_ID, "hotMeal") === true,
       nextWaterDays: (game.settings.get(MODULE_ID, "nextWaterDays") as number) ?? 0,
       bands: BANDS.map((b) => ({
         band: b,
