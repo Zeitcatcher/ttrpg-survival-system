@@ -1,0 +1,20 @@
+{{#if hasData}}
+<div class="ss-hud-panel">
+  <div class="ss-hud-headline">🍖 {{headline.food}} · 💧 {{headline.water}}{{#if coldActive}} · 🔥 {{headline.firewood}}{{/if}}</div>
+  <div class="ss-hud-rows">
+    {{#each roster}}
+    <div class="ss-hud-row">
+      <span class="ss-hud-name">{{name}}</span>
+      <span class="ss-hud-status {{status.cls}}">{{status.label}}</span>
+      {{#if owned}}{{#if @root.coldActive}}
+      <button type="button" class="ss-warm {{#if warm}}on{{/if}}" data-action="toggleWarm" data-actor="{{id}}" data-warm="{{warmNext}}">
+        {{#if warm}}{{localize "SURVIVAL.Hud.Warm"}}{{else}}{{localize "SURVIVAL.Hud.SetWarm"}}{{/if}}
+      </button>
+      {{/if}}{{/if}}
+    </div>
+    {{/each}}
+  </div>
+</div>
+{{else}}
+<div class="ss-empty">{{localize "SURVIVAL.Panel.Empty"}}</div>
+{{/if}}

@@ -10,6 +10,7 @@ import {
   setWithParty,
 } from "../state/bridge";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
+import { postUpkeepCard } from "./upkeepCard";
 
 const BANDS: ClimateBand[] = ["temperate", "hot", "extremeHeat", "cold", "extremeCold"];
 
@@ -23,7 +24,10 @@ export function setPanelAdapter(a: SurvivalSystemAdapter): void {
 // ---- action handlers (Foundry binds `this` to the application instance) ----
 async function onAdvance(this: any, _e: Event, target: HTMLElement): Promise<void> {
   const days = Number(target.dataset.days ?? "1");
-  if (panelAdapter) await advanceDays(days, panelAdapter);
+  if (panelAdapter) {
+    const result = await advanceDays(days, panelAdapter);
+    await postUpkeepCard(result);
+  }
   this.render();
 }
 async function onToggleParty(this: any, _e: Event, target: HTMLElement): Promise<void> {
@@ -141,4 +145,8 @@ let instance: GmControlPanel | undefined;
 export function openGmPanel(): void {
   instance ??= new GmControlPanel();
   instance.render({ force: true });
+}
+/** Re-render the panel if it's open (e.g. after an actor flag changes). */
+export function refreshGmPanel(): void {
+  if (instance?.rendered) instance.render();
 }
