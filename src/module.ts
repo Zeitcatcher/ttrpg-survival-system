@@ -20,6 +20,39 @@ function isPrimaryGM(): boolean {
   return game.users?.activeGM?.isSelf === true;
 }
 
+// Left-toolbar buttons under Token Controls: everyone gets the party HUD, the GM also gets the
+// panel. v13/v14 shape (controls is a Record; a tool needs name/title/icon/order/button/visible/
+// onChange). Registered at top level so it's present before the controls first render.
+Hooks.on("getSceneControlButtons", (controls: any) => {
+  const tokens =
+    controls?.tokens ?? (Array.isArray(controls) ? controls.find((c: any) => c.name === "tokens") : undefined);
+  if (!tokens?.tools) return;
+  const add = (tool: any) => {
+    if (Array.isArray(tokens.tools)) tokens.tools.push(tool);
+    else tokens.tools[tool.name] = tool;
+  };
+  add({
+    name: `${MODULE_ID}-hud`,
+    title: "SURVIVAL.Hud.Title",
+    icon: "fa-solid fa-heart-pulse",
+    order: 90,
+    button: true,
+    visible: true,
+    onChange: () => openPartyHud(),
+  });
+  if (game.user?.isGM) {
+    add({
+      name: MODULE_ID,
+      title: "SURVIVAL.Panel.Title",
+      icon: "fa-solid fa-campground",
+      order: 91,
+      button: true,
+      visible: true,
+      onChange: () => openGmPanel(),
+    });
+  }
+});
+
 Hooks.once("init", () => {
   registerSettings();
   console.log(`${MODULE_ID} | init — settings registered`);
@@ -53,40 +86,9 @@ Hooks.once("ready", () => {
     };
   }
 
-  // Toolbar buttons: everyone gets the party HUD; the GM also gets the control panel.
-  // Defensive across v12 (array of controls) and v13 (object of controls).
-  Hooks.on("getSceneControlButtons", (controls: any) => {
-    const addTool = (tool: any) => {
-      const tokens = Array.isArray(controls)
-        ? controls.find((c: any) => c.name === "token" || c.name === "tokens")
-        : (controls.tokens ?? controls.token);
-      if (!tokens) return;
-      if (Array.isArray(tokens.tools)) tokens.tools.push(tool);
-      else if (tokens.tools) tokens.tools[tool.name] = tool;
-    };
-    try {
-      addTool({
-        name: `${MODULE_ID}-hud`,
-        title: "SURVIVAL.Hud.Title",
-        icon: "fa-solid fa-heart-pulse",
-        button: true,
-        onClick: () => openPartyHud(),
-        onChange: () => openPartyHud(),
-      });
-      if (game.user?.isGM) {
-        addTool({
-          name: MODULE_ID,
-          title: "SURVIVAL.Panel.Title",
-          icon: "fa-solid fa-campground",
-          button: true,
-          onClick: () => openGmPanel(),
-          onChange: () => openGmPanel(),
-        });
-      }
-    } catch (e) {
-      console.warn(`${MODULE_ID} | could not add scene controls`, e);
-    }
-  });
+  // The toolbar buttons are registered at top level (below); if the controls already rendered
+  // before this module was ready, force one re-render so they appear on first load.
+  ui.controls?.render?.();
 
   // Keep open surfaces fresh when survival state changes (warmth flag, registry doc).
   const refresh = () => {
