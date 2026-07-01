@@ -5,6 +5,7 @@ import {
   advanceDays,
   applyDelvingPreset,
   editPool,
+  forage,
   readModel,
   setClimate,
   setWithParty,
@@ -53,6 +54,20 @@ async function onAddSelected(this: any): Promise<void> {
   ui.notifications?.info(game.i18n.format("SURVIVAL.Panel.Added", { n }));
   this.render();
 }
+async function onForage(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  if (!panelAdapter) return;
+  const outcome = await forage(target.dataset.actor!, panelAdapter);
+  if (!outcome) {
+    ui.notifications?.warn(game.i18n.localize("SURVIVAL.Forage.CantRoll"));
+    return;
+  }
+  const fatigued = outcome.fatigued ? ` <em>${game.i18n.localize("SURVIVAL.Forage.Fatigued")}</em>` : "";
+  await ChatMessage.create({
+    content: `<p>${game.i18n.format("SURVIVAL.Forage.Result", { name: target.dataset.name ?? "", food: outcome.food })}${fatigued}</p>`,
+    speaker: { alias: game.i18n.localize("SURVIVAL.Panel.Title") },
+  });
+  this.render();
+}
 
 async function promptNumber(current: number): Promise<number | null> {
   try {
@@ -94,6 +109,7 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       setClimate: onSetClimate,
       editPool: onEditPool,
       addSelected: onAddSelected,
+      forage: onForage,
     },
   };
 
@@ -112,6 +128,8 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       waterMult: g.waterMult,
       firewoodNeeded: g.firewoodNeeded,
       headline: g.headline,
+      foragingOn: game.settings.get(MODULE_ID, "foraging") === true,
+      nextWaterDays: (game.settings.get(MODULE_ID, "nextWaterDays") as number) ?? 0,
       bands: BANDS.map((b) => ({
         band: b,
         active: b === g.climate,

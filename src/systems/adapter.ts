@@ -1,4 +1,5 @@
-import type { ResourceKind, TrackKey } from "../core/types";
+import type { DegreeOfSuccess, ResourceKind, TrackKey } from "../core/types";
+export type { DegreeOfSuccess } from "../core/types";
 
 // The adapter seam. Core asks an adapter for exactly four irreducible, system-specific things:
 // read resources, decrement resources, reconcile consequences, and classify/inspect actors.
@@ -6,8 +7,6 @@ import type { ResourceKind, TrackKey } from "../core/types";
 //
 // NOTE: this is the ONLY place "pf2e" / game.system may appear (Pillar 1). The pf2e adapter
 // implementing this interface lands in a later milestone; the interface fixes the contract now.
-
-export type DegreeOfSuccess = "critFail" | "fail" | "success" | "critSuccess";
 
 export interface ResourceLot {
   readonly kind: ResourceKind;
