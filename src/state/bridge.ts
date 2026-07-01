@@ -92,6 +92,28 @@ export async function runTickViaFoundry(
   return result;
 }
 
+/** Cook a hot meal for a group: burns 1 firewood from a with-party pool and applies the "well-fed"
+ *  buff to each present eater. Returns the number buffed, -1 if no firewood, 0 if unsupported. */
+export async function cookHotMeal(adapter: SurvivalSystemAdapter, group = "Main"): Promise<number> {
+  if (!adapter.applyHotMeal) return 0;
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const pool = reg.pools.find((p) => p.withParty[group] === true && p.counts.firewood > 0);
+  if (!pool) return -1;
+  pool.counts.firewood -= 1;
+  await registry.save(reg);
+
+  let n = 0;
+  for (const m of reg.members) {
+    if (m.group !== group || !m.enabled || m.isMount) continue;
+    const actor = fromUuidSync(m.uuid);
+    if (!actor) continue;
+    await adapter.applyHotMeal(actor);
+    n++;
+  }
+  return n;
+}
+
 export interface ForageOutcome {
   degree: DegreeOfSuccess;
   food: number;

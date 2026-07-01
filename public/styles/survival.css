@@ -69,3 +69,5 @@
 .ss-nextwater { font-size: 11px; color: #6f9fd6; text-align: center; padding: 3px 0; }
 .ss-forage { background: #16271d; border: 1px solid #33503f; color: #5fb27a; border-radius: 4px; padding: 0 5px; font-size: 11px; cursor: pointer; }
 .ss-forage:hover { background: #1d3326; }
+.ss-section-actions { display: flex; gap: 5px; }
+.ss-btn.cook { background: #cf7a3a; border-color: #7a431b; color: #fff; }
