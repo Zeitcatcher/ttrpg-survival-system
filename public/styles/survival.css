@@ -41,3 +41,26 @@
 .ss-roster td.muted { color: #6c707c; font-style: italic; }
 .ss-roster .clk { color: #8a8f9c; font-size: 10px; }
 .ss-empty { padding: 16px; text-align: center; color: #8a8f9c; }
+
+/* ---- Party HUD (players) ---- */
+.application.ss-hud { --ss-warn: #d9a441; --ss-danger: #d8584e; --ss-ok: #5fb27a; }
+.ss-hud-panel { color: #e6e8ee; font-size: 13px; padding: 4px; }
+.ss-hud-headline { font-weight: 600; padding: 6px 8px; border-bottom: 1px solid #11131a; margin-bottom: 6px; }
+.ss-hud-rows { display: flex; flex-direction: column; gap: 3px; }
+.ss-hud-row { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: #1b1e25; border-radius: 5px; }
+.ss-hud-name { font-weight: 600; flex: 1; }
+.ss-hud-status { font-size: 11px; }
+.ss-hud-status.ok { color: var(--ss-ok); }
+.ss-hud-status.warn { color: var(--ss-warn); }
+.ss-hud-status.danger { color: var(--ss-danger); font-weight: 600; }
+.ss-warm { background: #2a1d10; border: 1px solid #5a4a28; color: var(--ss-warn); border-radius: 5px; padding: 2px 7px; font-size: 11px; cursor: pointer; }
+.ss-warm.on { background: #1d3326; border-color: #3f6b54; color: #7fdca0; }
+
+/* ---- Upkeep chat card ---- */
+.ss-card h3 { margin: 0 0 4px; font-size: 15px; }
+.ss-card-consumed { font-size: 13px; margin: 2px 0 6px; }
+.ss-card-short ul, .ss-card-clocks ul { margin: 3px 0 8px; padding-left: 18px; }
+.ss-card-short li { color: #a3401d; }
+.ss-card-clocks li { color: #6b4a1f; }
+.ss-card-green { color: #3b6d3b; font-style: italic; margin: 2px 0; }
+.ss-card-warn { color: #a3401d; font-weight: 600; }
