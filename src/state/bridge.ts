@@ -198,6 +198,12 @@ export async function addActorToCaravan(
   await registry.save(reg);
 }
 
+/** GM-side write of a creature's "kept warm tonight" flag (called via socketlib from a player). */
+export async function setWarm(actorUuid: string, warm: boolean): Promise<void> {
+  const actor = fromUuidSync(actorUuid);
+  if (actor?.setFlag) await actor.setFlag(MODULE_ID, "warmth", warm);
+}
+
 /** Add the currently-selected canvas tokens to the caravan. Returns how many were added. */
 export async function addSelectedTokens(): Promise<number> {
   const tokens = canvas?.tokens?.controlled ?? [];
