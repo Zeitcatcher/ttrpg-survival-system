@@ -91,9 +91,13 @@ function computeHeadline(state: CaravanState, group: string): Headline {
   const sum = (kind: ResourceKind) => present.reduce((s, p) => s + p.counts[kind], 0);
   const foodNeed = dailyGroupNeed(state.consumers, group, "food", band.waterMult);
   const waterNeed = dailyGroupNeed(state.consumers, group, "water", band.waterMult);
+  // Provisions extend both food and water. The headline is an at-a-glance gauge, so it counts the
+  // shared reserve toward each (mildly optimistic when both lean on it); the day-by-day tick is the
+  // authoritative allocator that spends provision once.
+  const prov = present.reduce((s, p) => s + p.counts.provision, 0);
   return {
-    food: foodNeed > 0 ? Math.floor(sum("food") / foodNeed) : 0,
-    water: waterNeed > 0 ? Math.floor(sum("water") / waterNeed) : 0,
+    food: foodNeed > 0 ? Math.floor((sum("food") + prov) / foodNeed) : 0,
+    water: waterNeed > 0 ? Math.floor((sum("water") + prov) / waterNeed) : 0,
     firewood: band.bundles > 0 ? Math.floor(sum("firewood") / band.bundles) : 0,
   };
 }
@@ -122,8 +126,8 @@ function resolveDayForGroup(
     const foodNeed = c.ration.food * c.sizeMult;
     const waterNeed = c.ration.water * c.sizeMult * band.waterMult;
     const order = sourceOrder(c, classified, opts.sourceMode);
-    const gotFood = ledger.draw(order, "food", foodNeed);
-    const gotWater = ledger.draw(order, "water", waterNeed);
+    const gotFood = ledger.drawWithProvision(order, "food", foodNeed);
+    const gotWater = ledger.drawWithProvision(order, "water", waterNeed);
 
     draws.push({
       consumerId: c.id,

@@ -50,7 +50,7 @@ export function emptyRegistry(): RegistryData {
 }
 
 function asCounts(c: Partial<Counts> | undefined): Counts {
-  return { food: c?.food ?? 0, water: c?.water ?? 0, firewood: c?.firewood ?? 0 };
+  return { food: c?.food ?? 0, water: c?.water ?? 0, firewood: c?.firewood ?? 0, provision: c?.provision ?? 0 };
 }
 
 /** Defensive normalization of whatever is read from the document flags: fills defaults,

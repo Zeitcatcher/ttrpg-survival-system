@@ -12,8 +12,10 @@
     </div>
     <div class="ss-advance">
       <span class="ss-lbl">{{localize "SURVIVAL.Panel.Advance"}}</span>
-      <button type="button" class="ss-btn primary" data-action="advance" data-days="1">{{localize "SURVIVAL.Panel.Day"}}</button>
-      <button type="button" class="ss-btn" data-action="advance" data-days="7">{{localize "SURVIVAL.Panel.Week"}}</button>
+      <div class="ss-advance-btns">
+        <button type="button" class="ss-btn primary" data-action="advance" data-days="1">{{localize "SURVIVAL.Panel.Day"}}</button>
+        <button type="button" class="ss-btn" data-action="advance" data-days="7">{{localize "SURVIVAL.Panel.Week"}}</button>
+      </div>
     </div>
   </div>
 
@@ -29,6 +31,7 @@
       <span>{{localize "SURVIVAL.Panel.Pools"}}</span>
       <span class="ss-section-actions">
         {{#if hotMealOn}}<button type="button" class="ss-btn cook" data-action="cook">{{localize "SURVIVAL.Panel.Cook"}}</button>{{/if}}
+        <button type="button" class="ss-btn" data-action="addBase">{{localize "SURVIVAL.Panel.AddBase"}}</button>
         <button type="button" class="ss-btn delve" data-action="delving">{{localize "SURVIVAL.Panel.Delving"}}</button>
       </span>
     </div>
@@ -43,6 +46,7 @@
       <div class="ss-pool-counts">
         <button type="button" class="ss-num" data-action="editPool" data-pool="{{id}}" data-kind="food" data-current="{{food}}">🍖 {{food}}</button>
         <button type="button" class="ss-num" data-action="editPool" data-pool="{{id}}" data-kind="water" data-current="{{water}}">💧 {{water}}</button>
+        <button type="button" class="ss-num prov" data-action="editPool" data-pool="{{id}}" data-kind="provision" data-current="{{provision}}" title="{{localize "SURVIVAL.Panel.ProvisionHint"}}">🥫 {{provision}}</button>
         <button type="button" class="ss-num" data-action="editPool" data-pool="{{id}}" data-kind="firewood" data-current="{{firewood}}">🔥 {{firewood}}</button>
       </div>
     </div>
@@ -52,7 +56,10 @@
   <div class="ss-section">
     <div class="ss-section-h">
       <span>{{localize "SURVIVAL.Panel.Roster"}}</span>
-      <button type="button" class="ss-btn" data-action="addSelected">{{localize "SURVIVAL.Panel.AddSelected"}}</button>
+      <span class="ss-section-actions">
+        <button type="button" class="ss-btn danger" data-action="reset">{{localize "SURVIVAL.Panel.Reset"}}</button>
+        <button type="button" class="ss-btn" data-action="addSelected">{{localize "SURVIVAL.Panel.AddSelected"}}</button>
+      </span>
     </div>
     <table class="ss-roster">
       <thead>
@@ -67,7 +74,7 @@
       <tbody>
         {{#each roster}}
         <tr class="{{#if zeroNeeds}}zero{{/if}}">
-          <td class="nm">{{name}}{{#if @root.foragingOn}}{{#unless zeroNeeds}} <button type="button" class="ss-forage" data-action="forage" data-actor="{{id}}" data-name="{{name}}" title="{{localize "SURVIVAL.Panel.Forage"}}">🌿</button>{{/unless}}{{/if}}</td>
+          <td class="nm">{{name}} <button type="button" class="ss-role {{#if isMount}}on{{/if}}" data-action="setRole" data-actor="{{id}}" data-mount="{{roleNext}}" title="{{localize "SURVIVAL.Panel.RoleHint"}}">{{#if isMount}}🐴{{else}}🎒{{/if}}</button>{{#if @root.foragingOn}}{{#unless zeroNeeds}} <button type="button" class="ss-forage" data-action="forage" data-actor="{{id}}" data-name="{{name}}" title="{{localize "SURVIVAL.Panel.Forage"}}">🌿</button>{{/unless}}{{/if}}</td>
           <td>{{size}}</td>
           {{#if zeroNeeds}}
           <td colspan="3" class="muted">{{localize "SURVIVAL.Panel.NoNeeds"}}</td>

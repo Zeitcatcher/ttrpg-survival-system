@@ -1,4 +1,4 @@
-import type { DegreeOfSuccess, ResourceKind, TrackKey } from "../core/types";
+import type { DegreeOfSuccess, SupplyKind, TrackKey } from "../core/types";
 export type { DegreeOfSuccess } from "../core/types";
 
 // The adapter seam. Core asks an adapter for exactly four irreducible, system-specific things:
@@ -9,8 +9,8 @@ export type { DegreeOfSuccess } from "../core/types";
 // implementing this interface lands in a later milestone; the interface fixes the contract now.
 
 export interface ResourceLot {
-  readonly kind: ResourceKind;
-  readonly available: number; // creature-days (food/water) or bundles (firewood)
+  readonly kind: SupplyKind;
+  readonly available: number; // creature-days (food/water/provision) or bundles (firewood)
   readonly itemId: string; // opaque to core
   readonly label: string; // already-localized
 }
@@ -18,13 +18,13 @@ export interface ResourceLot {
 export interface SurvivalSystemAdapter {
   readonly systemId: string;
 
-  // INVENTORY (read) — normalized to creature-days / bundles
-  getResourceLots(actor: any, kind: ResourceKind): ResourceLot[];
-  getAvailable(actor: any, kind: ResourceKind): number;
+  // INVENTORY (read) — normalized to creature-days / bundles. `provision` reads fungible rations.
+  getResourceLots(actor: any, kind: SupplyKind): ResourceLot[];
+  getAvailable(actor: any, kind: SupplyKind): number;
 
   // INVENTORY (write) — handles 7-ration decomposition + per-system quantity path
-  consume(actor: any, kind: ResourceKind, units: number): Promise<number>;
-  grant(actor: any, kind: ResourceKind, units: number): Promise<void>;
+  consume(actor: any, kind: SupplyKind, units: number): Promise<number>;
+  grant(actor: any, kind: SupplyKind, units: number): Promise<void>;
 
   // CREATURE NEEDS / LIVENESS
   getCreatureRation(actor: any): { food: number; water: number };

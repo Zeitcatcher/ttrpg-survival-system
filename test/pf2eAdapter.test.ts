@@ -42,4 +42,22 @@ describe("Pf2eAdapter inspection", () => {
     expect(adapter.isWarmSourceEquipped(stowed)).toBe(false);
     expect(adapter.isWarmSourceEquipped(actor())).toBe(false);
   });
+
+  it("counts native Rations as fungible provisions (1 week = 7 charges), not plain food", () => {
+    const a = actor({ items: [{ slug: "rations", system: { quantity: 2 } }] });
+    expect(adapter.getAvailable(a, "provision")).toBe(14); // 2 × 7 charges, spendable on food OR water
+    expect(adapter.getAvailable(a, "food")).toBe(0);
+    expect(adapter.getAvailable(a, "water")).toBe(0);
+  });
+
+  it("reads the module's dedicated day-items into their own kind", () => {
+    const a = actor({
+      items: [
+        { slug: "survival-water-day", system: { quantity: 3 } },
+        { slug: "survival-provision-day", system: { quantity: 4 } },
+      ],
+    });
+    expect(adapter.getAvailable(a, "water")).toBe(3);
+    expect(adapter.getAvailable(a, "provision")).toBe(4);
+  });
 });

@@ -12,9 +12,11 @@
 .ss-band { background: #1b1e25; border: 1px solid #2f3441; color: #c3c7d1; border-radius: 5px; padding: 3px 8px; font-size: 11px; cursor: pointer; }
 .ss-band.active { border-color: var(--ss-warn); background: #33231f; color: #fff; }
 .ss-advance { text-align: right; }
+.ss-advance-btns { display: flex; gap: 6px; justify-content: flex-end; }
 .ss-btn { background: #3a4150; border: 1px solid #11131a; color: #dfe2ea; border-radius: 5px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
 .ss-btn.primary { background: #5a7fd6; border-color: #2c3f73; color: #fff; }
 .ss-btn.delve { background: #523774; border-color: #2e1f44; color: #f2e9ff; }
+.ss-btn.danger { background: #5a2d2a; border-color: #3a1c1a; color: #f2d9d6; }
 .ss-headline { display: flex; gap: 8px; }
 .ss-stat { flex: 1; background: var(--ss-panel); border: 1px solid var(--ss-line); border-radius: 6px; padding: 8px; text-align: center; }
 .ss-stat .k { display: block; font-size: 10px; text-transform: uppercase; color: #8a8f9c; }
@@ -31,6 +33,9 @@
 .ss-toggle:not(.on) { background: #2a1d10; border-color: #5a4a28; color: var(--ss-warn); }
 .ss-pool-counts { display: flex; gap: 6px; margin-top: 6px; }
 .ss-num { background: #101217; border: 1px solid #333845; color: #e6e8ee; border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+.ss-num.prov { border-color: #4a3f2a; }
+.ss-role { background: #1b1e25; border: 1px solid #333845; color: #c3c7d1; border-radius: 4px; padding: 0 5px; font-size: 11px; cursor: pointer; }
+.ss-role.on { background: #33231f; border-color: var(--ss-warn); }
 .ss-roster { width: 100%; border-collapse: collapse; font-size: 12px; }
 .ss-roster th { text-align: left; font-size: 10px; color: #8a8f9c; border-bottom: 1px solid var(--ss-line); padding: 4px 6px; font-weight: 600; }
 .ss-roster td { padding: 4px 6px; border-bottom: 1px solid #23262e; }
