@@ -80,7 +80,7 @@ export async function runTickViaFoundry(
       const actor = uuid ? fromUuidSync(uuid) : null;
       if (!actor) continue;
       const before = pre.get(p.id)!;
-      for (const kind of ["food", "water", "firewood"] as const) {
+      for (const kind of ["food", "water", "firewood", "provision"] as const) {
         const delta = before[kind] - p.counts[kind];
         if (delta > 0) await adapter.consume(actor, kind, delta);
       }
@@ -198,9 +198,20 @@ async function loadLive(
           food: adapter.getAvailable(actor, "food"),
           water: adapter.getAvailable(actor, "water"),
           firewood: adapter.getAvailable(actor, "firewood"),
+          provision: adapter.getAvailable(actor, "provision"),
         };
       }
     }
+  }
+
+  // Derive friendly pool labels from the backing actor + role ("Grog (personal pack)",
+  // "Chiga-Biga (shared stock)"). Display-only; the persisted label is left untouched.
+  for (const p of state.pools) {
+    const rp = reg.pools.find((x) => x.id === p.id);
+    const actor = rp?.actorUuid ? fromUuidSync(rp.actorUuid) : null;
+    const suffix = game.i18n.localize(p.isStorage ? "SURVIVAL.Pool.sharedStock" : "SURVIVAL.Pool.personalPack");
+    if (actor?.name) p.label = `${actor.name} (${suffix})`;
+    else if (p.isStorage) p.label = `${p.label} (${suffix})`;
   }
   return { registry, reg, state };
 }
@@ -237,7 +248,7 @@ export async function setWithParty(poolId: string, group: string, withParty: boo
 
 export async function editPool(
   poolId: string,
-  kind: "food" | "water" | "firewood",
+  kind: "food" | "water" | "firewood" | "provision",
   value: number,
   adapter?: SurvivalSystemAdapter,
 ): Promise<void> {
@@ -299,13 +310,75 @@ export async function addActorToCaravan(
     reg.pools.push({
       id: poolId,
       label: isMount ? "Mount supply" : "Personal pack",
-      counts: { food: 0, water: 0, firewood: 0 },
+      counts: { food: 0, water: 0, firewood: 0, provision: 0 },
       withParty: { [group]: true },
       isMount,
       isStorage: isMount,
       actorUuid: uuid,
     });
   }
+  await registry.save(reg);
+}
+
+/** GM "reset": clear every member's hunger/thirst/cold tracks and strip the conditions the module
+ *  applied. Supplies, pools, roster, and the day pointer are untouched. Returns creatures reset. */
+export async function resetSurvival(adapter: SurvivalSystemAdapter, group?: string): Promise<number> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  let n = 0;
+  for (const m of reg.members) {
+    if (group && m.group !== group) continue;
+    const actor = fromUuidSync(m.uuid);
+    if (!actor) continue;
+    // Remove module-applied deprivation conditions (idempotent; also clears the `applied` flag).
+    await adapter.reconcileConsequences(actor, { hunger: 0, thirst: 0, cold: 0 });
+    if (actor.setFlag) await actor.setFlag(MODULE_ID, "state", emptyActorState());
+    n++;
+  }
+  return n;
+}
+
+/** Promote/demote a member between a plain party member and a mount. A mount's own pool becomes
+ *  SHARED STOCK the whole party draws from (a mobile base); demoting reverts it to a personal pack. */
+export async function setMemberRole(uuid: string, isMount: boolean): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const m = reg.members.find((x) => x.uuid === uuid);
+  if (!m) return;
+  m.isMount = isMount;
+  let pool =
+    reg.pools.find((p) => p.actorUuid === uuid) ?? (m.poolId ? reg.pools.find((p) => p.id === m.poolId) : undefined);
+  if (!pool && isMount) {
+    const id = m.poolId ?? `mount-${uuid}`;
+    pool = {
+      id, label: "Mount supply", counts: { food: 0, water: 0, firewood: 0, provision: 0 },
+      withParty: { [m.group]: true }, isMount: true, isStorage: true, actorUuid: uuid,
+    };
+    reg.pools.push(pool);
+    m.poolId = id;
+  }
+  if (pool) {
+    pool.isMount = isMount;
+    pool.isStorage = isMount; // a mount carries shared stock; a member keeps a personal pack
+  }
+  const actor = fromUuidSync(uuid);
+  await actor?.setFlag?.(MODULE_ID, "isMount", isMount);
+  await registry.save(reg);
+}
+
+/** Add a standalone base: a communal stockpile pool (no creature) the party draws from and can
+ *  leave behind via the separation toggle. Its counts are edited by hand (Abstract). */
+export async function addBasePool(label: string, group = "Main"): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  reg.pools.push({
+    id: `base-${foundry.utils.randomID()}`,
+    label: label || "Base",
+    counts: { food: 0, water: 0, firewood: 0, provision: 0 },
+    withParty: { [group]: true },
+    isMount: false,
+    isStorage: true,
+  });
   await registry.save(reg);
 }
 

@@ -17,7 +17,7 @@ function greenState(): CaravanState {
       },
     ],
     pools: [
-      { id: "base", label: "Base", counts: { food: 10, water: 10, firewood: 0 }, withParty: { Main: true }, isMount: false, isStorage: true },
+      { id: "base", label: "Base", counts: { food: 10, water: 10, firewood: 0, provision: 0 }, withParty: { Main: true }, isMount: false, isStorage: true },
     ],
     actorState: {},
     lastTickDay: 0,

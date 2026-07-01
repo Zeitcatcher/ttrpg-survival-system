@@ -59,17 +59,26 @@ async function whisperGM(content: string): Promise<void> {
 }
 
 async function nudgeOwners(s: UpkeepSummary): Promise<void> {
+  // Group every shortfall by owning player, so each gets ONE consolidated whisper listing all of
+  // their affected characters — not a separate message per character/resource.
+  const byUser = new Map<string, { user: any; lines: string[] }>();
   for (const sf of s.shortfalls) {
     if (sf.isMountNarrateOnly) continue;
     const actor = fromUuidSync(sf.actorUuid);
     if (!actor) continue;
-    const owners = (game.users ?? []).filter(
-      (u: any) => !u.isGM && actor.testUserPermission?.(u, "OWNER"),
-    );
-    if (!owners.length) continue;
+    const owners = (game.users ?? []).filter((u: any) => !u.isGM && actor.testUserPermission?.(u, "OWNER"));
+    for (const u of owners) {
+      const entry = byUser.get(u.id) ?? { user: u, lines: [] };
+      entry.lines.push(`${ICON[sf.kind]} <b>${sf.name}</b> — ${L(`SURVIVAL.Resource.${sf.kind}`)}`);
+      byUser.set(u.id, entry);
+    }
+  }
+  for (const { user, lines } of byUser.values()) {
     await ChatMessage.create({
-      content: `<p>${L("SURVIVAL.Card.Nudge", { kind: L(`SURVIVAL.Resource.${sf.kind}`) })}</p>`,
-      whisper: owners.map((u: any) => u.id),
+      content: `<div class="ss-card"><p>${L("SURVIVAL.Card.NudgeIntro")}</p><ul class="ss-card-short">${lines
+        .map((l) => `<li>${l}</li>`)
+        .join("")}</ul></div>`,
+      whisper: [user.id],
       speaker: { alias: L("SURVIVAL.Panel.Title") },
     });
   }

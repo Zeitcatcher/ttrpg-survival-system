@@ -18,7 +18,7 @@ function pc(id: string, name: string, thirstGrace: number): Consumer {
 function pack(id: string, water: number): Pool {
   return {
     id: `pack-${id}`, label: `${id} pack`,
-    counts: { food: 0, water, firewood: 0 },
+    counts: { food: 0, water, firewood: 0, provision: 0 },
     withParty: { Main: true }, isMount: false, isStorage: false,
   };
 }
@@ -56,7 +56,7 @@ export function buildShardsState(): CaravanState {
   const pools: Pool[] = [
     {
       id: "chiga", label: "Chiga-Biga (base)",
-      counts: { food: 30, water: 14, firewood: 4 },
+      counts: { food: 30, water: 14, firewood: 4, provision: 0 },
       withParty: { Main: true }, isMount: true, isStorage: true,
     },
     pack("irime", 2),
