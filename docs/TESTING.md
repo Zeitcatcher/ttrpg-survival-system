@@ -1,6 +1,6 @@
-# Smoke-testing v0.1.4 in Foundry
+# Smoke-testing v0.1.5 in Foundry
 
-Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging (M6)**. The engine is unit-tested headless (50 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
+Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)**. The engine is unit-tested headless (50 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
 ## 1. Install
 1. Foundry **v13 or v14**, a **Pathfinder 2e** world.
@@ -35,6 +35,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 ## 6. Foraging + water countdown (M6)
 - Turn **Foraging = on** (settings). A small **🌿** button appears next to each creature in the roster. Click it → it rolls that actor's **Survival** check (you'll see the roll in chat) and, on success, **adds food** to the shared pool (crit = 2 days, success = 1).
 - Set **Next water (days)** in settings to e.g. **5** → the panel header shows **"Next water: 5"**, which **counts down** as you Advance.
+- Turn **Hot meal = on** (settings). A **Cook hot meal** button appears in the Pools header. Put some **🔥 firewood** on a mount/base pool, then click **Cook** → 1 firewood is spent and each member gains a **"Hot Meal"** effect + **temporary HP** (≈ their level). Check the token's effects/temp HP. *(A GM can point the "Hot meal effect (UUID)" setting at their own effect instead.)*
 
 ## 7. Separation + mounts (advanced)
 - Flag a mount before adding it (script macro, mount token selected):
@@ -47,4 +48,4 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 - Do the **panel and HUD render** and respond? Do **conditions apply/clear** on tokens? Does the **card** appear only on shortfall days? Does the **warm toggle** actually reach the GM (socketlib)?
 - Anything that looks off.
 
-**Not built yet** (don't report as bugs): the hot-meal cooking option, and real-inventory (**Ledger**) mode — those are M6-hot-meal / M8.
+**Not built yet** (don't report as bugs): real-inventory (**Ledger**) supply mode — that's M8.
