@@ -25,6 +25,8 @@ export interface RegPool {
   withParty: Record<string, boolean>;
   isMount: boolean;
   isStorage: boolean;
+  /** The actor whose inventory backs this pool in Ledger mode (a mount, storage, or PC pack). */
+  actorUuid?: string;
 }
 
 export interface RegistryData {
@@ -68,6 +70,7 @@ export function normalizeRegistry(raw: Partial<RegistryData> | null | undefined)
     withParty: { ...(p.withParty ?? {}) },
     isMount: !!p.isMount,
     isStorage: !!p.isStorage,
+    ...(p.actorUuid ? { actorUuid: p.actorUuid } : {}),
   }));
 
   const members: RegMember[] = (raw.members ?? []).map((m) => ({
