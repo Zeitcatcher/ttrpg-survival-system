@@ -111,4 +111,44 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     const d20 = roll.dice?.[0]?.results?.[0]?.result ?? 10;
     return computeDegree(roll.total, d20, dc);
   }
+
+  async applyHotMeal(actor: any): Promise<void> {
+    // Refresh rather than stack: drop any prior hot-meal marker first.
+    const prior = (actor.items ?? []).filter?.((i: any) => (i.slug ?? i.system?.slug) === "hot-meal") ?? [];
+    if (prior.length) await actor.deleteEmbeddedDocuments?.("Item", prior.map((i: any) => i.id));
+
+    // Effect source: a GM-configured effect UUID, else the built-in marker.
+    const uuid = game.settings.get(MODULE_ID, "hotMealEffectUuid") as string;
+    let data: any = null;
+    if (uuid) {
+      const src = await fromUuid(uuid);
+      data = src?.toObject?.() ?? null;
+    }
+    data ??= this.#hotMealEffect();
+    await actor.createEmbeddedDocuments?.("Item", [data]);
+
+    // Grant temporary HP ≈ character level (never reduce a larger existing pool).
+    const level = actor.level ?? actor.system?.details?.level?.value ?? 1;
+    const current = actor.system?.attributes?.hp?.temp ?? 0;
+    if (level > current) await actor.update?.({ "system.attributes.hp.temp": level });
+  }
+
+  #hotMealEffect(): any {
+    return {
+      name: game.i18n.localize("SURVIVAL.HotMeal.EffectName"),
+      type: "effect",
+      img: "icons/svg/heal.svg",
+      system: {
+        slug: "hot-meal",
+        description: { value: `<p>${game.i18n.localize("SURVIVAL.HotMeal.EffectDesc")}</p>` },
+        rules: [],
+        traits: { otherTags: [], value: [] },
+        level: { value: 0 },
+        duration: { value: 1, unit: "days", expiry: "turn-start", sustained: false },
+        start: { value: 0, initiative: null },
+        tokenIcon: { show: true },
+        unidentified: false,
+      },
+    };
+  }
 }

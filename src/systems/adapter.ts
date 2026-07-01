@@ -42,4 +42,7 @@ export interface SurvivalSystemAdapter {
 
   // FORAGING (optional extra)
   rollForage?(actor: any, dc: number): Promise<DegreeOfSuccess | null>;
+
+  // HOT MEAL (optional extra): grant a "well-fed" buff (temp HP + a 1-day marker effect).
+  applyHotMeal?(actor: any): Promise<void>;
 }

@@ -27,7 +27,10 @@
   <div class="ss-section">
     <div class="ss-section-h">
       <span>{{localize "SURVIVAL.Panel.Pools"}}</span>
-      <button type="button" class="ss-btn delve" data-action="delving">{{localize "SURVIVAL.Panel.Delving"}}</button>
+      <span class="ss-section-actions">
+        {{#if hotMealOn}}<button type="button" class="ss-btn cook" data-action="cook">{{localize "SURVIVAL.Panel.Cook"}}</button>{{/if}}
+        <button type="button" class="ss-btn delve" data-action="delving">{{localize "SURVIVAL.Panel.Delving"}}</button>
+      </span>
     </div>
     {{#each pools}}
     <div class="ss-pool {{#if separated}}separated{{/if}}">
