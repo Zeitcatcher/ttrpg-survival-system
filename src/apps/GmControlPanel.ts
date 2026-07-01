@@ -47,7 +47,7 @@ async function onSetClimate(this: any, _e: Event, target: HTMLElement): Promise<
 async function onEditPool(this: any, _e: Event, target: HTMLElement): Promise<void> {
   const value = await promptNumber(Number(target.dataset.current ?? "0"));
   if (value === null) return;
-  await editPool(target.dataset.pool!, target.dataset.kind as "food" | "water" | "firewood", value);
+  await editPool(target.dataset.pool!, target.dataset.kind as "food" | "water" | "firewood", value, panelAdapter);
   this.render();
 }
 async function onAddSelected(this: any): Promise<void> {

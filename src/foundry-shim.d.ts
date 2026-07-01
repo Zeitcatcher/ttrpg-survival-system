@@ -11,6 +11,7 @@ declare const CONFIG: any;
 declare const foundry: any;
 declare const JournalEntry: any;
 declare const ChatMessage: any;
+declare const Item: any;
 declare const canvas: any;
 declare function fromUuid(uuid: string): Promise<any>;
 declare function fromUuidSync(uuid: string): any;

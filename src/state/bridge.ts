@@ -69,17 +69,27 @@ export async function runTickViaFoundry(
   targetDay: number,
   adapter: SurvivalSystemAdapter,
 ): Promise<TickResult> {
-  const registry = await CaravanRegistry.findOrCreate();
-  const reg = registry.load();
-  const facts = gatherFacts(reg, adapter);
-  const actorStates = loadActorStates(reg);
-  const lastTickDay = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
-
-  const state = buildCaravanState(reg, facts, actorStates, lastTickDay);
+  const { registry, reg, state } = await loadLive(adapter);
+  const pre = new Map(state.pools.map((p) => [p.id, { ...p.counts }]));
   const result = computeTick(state, targetDay, tickOptionsFromSettings());
 
-  writeBackPoolCounts(reg, state);
-  await registry.save(reg);
+  if (isLedger()) {
+    // Decrement real items by exactly what the engine drew from each pool this tick.
+    for (const p of state.pools) {
+      const uuid = reg.pools.find((rp) => rp.id === p.id)?.actorUuid;
+      const actor = uuid ? fromUuidSync(uuid) : null;
+      if (!actor) continue;
+      const before = pre.get(p.id)!;
+      for (const kind of ["food", "water", "firewood"] as const) {
+        const delta = before[kind] - p.counts[kind];
+        if (delta > 0) await adapter.consume(actor, kind, delta);
+      }
+    }
+  } else {
+    writeBackPoolCounts(reg, state);
+    await registry.save(reg);
+  }
+
   await game.settings.set(MODULE_ID, "lastTickDay", state.lastTickDay);
   await persistActorStates(state);
   await applyConsequences(state, adapter);
@@ -163,14 +173,41 @@ async function applyConsequences(state: CaravanState, adapter: SurvivalSystemAda
   }
 }
 
-/** Build the live engine snapshot from the registry + actors (read path; no writes). */
-async function liveState(adapter: SurvivalSystemAdapter): Promise<CaravanState> {
+function isLedger(): boolean {
+  return game.settings.get(MODULE_ID, "supplyDetail") === "ledger";
+}
+
+/** Load the registry + build the engine snapshot. In Ledger mode, each pool's counts are derived
+ *  live from its backing actor's real inventory (via the adapter) rather than stored day-counts. */
+async function loadLive(
+  adapter: SurvivalSystemAdapter,
+): Promise<{ registry: CaravanRegistry; reg: RegistryData; state: CaravanState }> {
   const registry = await CaravanRegistry.findOrCreate();
   const reg = registry.load();
   const facts = gatherFacts(reg, adapter);
   const actorStates = loadActorStates(reg);
   const lastTickDay = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
-  return buildCaravanState(reg, facts, actorStates, lastTickDay);
+  const state = buildCaravanState(reg, facts, actorStates, lastTickDay);
+
+  if (isLedger()) {
+    for (const p of state.pools) {
+      const uuid = reg.pools.find((rp) => rp.id === p.id)?.actorUuid;
+      const actor = uuid ? fromUuidSync(uuid) : null;
+      if (actor) {
+        p.counts = {
+          food: adapter.getAvailable(actor, "food"),
+          water: adapter.getAvailable(actor, "water"),
+          firewood: adapter.getAvailable(actor, "firewood"),
+        };
+      }
+    }
+  }
+  return { registry, reg, state };
+}
+
+/** The live engine snapshot (read path; no writes). */
+async function liveState(adapter: SurvivalSystemAdapter): Promise<CaravanState> {
+  return (await loadLive(adapter)).state;
 }
 
 /** The at-a-glance days-of-supply for a group, without advancing time. */
@@ -202,12 +239,24 @@ export async function editPool(
   poolId: string,
   kind: "food" | "water" | "firewood",
   value: number,
+  adapter?: SurvivalSystemAdapter,
 ): Promise<void> {
   const registry = await CaravanRegistry.findOrCreate();
   const reg = registry.load();
   const pool = reg.pools.find((p) => p.id === poolId);
-  if (pool) {
-    pool.counts[kind] = Math.max(0, Math.round(value));
+  if (!pool) return;
+  const target = Math.max(0, Math.round(value));
+
+  if (isLedger() && adapter && pool.actorUuid) {
+    // Ledger: bring the actor's real inventory to the target (grant or consume the difference).
+    const actor = fromUuidSync(pool.actorUuid);
+    if (actor) {
+      const current = adapter.getAvailable(actor, kind);
+      if (target > current) await adapter.grant(actor, kind, target - current);
+      else if (target < current) await adapter.consume(actor, kind, current - target);
+    }
+  } else {
+    pool.counts[kind] = target;
     await registry.save(reg);
   }
 }
@@ -254,6 +303,7 @@ export async function addActorToCaravan(
       withParty: { [group]: true },
       isMount,
       isStorage: isMount,
+      actorUuid: uuid,
     });
   }
   await registry.save(reg);
