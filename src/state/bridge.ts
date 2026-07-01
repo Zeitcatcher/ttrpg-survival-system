@@ -1,5 +1,6 @@
 import { computeTick, type Headline, type TickOptions, type TickResult } from "../core/engine";
-import { type ActorState, type CaravanState, type ClimateBand, emptyActorState } from "../core/types";
+import { forageYield } from "../core/foraging";
+import { type ActorState, type CaravanState, type ClimateBand, type DegreeOfSuccess, emptyActorState } from "../core/types";
 import { MODULE_ID } from "../settings";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
 import { type GroupView, projectGroups } from "./readModel";
@@ -82,7 +83,45 @@ export async function runTickViaFoundry(
   await game.settings.set(MODULE_ID, "lastTickDay", state.lastTickDay);
   await persistActorStates(state);
   await applyConsequences(state, adapter);
+
+  // Optional "next water in N days" desert countdown ticks down with the days that passed.
+  const nextWater = (game.settings.get(MODULE_ID, "nextWaterDays") as number) ?? 0;
+  if (nextWater > 0) {
+    await game.settings.set(MODULE_ID, "nextWaterDays", Math.max(0, nextWater - result.daysProcessed));
+  }
   return result;
+}
+
+export interface ForageOutcome {
+  degree: DegreeOfSuccess;
+  food: number;
+  fatigued: boolean;
+}
+
+/** Foraging / Subsist: roll the actor's Survival check via the adapter and credit the food gathered
+ *  to a with-party pool (or the forager's own pack). Returns null if the system can't roll it. */
+export async function forage(actorUuid: string, adapter: SurvivalSystemAdapter): Promise<ForageOutcome | null> {
+  const actor = fromUuidSync(actorUuid);
+  if (!actor || !adapter.rollForage) return null;
+  const dc = (game.settings.get(MODULE_ID, "forageDC") as number) ?? 15;
+  const degree = await adapter.rollForage(actor, dc);
+  if (!degree) return null;
+
+  const { food, fatigued } = forageYield(degree);
+  if (food > 0) {
+    const registry = await CaravanRegistry.findOrCreate();
+    const reg = registry.load();
+    const member = reg.members.find((m) => m.uuid === actorUuid);
+    const group = member?.group ?? "Main";
+    const target =
+      reg.pools.find((p) => (p.isStorage || p.isMount) && p.withParty[group] === true) ??
+      reg.pools.find((p) => p.id === member?.poolId);
+    if (target) {
+      target.counts.food += food;
+      await registry.save(reg);
+    }
+  }
+  return { degree, food, fatigued };
 }
 
 /** Apply each consumer's current stages as native conditions. Narrate-only mounts are skipped

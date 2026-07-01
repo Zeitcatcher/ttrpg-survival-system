@@ -33,6 +33,8 @@ export const SETTINGS: readonly SettingDef[] = [
   { key: "splitPartyMode", scope: "world", type: "String", default: "single", config: true,
     choices: { single: "Single party", named: "Named groups" } },
   { key: "foraging", scope: "world", type: "Boolean", default: false, config: true },
+  { key: "forageDC", scope: "world", type: "Number", default: 15, config: true },
+  { key: "nextWaterDays", scope: "world", type: "Number", default: 0, config: true },
   { key: "maxCatchUpDays", scope: "world", type: "Number", default: 14, config: true },
   { key: "mountDefaultApplyConsequences", scope: "world", type: "Boolean", default: false, config: true },
   { key: "hudDensity", scope: "client", type: "String", default: "full", config: true,
