@@ -1,4 +1,4 @@
-# Smoke-testing v0.5.1 in Foundry
+# Smoke-testing v0.5.2 in Foundry
 
 Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)** + the **v0.3–0.4 GM-play additions** (reset, member/base chips, remove, transfer, fungible provisions). The engine is unit-tested headless (62 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
@@ -9,7 +9,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
 4. **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
-> If you installed an earlier build, click **Update** so you get v0.5.1.
+> If you installed an earlier build, click **Update** so you get v0.5.2.
 
 ## 2. Sanity check
 - Console (**F12**) on load: `ttrpg-survival-system | ready (system adapter: pf2e)` + a **"Survival module loaded."** toast.
@@ -25,7 +25,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 
 ## 4. The upkeep card (M5)
 - **Green day:** with a well-supplied party, **Advance Day** → **no card**, just a quiet GM whisper in chat ("everyone fed, watered, and warm"). *(This is the "green days vanish" behaviour; controlled by the Upkeep prompt setting.)*
-- **Shortfall day:** starve someone (empty their water), **Advance Week** → **one consolidated card** to the GM listing who went without + the **named cause** + clocks, and each affected **player gets a private nudge** whisper.
+- **Shortfall day:** starve someone (empty their water), **Advance Week** → **exactly one** GM card, **grouped by character**: each affected creature is its own section listing what it went without (with the named cause) and its current hunger/thirst/cold clocks. No separate per-player messages — one readable card is the whole report.
 
 ## 5. Player HUD + warmth (M5)
 - Open the **party HUD**: the **heart-pulse** button in the token toolbar (visible to players too), or `api.openHud()`. It shows the headline + each member's worst status.
