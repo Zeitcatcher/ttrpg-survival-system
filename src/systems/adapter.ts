@@ -54,7 +54,7 @@ export interface SurvivalSystemAdapter {
   // WATER SPELLS (optional extra): water-creating spells (Create Water) castable RIGHT NOW —
   // prepared & unexpended, or slots/uses remaining. Knowing the spell is not enough. `maxCasts`
   // is how many times each can go off now, so a caster can spend several when one isn't enough.
-  findWaterSpells?(actor: any): { spellId: string; label: string; rank: number; maxCasts: number }[];
+  findWaterSpells?(actor: any): { spellId: string; label: string; img: string; rank: number; maxCasts: number }[];
   /** Cast one water spell up to `count` times (expend slot/use + post card each). Returns casts done. */
   castWaterSpellById?(actor: any, spellId: string, count: number): Promise<number>;
 

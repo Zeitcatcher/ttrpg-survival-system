@@ -43,6 +43,7 @@
   "SURVIVAL.WaterSpell.Total": "Total: {casts} × → +{water} water",
   "SURVIVAL.WaterSpell.CastMax": "Cast all (+{water})",
   "SURVIVAL.WaterSpell.CastOne": "Cast one",
+  "SURVIVAL.WaterSpell.NoSocket": "Survival: socketlib isn't active, so players can't be prompted for Create Water. Enable socketlib, or decide it here on the GM panel.",
   "SURVIVAL.WaterSpell.PromptBody": "Without more water, someone goes thirsty today. Should {name} cast {spell}? This expends the prepared spell (a slot or use). Unused conjured water evaporates at the end of the day.",
   "SURVIVAL.WaterSpell.Cast": "Cast",
   "SURVIVAL.WaterSpell.Decline": "Don't cast",

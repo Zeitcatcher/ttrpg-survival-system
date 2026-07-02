@@ -489,6 +489,7 @@ export async function addBasePool(label: string, group = "Main"): Promise<void> 
 export interface WaterSpellOption {
   spellId: string;
   label: string;
+  img: string;
   rank: number;
   maxCasts: number;
 }
@@ -541,11 +542,17 @@ export async function planWaterCandidates(
     if (!actor) continue;
     const spells = adapter.findWaterSpells(actor);
     if (!spells.length) continue;
-    const owner = (game.users ?? []).find(
+    const activeOwner = (game.users ?? []).find(
       (u: any) => u.active && !u.isGM && actor.testUserPermission?.(u, "OWNER"),
     );
-    candidates.push({ actorUuid: m.uuid, name: actor.name, ownerUserId: owner?.id ?? null, spells });
+    // For diagnostics: does ANY non-GM user own it (regardless of being online)?
+    const anyOwner = (game.users ?? []).find((u: any) => !u.isGM && actor.testUserPermission?.(u, "OWNER"));
+    if (activeOwner) console.log(`${MODULE_ID} | Create Water: ${actor.name} → prompt online owner ${activeOwner.name}`);
+    else if (anyOwner) console.log(`${MODULE_ID} | Create Water: ${actor.name} owner ${anyOwner.name} is OFFLINE → GM decides`);
+    else console.log(`${MODULE_ID} | Create Water: ${actor.name} has no player owner → GM decides`);
+    candidates.push({ actorUuid: m.uuid, name: actor.name, ownerUserId: activeOwner?.id ?? null, spells });
   }
+  console.log(`${MODULE_ID} | Create Water: water deficit ~${Math.round(deficit)}, ${candidates.length} caster(s)`);
   return { candidates, deficitUnits: Math.round(deficit) };
 }
 
