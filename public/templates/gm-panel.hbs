@@ -19,10 +19,24 @@
     </div>
   </div>
 
-  <div class="ss-headline">
-    <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.food"}}</span><span class="v">{{headline.food}}</span></div>
-    <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.water"}}</span><span class="v">{{headline.water}}</span></div>
-    <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.firewood"}}</span><span class="v">{{#if firewoodNeeded}}{{headline.firewood}}{{else}}—{{/if}}</span></div>
+  <div class="ss-supply">
+    <div class="ss-supply-head">👥 {{localize "SURVIVAL.Headline.Pooled"}}{{#if supply.partyCount}} · {{supply.partyCount}}{{/if}}</div>
+    <div class="ss-climate-eff">{{supply.climateLine}}</div>
+    <div class="ss-headline">
+      {{#each supply.cells}}
+      <div class="ss-stat {{cls}}">
+        <span class="k">{{icon}} {{label}}</span>
+        <span class="v">{{#if needed}}{{days}}{{else}}—{{/if}}</span>{{#if needed}}<span class="unit">{{localize "SURVIVAL.Headline.Days"}}</span>{{/if}}
+        <span class="math">{{math}}</span>
+      </div>
+      {{/each}}
+    </div>
+    <div class="ss-sources-lbl">{{localize "SURVIVAL.Headline.CountedFrom"}}</div>
+    <div class="ss-sources">
+      {{#each supply.sources}}
+      <span class="ss-srcchip {{#if isStorage}}base{{/if}}{{#if separated}} out{{/if}}">{{#if separated}}<s>{{label}}</s> · {{localize "SURVIVAL.Headline.LeftBehind"}}{{else}}{{label}}{{/if}}</span>
+      {{/each}}
+    </div>
   </div>
   <div class="ss-mode">{{supplyModeLabel}}</div>
   {{#if nextWaterDays}}<div class="ss-nextwater">💧 {{localize "SURVIVAL.Panel.NextWater"}}: {{nextWaterDays}}</div>{{/if}}

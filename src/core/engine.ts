@@ -78,7 +78,7 @@ export interface TickResult {
   state: CaravanState;
 }
 
-function dailyGroupNeed(
+export function dailyGroupNeed(
   consumers: Consumer[],
   group: string,
   kind: "food" | "water",

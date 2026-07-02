@@ -20,6 +20,7 @@ import {
   setWithParty,
   transferSupply,
 } from "../state/bridge";
+import { buildHeadlineView } from "./headline";
 import { negotiateWaterCasts } from "./waterCastDialog";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
 import { postUpkeepCard } from "./upkeepCard";
@@ -287,7 +288,7 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       climate: g.climate,
       waterMult: g.waterMult,
       firewoodNeeded: g.firewoodNeeded,
-      headline: g.headline,
+      supply: buildHeadlineView(g),
       foragingOn: game.settings.get(MODULE_ID, "foraging") === true,
       hotMealOn: game.settings.get(MODULE_ID, "hotMeal") === true,
       nextWaterDays: (game.settings.get(MODULE_ID, "nextWaterDays") as number) ?? 0,
