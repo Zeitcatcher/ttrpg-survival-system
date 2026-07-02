@@ -2,7 +2,6 @@
 
 [![Latest release](https://img.shields.io/github/v/release/Zeitcatcher/ttrpg-survival-system?display_name=tag&label=release)](https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Zeitcatcher/ttrpg-survival-system/total)](https://github.com/Zeitcatcher/ttrpg-survival-system/releases)
-[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-lightgrey)](LICENSE)
 
 Track a party's food, water, and firewood in Foundry VTT, and let hunger, thirst, and cold catch up with them — automated, immersive, and never a spreadsheet.
 
