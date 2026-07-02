@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Lot, lotAvailable, planConsume, totalAvailable } from "../src/systems/ledgerMath";
+import { type Lot, lotAvailable, planConsume, totalAvailable, weekStackFor } from "../src/systems/ledgerMath";
 
 const lot = (itemId: string, quantity: number, daysPerUnit = 1, daysUsed = 0): Lot => ({
   itemId, quantity, daysPerUnit, daysUsed,
@@ -46,6 +46,22 @@ describe("ledger math", () => {
     const avail = totalAvailable(lots);
     for (const req of [0, 1, 5, avail, avail + 10]) {
       expect(planConsume(lots, req).drawn).toBeLessThanOrEqual(avail);
+    }
+  });
+
+  it("weekStackFor represents food-days as whole Rations + a partial counter (grant inverse)", () => {
+    expect(weekStackFor(7, 7)).toEqual({ quantity: 1, daysUsed: 0 }); // one clean week
+    expect(weekStackFor(14, 7)).toEqual({ quantity: 2, daysUsed: 0 });
+    expect(weekStackFor(8, 7)).toEqual({ quantity: 2, daysUsed: 6 }); // 2 rations, 6 already eaten → 8 left
+    expect(weekStackFor(1, 7)).toEqual({ quantity: 1, daysUsed: 6 });
+    expect(weekStackFor(0, 7)).toEqual({ quantity: 0, daysUsed: 0 });
+    expect(weekStackFor(5, 1)).toEqual({ quantity: 5, daysUsed: 0 }); // day-units are identity
+  });
+
+  it("weekStackFor round-trips through lotAvailable for any day-count", () => {
+    for (const days of [1, 3, 7, 8, 10, 13, 14, 21]) {
+      const s = weekStackFor(days, 7);
+      expect(lotAvailable({ itemId: "r", quantity: s.quantity, daysPerUnit: 7, daysUsed: s.daysUsed })).toBe(days);
     }
   });
 });

@@ -55,6 +55,8 @@
   "SURVIVAL.Settings.waterSpellUnits.hint": "Сколько единиц воды создаёт один каст. Create Water создаёт 2 галлона; 1 галлон = 4 единицы → 8.",
   "SURVIVAL.Settings.waterSpellSlugs.name": "Слаги заклинаний воды",
   "SURVIVAL.Settings.waterSpellSlugs.hint": "Слаги заклинаний через запятую, которые создают воду (по умолчанию: create-water).",
+  "SURVIVAL.Settings.rationsSourceUuid.name": "Предмет Rations (UUID)",
+  "SURVIVAL.Settings.rationsSourceUuid.hint": "Необязательно: UUID конкретного предмета Rations для клонирования, когда модуль добавляет еду. Пусто = Rations из pf2e SRD.",
   "SURVIVAL.Pool.personalPack": "личный запас",
   "SURVIVAL.Pool.sharedStock": "общий запас",
   "SURVIVAL.Mode.ledger": "Припасы: Ledger — пулы читают реальный инвентарь (рационы учитываются автоматически).",
