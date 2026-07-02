@@ -19,6 +19,7 @@ import {
   setMemberRole,
   setWithParty,
   transferSupply,
+  waterSpellUnits,
 } from "../state/bridge";
 import { buildHeadlineView } from "./headline";
 import { negotiateWaterCasts } from "./waterCastDialog";
@@ -42,10 +43,10 @@ async function onAdvance(this: any, _e: Event, target: HTMLElement): Promise<voi
     // ask (player prompt + GM override) BEFORE the real tick. Confirmed casts expend slots
     // and add per-day conjured water that expires at each day's end.
     const last = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
-    const candidates = await planWaterCandidates(panelAdapter, last + days);
+    const { candidates, deficitUnits } = await planWaterCandidates(panelAdapter, last + days);
     let conjuredWaterPerDay = 0;
     if (candidates.length) {
-      const confirmed = await negotiateWaterCasts(candidates);
+      const confirmed = await negotiateWaterCasts(candidates, deficitUnits, waterSpellUnits());
       conjuredWaterPerDay = await castConfirmedWaterSpells(panelAdapter, confirmed);
     }
     const result = await advanceDays(days, panelAdapter, conjuredWaterPerDay > 0 ? { conjuredWaterPerDay } : {});
