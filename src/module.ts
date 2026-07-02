@@ -27,36 +27,28 @@ function isPrimaryGM(): boolean {
   return game.users?.activeGM?.isSelf === true;
 }
 
-// Left-toolbar buttons under Token Controls: everyone gets the party HUD, the GM also gets the
-// panel. v13/v14 shape (controls is a Record; a tool needs name/title/icon/order/button/visible/
-// onChange). Registered at top level so it's present before the controls first render.
+// Left-toolbar (Token Controls): exactly ONE survival button per user — the GM panel for a GM,
+// the party HUD for a player. (Earlier builds added two buttons, so a GM saw a redundant pair.)
+// v13/v14 shape: controls is a Record; a tool needs name/title/icon/order/button/visible/onChange.
+// Registered at top level so it's present before the controls first render; guarded against the
+// array-shaped path re-adding a duplicate on every re-render.
 Hooks.on("getSceneControlButtons", (controls: any) => {
   const tokens =
     controls?.tokens ?? (Array.isArray(controls) ? controls.find((c: any) => c.name === "tokens") : undefined);
   if (!tokens?.tools) return;
-  const add = (tool: any) => {
-    if (Array.isArray(tokens.tools)) tokens.tools.push(tool);
-    else tokens.tools[tool.name] = tool;
-  };
-  add({
-    name: `${MODULE_ID}-hud`,
-    title: "SURVIVAL.Hud.Title",
-    icon: "fa-solid fa-heart-pulse",
+  const tool = {
+    name: MODULE_ID,
+    title: "SURVIVAL.Panel.Title",
+    icon: "fa-solid fa-campground",
     order: 90,
     button: true,
     visible: true,
-    onChange: () => openPartyHud(),
-  });
-  if (game.user?.isGM) {
-    add({
-      name: MODULE_ID,
-      title: "SURVIVAL.Panel.Title",
-      icon: "fa-solid fa-campground",
-      order: 91,
-      button: true,
-      visible: true,
-      onChange: () => openGmPanel(),
-    });
+    onChange: () => (game.user?.isGM ? openGmPanel() : openPartyHud()),
+  };
+  if (Array.isArray(tokens.tools)) {
+    if (!tokens.tools.some((t: any) => t?.name === tool.name)) tokens.tools.push(tool);
+  } else {
+    tokens.tools[tool.name] = tool;
   }
 });
 
