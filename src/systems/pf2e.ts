@@ -4,6 +4,7 @@ import { MODULE_ID } from "../settings";
 import type { DegreeOfSuccess, ResourceLot, SurvivalSystemAdapter } from "./adapter";
 import { type Lot, planConsume, totalAvailable } from "./ledgerMath";
 import { type ConditionSpec, planConditions } from "./pf2eConditions";
+import { canCastNow, type CastAvailability } from "./spellSlots";
 
 // Day-unit supply items the module seeds / grants in Ledger mode.
 const SUPPLY_SLUG: Record<ResourceKind, string> = {
@@ -235,6 +236,47 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     for (const kind of ["food", "water", "firewood"] as const) {
       const has = (game.items ?? []).some?.((i: any) => (i.slug ?? i.system?.slug) === SUPPLY_SLUG[kind]);
       if (!has) await Item.create?.(supplyItemData(kind, 1));
+    }
+  }
+
+  // --- Water spells (Create Water) ---
+  /** Find a configured water spell CASTABLE RIGHT NOW (prepared & unexpended / slot / use left). */
+  #castableWaterSpell(actor: any): { spell: any; entry: any; avail: CastAvailability } | null {
+    const raw = String(game.settings.get(MODULE_ID, "waterSpellSlugs") ?? "create-water");
+    const slugs = raw.split(",").map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+    const spells = actor?.itemTypes?.spell ?? (actor?.items ?? []).filter?.((i: any) => i.type === "spell") ?? [];
+    for (const spell of spells) {
+      const slug = String(spell.slug ?? spell.system?.slug ?? "").toLowerCase();
+      if (!slugs.includes(slug)) continue;
+      const entry = spell.spellcasting ?? actor?.spellcasting?.get?.(spell.system?.location?.value);
+      if (!entry) continue;
+      const type = entry.system?.prepared?.value ?? "prepared";
+      const rank = spell.rank ?? spell.system?.level?.value ?? 1;
+      const isCantrip = spell.isCantrip ?? spell.system?.traits?.value?.includes?.("cantrip") ?? false;
+      const innateUsesLeft = spell.system?.location?.uses?.value ?? 0;
+      const avail = canCastNow(type, entry.system?.slots ?? {}, spell.id, rank, { isCantrip, innateUsesLeft });
+      if (avail.ok) return { spell, entry, avail };
+    }
+    return null;
+  }
+
+  findWaterSpell(actor: any): { label: string } | null {
+    const found = this.#castableWaterSpell(actor);
+    return found ? { label: found.spell.name } : null;
+  }
+
+  async castWaterSpell(actor: any): Promise<boolean> {
+    const found = this.#castableWaterSpell(actor);
+    if (!found) return false;
+    const { spell, entry, avail } = found;
+    try {
+      // The system's own cast path: posts the spell card AND expends the slot/use.
+      await entry.cast(spell, { rank: avail.rankUsed ?? spell.rank, slotId: avail.slotId, consume: true });
+      return true;
+    } catch (e) {
+      console.warn(`${MODULE_ID} | entry.cast failed, posting card without slot bookkeeping`, e);
+      await spell.toMessage?.();
+      return true;
     }
   }
 

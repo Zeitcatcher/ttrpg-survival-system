@@ -5,9 +5,11 @@ import {
   addSelectedTokens,
   advanceDays,
   applyDelvingPreset,
+  castConfirmedWaterSpells,
   cookHotMeal,
   editPool,
   forage,
+  planWaterCandidates,
   readModel,
   removeBasePool,
   removeMemberFromCaravan,
@@ -18,6 +20,7 @@ import {
   setWithParty,
   transferSupply,
 } from "../state/bridge";
+import { negotiateWaterCasts } from "./waterCastDialog";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
 import { postUpkeepCard } from "./upkeepCard";
 
@@ -34,7 +37,17 @@ export function setPanelAdapter(a: SurvivalSystemAdapter): void {
 async function onAdvance(this: any, _e: Event, target: HTMLElement): Promise<void> {
   const days = Number(target.dataset.days ?? "1");
   if (panelAdapter) {
-    const result = await advanceDays(days, panelAdapter);
+    // Create Water: dry-run the span; if someone would go thirsty and a caster can help,
+    // ask (player prompt + GM override) BEFORE the real tick. Confirmed casts expend slots
+    // and add per-day conjured water that expires at each day's end.
+    const last = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
+    const candidates = await planWaterCandidates(panelAdapter, last + days);
+    let conjuredWaterPerDay = 0;
+    if (candidates.length) {
+      const confirmed = await negotiateWaterCasts(candidates);
+      conjuredWaterPerDay = await castConfirmedWaterSpells(panelAdapter, confirmed);
+    }
+    const result = await advanceDays(days, panelAdapter, conjuredWaterPerDay > 0 ? { conjuredWaterPerDay } : {});
     await postUpkeepCard(result);
   }
   this.render();

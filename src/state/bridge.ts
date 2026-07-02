@@ -69,10 +69,11 @@ async function persistActorStates(
 export async function runTickViaFoundry(
   targetDay: number,
   adapter: SurvivalSystemAdapter,
+  extraOptions: Partial<TickOptions> = {},
 ): Promise<TickResult> {
   const { registry, reg, state } = await loadLive(adapter);
   const pre = new Map(state.pools.map((p) => [p.id, { ...p.counts }]));
-  const result = computeTick(state, targetDay, tickOptionsFromSettings());
+  const result = computeTick(state, targetDay, { ...tickOptionsFromSettings(), ...extraOptions });
 
   if (isLedger()) {
     // Decrement real items by exactly what the engine drew from each pool this tick.
@@ -309,9 +310,13 @@ export async function applyDelvingPreset(group: string, setUnderground: boolean)
 }
 
 /** Advance N survival days from the current pointer (Advance Day = 1, Week = 7). */
-export async function advanceDays(days: number, adapter: SurvivalSystemAdapter): Promise<TickResult> {
+export async function advanceDays(
+  days: number,
+  adapter: SurvivalSystemAdapter,
+  extraOptions: Partial<TickOptions> = {},
+): Promise<TickResult> {
   const last = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
-  return runTickViaFoundry(last + days, adapter);
+  return runTickViaFoundry(last + days, adapter, extraOptions);
 }
 
 /** Add an actor (by UUID) to the caravan as a consumer, with a personal/mount pool. Idempotent. */
@@ -477,6 +482,68 @@ export async function addBasePool(label: string, group = "Main"): Promise<void> 
     isStorage: true,
   });
   await registry.save(reg);
+}
+
+// ---- Water spells (Create Water) ----
+
+export interface WaterCastPlan {
+  actorUuid: string;
+  name: string;
+  spellLabel: string;
+  ownerUserId: string | null;
+}
+
+/** Dry-run the advance: if anyone would go short on WATER, list every enabled member who can
+ *  cast a water spell RIGHT NOW (prepared/slot/use available — knowing it is not enough). */
+export async function planWaterCandidates(
+  adapter: SurvivalSystemAdapter,
+  targetDay: number,
+): Promise<WaterCastPlan[]> {
+  if (game.settings.get(MODULE_ID, "waterSpell") !== true || !adapter.findWaterSpell) return [];
+  const { reg, state } = await loadLive(adapter);
+  const dry = computeTick(state, targetDay, tickOptionsFromSettings()); // scratch copy — never persisted
+  const thirstAhead = dry.perDay.some((d) =>
+    d.shortfalls.some((s) => s.kind === "water" && !s.isMountNarrateOnly),
+  );
+  if (!thirstAhead) return [];
+
+  const out: WaterCastPlan[] = [];
+  for (const m of reg.members) {
+    if (!m.enabled || m.isMount) continue;
+    const actor = fromUuidSync(m.uuid);
+    if (!actor) continue;
+    const found = adapter.findWaterSpell(actor);
+    if (!found) continue;
+    const owner = (game.users ?? []).find(
+      (u: any) => u.active && !u.isGM && actor.testUserPermission?.(u, "OWNER"),
+    );
+    out.push({ actorUuid: m.uuid, name: actor.name, spellLabel: found.label, ownerUserId: owner?.id ?? null });
+  }
+  return out;
+}
+
+/** Cast for each confirmed actor (slot expended + spell card in chat) and return the water
+ *  conjured PER DAY (casters × units). The engine holds it in an ephemeral pool that expires
+ *  at each day's end — undrunk spell water is never carried over. */
+export async function castConfirmedWaterSpells(
+  adapter: SurvivalSystemAdapter,
+  actorUuids: string[],
+): Promise<number> {
+  if (!actorUuids.length || !adapter.castWaterSpell) return 0;
+  let casters = 0;
+  for (const uuid of actorUuids) {
+    const actor = fromUuidSync(uuid);
+    if (actor && (await adapter.castWaterSpell(actor))) casters++;
+  }
+  const units = (game.settings.get(MODULE_ID, "waterSpellUnits") as number) ?? 8;
+  const conjured = casters * units;
+  if (conjured > 0) {
+    await ChatMessage.create({
+      content: `<p>${game.i18n.format("SURVIVAL.WaterSpell.Conjured", { n: conjured })}</p>`,
+      speaker: { alias: game.i18n.localize("SURVIVAL.Panel.Title") },
+    });
+  }
+  return conjured;
 }
 
 /** One-shot 0.4.1 heal: worlds that stored Abstract explicitly but never actually used it
