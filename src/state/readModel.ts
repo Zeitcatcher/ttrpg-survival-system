@@ -13,6 +13,8 @@ export interface PoolView {
   separated: boolean;
   isMount: boolean;
   isStorage: boolean;
+  /** A caravan member's own pool (pack/carried supply). False = a standalone base — removable. */
+  hasOwner: boolean;
 }
 
 export interface TrackView {
@@ -29,6 +31,8 @@ export interface RosterView {
   name: string;
   sizeMult: number;
   isMount: boolean;
+  /** Party-member toggle: false = not consuming (a building base, a retired PC). */
+  enabled: boolean;
   /** needs food+water = 0 (mephits, astral companions). */
   zeroNeeds: boolean;
   tracks: Record<TrackKey, TrackView>;
@@ -62,6 +66,7 @@ export function projectGroup(state: CaravanState, group: string, headline: Headl
       separated: !withParty,
       isMount: p.isMount,
       isStorage: p.isStorage,
+      hasOwner: state.consumers.some((c) => c.poolId === p.id),
     };
   });
 
@@ -87,6 +92,7 @@ export function projectGroup(state: CaravanState, group: string, headline: Headl
         name: c.name,
         sizeMult: c.sizeMult,
         isMount: c.isMount,
+        enabled: c.enabled,
         zeroNeeds: c.ration.food === 0 && c.ration.water === 0,
         tracks,
         worstStage,

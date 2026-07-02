@@ -1,6 +1,6 @@
-# Smoke-testing v0.2.0 in Foundry
+# Smoke-testing v0.4.0 in Foundry
 
-Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)**. The engine is unit-tested headless (50 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
+Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)** + the **v0.3–0.4 GM-play additions** (reset, member/base chips, remove, transfer, fungible provisions). The engine is unit-tested headless (62 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
 ## 1. Install
 1. Foundry **v13 or v14**, a **Pathfinder 2e** world.
@@ -9,7 +9,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
 4. **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
-> If you installed an earlier build, click **Update** so you get v0.1.4.
+> If you installed an earlier build, click **Update** so you get v0.4.0.
 
 ## 2. Sanity check
 - Console (**F12**) on load: `ttrpg-survival-system | ready (system adapter: pf2e)` + a **"Survival module loaded."** toast.
@@ -37,17 +37,25 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 - Set **Next water (days)** in settings to e.g. **5** → the panel header shows **"Next water: 5"**, which **counts down** as you Advance.
 - Turn **Hot meal = on** (settings). A **Cook hot meal** button appears in the Pools header. Put some **🔥 firewood** on a mount/base pool, then click **Cook** → 1 firewood is spent and each member gains a **"Hot Meal"** effect + **temporary HP** (≈ their level). Check the token's effects/temp HP. *(A GM can point the "Hot meal effect (UUID)" setting at their own effect instead.)*
 
-## 7. Separation + mounts (advanced)
-- Flag a mount before adding it (script macro, mount token selected):
-  `canvas.tokens.controlled[0].actor.setFlag("ttrpg-survival-system","isMount",true)`
-  Then **Add selected tokens** → it's a **mount/storage** pool. A **Huge** creature auto-consumes **×4** (size-based).
-- Put supplies on the mount's pool, then toggle its **With party** off (or hit **Delving**): the pool greys, the headline **drops** (the "cliff"), and shortfalls name the separated base.
+## 7. Members, bases, removal (v0.4.0)
+- Under each roster name are **two independent chips**: **party member** (consumes food/water daily) and **base** (its supply is shared stock). Both ON = a living base like **Chiga-Biga** (still eats ×4); **base only** = a structure that consumes nothing (row shows *"not consuming"*, and it disappears from the player HUD).
+- **✕ next to a name** removes the creature from tracking (confirm dialog): its pool goes too, and the module's conditions are stripped from the token.
+- **"+ Add base"** (Pools header) creates a standalone stockpile; standalone pools get their own **✕**.
+- **Reset** (Roster header) clears every member's hunger/thirst/cold and removes module-applied conditions — supplies and the day count stay.
 
-## 8. Ledger supply mode (M8)
-- **Settings → Supply detail → Ledger.** Pools now track **real inventory** instead of typed numbers — the panel/HUD look identical.
-- Reload once (or run `game.modules.get("ttrpg-survival-system").api.seedSupplies()`) to get **"Ration / Water / Firewood (day)"** items in the world's Items sidebar. Drag them onto a token, or just give a token real **pf2e Rations**.
-- You can also **tag any item**: open a physical item's sheet → set the **"Survival resource"** dropdown to food/water/firewood.
-- **Add** that token to the caravan → the panel's pool numbers now read **from its inventory**. **Advance** → the actual item quantities **drop** (a 1-week Rations item decomposes 7 days at a time — watch its quantity). Click-to-edit a pool number grants/consumes real items to match.
+## 8. Transfer supplies (v0.4.0)
+- Each pool row has a **⇄** button → pick the target pool, the resource (food/water/provisions/firewood), and the amount. Sharing is **always deliberate** — the engine never auto-drains one PC's pack for another.
+- In Ledger mode the transfer moves **real items** (consume on the source actor, grant on the target); day-count pools just adjust numbers. Mixed transfers (PC → standalone base) work too.
+
+## 9. Separation + mounts (advanced)
+- Put supplies on a base/mount pool, then toggle its **With party** off (or hit **Delving**): the pool greys, the headline **drops** (the "cliff"), and shortfalls name the separated base. A **Huge** creature auto-consumes **×4** (size-based).
+
+## 10. Ledger supply mode (M8; DEFAULT since v0.4.0)
+- **Supply detail = Ledger** is now the **default** — pools read **real inventory**; the panel header shows which mode is active. (Prefer typed day-counts? Switch back to Abstract.)
+- Reload once (or run `game.modules.get("ttrpg-survival-system").api.seedSupplies()`) to get **"Ration / Water / Firewood / Provisions (day)"** items in the world's Items sidebar. Drag them onto a token, or just give a token real **pf2e Rations**.
+- **Native pf2e Rations = 7 fungible "provision" charges** (🥫 in the pool row): each charge covers a day of food **or** water, spent only after dedicated food/water runs out.
+- You can also **tag any item**: open a physical item's sheet → set the **"Survival resource"** dropdown to food/water/provisions/firewood.
+- **Add** that token to the caravan → the panel's pool numbers read **from its inventory**. **Advance** → the actual item quantities **drop** (a 1-week Rations item decomposes 7 charges at a time — watch its quantity). Click-to-edit a pool number grants/consumes real items to match.
 
 ## What to report back
 - Any **red console errors** (F12) — especially opening the panel/HUD, Add selected, editing a pool, Advance, the warm toggle, or Forage.
