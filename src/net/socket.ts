@@ -5,14 +5,41 @@ import { setWarm } from "../state/bridge";
 // to the GM via executeAsGM, so all shared-state mutations happen on one client. Water-spell
 // prompts go the other way: GM → owning player (with a GM override that closes the player dialog).
 
-let socket: any;
+let socket: any = null;
+let registerAttempted = false;
 
-/** Register handlers on EVERY client. Must run in the `socketlib.ready` hook (not core init). */
+/** Idempotent, self-healing socket acquisition. socketlib fires `socketlib.ready` during core
+ *  `init`; if a hook-ordering hiccup means our once-listener misses it (or the bare `socketlib`
+ *  global wasn't defined yet), this re-acquires the socket the next time it's needed. Runs on EVERY
+ *  client — the player's inbound `promptWaterCast` handler is wired here too, so skipping it silently
+ *  breaks prompt delivery in BOTH directions. Returns true once a live socket is held. */
+export function ensureSocket(): boolean {
+  if (socket) return true;
+  const lib: any = (globalThis as any).socketlib;
+  if (!lib?.registerModule) return false; // socketlib not loaded/active yet — retry later
+  if (registerAttempted) return false; // registerModule throws if called twice; don't spam it
+  registerAttempted = true;
+  try {
+    socket = lib.registerModule(MODULE_ID);
+    socket.register("setWarm", (actorUuid: string, warm: boolean) => setWarm(actorUuid, warm));
+    socket.register("promptWaterCast", promptWaterCastLocal);
+    socket.register("closeWaterPrompt", closeWaterPromptLocal);
+    console.log(`${MODULE_ID} | socketlib socket registered (module handlers wired)`);
+    return true;
+  } catch (e) {
+    console.warn(`${MODULE_ID} | socketlib registration failed`, e);
+    return false;
+  }
+}
+
+/** Wire handlers on this client. Safe to call from `socketlib.ready` AND the main `ready` hook. */
 export function registerSocket(): void {
-  socket = socketlib.registerModule(MODULE_ID);
-  socket.register("setWarm", (actorUuid: string, warm: boolean) => setWarm(actorUuid, warm));
-  socket.register("promptWaterCast", promptWaterCastLocal);
-  socket.register("closeWaterPrompt", closeWaterPromptLocal);
+  ensureSocket();
+}
+
+/** Whether the socketlib module itself is installed AND enabled in this world (vs. our own wiring). */
+export function socketlibActive(): boolean {
+  return game.modules?.get("socketlib")?.active === true;
 }
 
 // ---- Water-spell player prompts (run on the OWNING PLAYER's client) ----
@@ -123,9 +150,10 @@ function closeWaterPromptLocal(actorUuid: string): void {
   openWaterPrompts.delete(actorUuid);
 }
 
-/** True once socketlib has handed us a module socket (i.e. socketlib is installed AND active). */
+/** True once we hold a live module socket. Lazily (re)acquires it, so a missed `socketlib.ready`
+ *  self-heals the moment the socket is actually needed. */
 export function isSocketReady(): boolean {
-  return !!socket;
+  return ensureSocket();
 }
 
 /** GM → player: show the cast prompt on the owner's client. Resolves with their per-spell picks. */
@@ -133,8 +161,11 @@ export async function promptUserWaterCast(
   userId: string,
   payload: WaterPromptPayload,
 ): Promise<WaterCastPick[] | null> {
-  if (!socket) {
-    console.warn(`${MODULE_ID} | Create Water: socketlib not ready — cannot prompt the player. Is socketlib enabled in this world?`);
+  if (!ensureSocket()) {
+    console.warn(
+      `${MODULE_ID} | Create Water: no socket — cannot prompt the player. socketlib module active=${socketlibActive()}. ` +
+        `If active=false, enable socketlib in Manage Modules; if active=true, this is a wiring bug — reload the world.`,
+    );
     return null;
   }
   try {
@@ -159,7 +190,7 @@ export function closeUserWaterPrompt(userId: string, actorUuid: string): void {
 
 /** Player → GM: set a creature's warmth. Falls back gracefully if no GM is connected. */
 export async function requestSetWarm(actorUuid: string, warm: boolean): Promise<void> {
-  if (!socket) return;
+  if (!ensureSocket()) return;
   try {
     await socket.executeAsGM("setWarm", actorUuid, warm);
   } catch (e) {

@@ -3,7 +3,7 @@ import { openPartyHud, refreshPartyHud, setHudAdapter } from "./apps/PartyHud";
 import { registerSheetInjection } from "./apps/sheet-injection";
 import { postUpkeepCard } from "./apps/upkeepCard";
 import { computeTick, DEFAULT_TICK_OPTIONS } from "./core";
-import { registerSocket } from "./net/socket";
+import { ensureSocket, registerSocket } from "./net/socket";
 import { MODULE_ID, registerSettings } from "./settings";
 import type { SurvivalSystemAdapter } from "./systems/adapter";
 import { resolveActiveAdapter } from "./systems/registry";
@@ -58,6 +58,11 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
+  // Fallback socket wiring: socketlib registers in its own `socketlib.ready` hook (below), but if
+  // that ordering ever misses, re-acquire here — on EVERY client — so the GM's send-side and each
+  // player's inbound `promptWaterCast` handler are both wired before any Advance can fire.
+  ensureSocket();
+
   activeAdapter = resolveActiveAdapter();
   setPanelAdapter(activeAdapter);
   setHudAdapter(activeAdapter);
