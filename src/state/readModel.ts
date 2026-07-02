@@ -8,7 +8,7 @@ import type { CaravanState, ClimateBand, TrackKey } from "../core/types";
 export interface PoolView {
   id: string;
   label: string;
-  counts: { food: number; water: number; firewood: number; provision: number };
+  counts: { food: number; water: number; firewood: number };
   withParty: boolean;
   separated: boolean;
   isMount: boolean;
@@ -30,6 +30,8 @@ export interface RosterView {
   id: string;
   name: string;
   sizeMult: number;
+  /** The system's size name for display ("Gargantuan"); null = unknown. */
+  sizeName: string | null;
   isMount: boolean;
   /** Party-member toggle: false = not consuming (a building base, a retired PC). */
   enabled: boolean;
@@ -91,6 +93,7 @@ export function projectGroup(state: CaravanState, group: string, headline: Headl
         id: c.id,
         name: c.name,
         sizeMult: c.sizeMult,
+        sizeName: c.sizeName,
         isMount: c.isMount,
         enabled: c.enabled,
         zeroNeeds: c.ration.food === 0 && c.ration.water === 0,

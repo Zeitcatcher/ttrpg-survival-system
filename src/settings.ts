@@ -46,6 +46,7 @@ export const SETTINGS: readonly SettingDef[] = [
   { key: "caravanDocUuid", scope: "world", type: "String", default: "", config: false },
   { key: "lastTickDay", scope: "world", type: "Number", default: 0, config: false },
   { key: "dataVersion", scope: "world", type: "Number", default: 1, config: false },
+  { key: "autoLedgerMigrated", scope: "world", type: "Boolean", default: false, config: false },
 ];
 
 /** Register every dial with Foundry. Called from the `init` hook. */

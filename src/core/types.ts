@@ -3,9 +3,6 @@
 // from Actors and writes back. This is what makes the core fully unit-testable headless.
 
 export type ResourceKind = "food" | "water" | "firewood";
-/** A supply kind for inventory read/write. `provision` is a FUNGIBLE reserve (e.g. pf2e Rations,
- *  7 charges each) that can satisfy either food OR water demand — never a consequence track. */
-export type SupplyKind = ResourceKind | "provision";
 export type DegreeOfSuccess = "critFail" | "fail" | "success" | "critSuccess";
 export type TrackKey = "hunger" | "thirst" | "cold";
 export type ClimateBand = "temperate" | "hot" | "extremeHeat" | "cold" | "extremeCold";
@@ -30,8 +27,6 @@ export interface Counts {
   food: number;
   water: number;
   firewood: number;
-  /** Fungible provisions (rations): spent on food OR water when a dedicated store runs short. */
-  provision: number;
 }
 
 /** A supply pool: a mount's carried supply, a base stockpile, or a PC's personal pack.
@@ -51,8 +46,10 @@ export interface Consumer {
   id: string;
   name: string;
   group: string;
-  /** 1 (Medium/Small), 2 (Large), 4 (Huge). */
+  /** 1 (Medium/Small), 2 (Large), 4 (Huge), 8 (Gargantuan). */
   sizeMult: number;
+  /** The system's size name for display ("Gargantuan"); null = unknown/not applicable. */
+  sizeName: string | null;
   /** Base per-day need before size/climate multipliers. {0,0} = non-eater (mephits, astral). */
   ration: { food: number; water: number };
   /** Base grace window per track = Con-mod + 1 (thirst further reduced by heat at runtime). */

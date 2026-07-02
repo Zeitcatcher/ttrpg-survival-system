@@ -1,4 +1,4 @@
-import type { DegreeOfSuccess, SupplyKind, TrackKey } from "../core/types";
+import type { DegreeOfSuccess, ResourceKind, TrackKey } from "../core/types";
 export type { DegreeOfSuccess } from "../core/types";
 
 // The adapter seam. Core asks an adapter for exactly four irreducible, system-specific things:
@@ -9,8 +9,8 @@ export type { DegreeOfSuccess } from "../core/types";
 // implementing this interface lands in a later milestone; the interface fixes the contract now.
 
 export interface ResourceLot {
-  readonly kind: SupplyKind;
-  readonly available: number; // creature-days (food/water/provision) or bundles (firewood)
+  readonly kind: ResourceKind;
+  readonly available: number; // creature-days (food/water) or bundles (firewood)
   readonly itemId: string; // opaque to core
   readonly label: string; // already-localized
 }
@@ -18,19 +18,21 @@ export interface ResourceLot {
 export interface SurvivalSystemAdapter {
   readonly systemId: string;
 
-  // INVENTORY (read) — normalized to creature-days / bundles. `provision` reads fungible rations.
-  getResourceLots(actor: any, kind: SupplyKind): ResourceLot[];
-  getAvailable(actor: any, kind: SupplyKind): number;
+  // INVENTORY (read) — normalized to creature-days / bundles
+  getResourceLots(actor: any, kind: ResourceKind): ResourceLot[];
+  getAvailable(actor: any, kind: ResourceKind): number;
 
   // INVENTORY (write) — handles 7-ration decomposition + per-system quantity path
-  consume(actor: any, kind: SupplyKind, units: number): Promise<number>;
-  grant(actor: any, kind: SupplyKind, units: number): Promise<void>;
+  consume(actor: any, kind: ResourceKind, units: number): Promise<number>;
+  grant(actor: any, kind: ResourceKind, units: number): Promise<void>;
 
   // CREATURE NEEDS / LIVENESS
   getCreatureRation(actor: any): { food: number; water: number };
   getGraceDays(actor: any, track: TrackKey): number;
-  /** 1 (Medium/Small), 2 (Large), 4 (Huge) — derived from the system's size trait. */
+  /** 1 (Medium/Small), 2 (Large), 4 (Huge), 8 (Gargantuan) — from the system's size trait. */
   getSizeMult(actor: any): number;
+  /** Display name of the size trait ("Gargantuan"); null when the system has no such concept. */
+  getSizeName?(actor: any): string | null;
   isMount(actor: any): boolean;
   needsConsumption(actor: any): boolean;
 
@@ -48,4 +50,7 @@ export interface SurvivalSystemAdapter {
 
   // LEDGER MODE: seed the module's day-unit supply items into the world (GM convenience).
   seedSupplies?(): Promise<void>;
+
+  // DIAGNOSTICS: human-readable lines explaining how each inventory item was classified.
+  diagnoseActor?(actor: any): string[];
 }

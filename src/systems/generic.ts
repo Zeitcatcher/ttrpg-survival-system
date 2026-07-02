@@ -28,7 +28,8 @@ export class GenericAdapter implements SurvivalSystemAdapter {
   }
   getSizeMult(actor: any): number {
     const size = actor?.system?.traits?.size?.value;
-    if (size === "huge" || size === "grg" || size === "gargantuan") return 4;
+    if (size === "grg" || size === "gargantuan") return 8;
+    if (size === "huge") return 4;
     if (size === "lg" || size === "large") return 2;
     return 1;
   }
