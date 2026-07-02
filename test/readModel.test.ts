@@ -26,6 +26,22 @@ describe("readModel projection", () => {
     expect(view.firewoodNeeded).toBe(false);
   });
 
+  it("exposes the party-member flag and pool ownership for the panel controls", () => {
+    const state = buildShardsState();
+    state.consumers.find((c) => c.id === "grog")!.enabled = false; // e.g. a retired character
+    state.pools.push({
+      id: "fort", label: "Fort", counts: { food: 5, water: 5, firewood: 0, provision: 0 },
+      withParty: { Main: true }, isMount: false, isStorage: true,
+    });
+    const headline = computeTick(state, state.lastTickDay).headlineByGroup;
+    const view = projectGroups(state, headline)[0];
+
+    expect(view.roster.find((r) => r.id === "grog")!.enabled).toBe(false);
+    expect(view.roster.find((r) => r.id === "irime")!.enabled).toBe(true);
+    expect(view.pools.find((p) => p.id === "chiga")!.hasOwner).toBe(true); // a member's own pool
+    expect(view.pools.find((p) => p.id === "fort")!.hasOwner).toBe(false); // standalone base — removable
+  });
+
   it("renders per-track clocks and status keys after a tick", () => {
     const state = buildShardsState();
     state.pools.find((p) => p.id === "chiga")!.withParty.Main = false; // strand the party

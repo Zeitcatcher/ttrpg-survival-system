@@ -34,8 +34,13 @@
 .ss-pool-counts { display: flex; gap: 6px; margin-top: 6px; }
 .ss-num { background: #101217; border: 1px solid #333845; color: #e6e8ee; border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
 .ss-num.prov { border-color: #4a3f2a; }
-.ss-role { background: #1b1e25; border: 1px solid #333845; color: #c3c7d1; border-radius: 4px; padding: 0 5px; font-size: 11px; cursor: pointer; }
-.ss-role.on { background: #33231f; border-color: var(--ss-warn); }
+.ss-chips { display: flex; gap: 4px; margin-top: 3px; }
+.ss-chip { background: #1b1e25; border: 1px solid #333845; color: #8a8f9c; border-radius: 9px; padding: 0 7px; font-size: 10px; line-height: 16px; font-weight: 400; cursor: pointer; }
+.ss-chip.on { background: #1d3326; border-color: #3f6b54; color: #7fdca0; }
+.ss-chip.base.on { background: #33231f; border-color: #5a4a28; color: var(--ss-warn); }
+.ss-x { background: transparent; border: 1px solid transparent; color: #6c707c; border-radius: 4px; padding: 0 4px; font-size: 11px; cursor: pointer; }
+.ss-x:hover { color: var(--ss-danger); border-color: #5a2d2a; }
+.ss-mode { font-size: 10px; color: #8a8f9c; text-align: center; }
 .ss-roster { width: 100%; border-collapse: collapse; font-size: 12px; }
 .ss-roster th { text-align: left; font-size: 10px; color: #8a8f9c; border-bottom: 1px solid var(--ss-line); padding: 4px 6px; font-weight: 600; }
 .ss-roster td { padding: 4px 6px; border-bottom: 1px solid #23262e; }

@@ -83,5 +83,13 @@ export function normalizeRegistry(raw: Partial<RegistryData> | null | undefined)
     ...(m.needsOverride ? { needsOverride: m.needsOverride } : {}),
   }));
 
+  // Backfill: pools created before v0.2.0 predate `actorUuid`. Re-link each member's own pool so
+  // Ledger mode can read that actor's real inventory (without this, old pools silently read 0).
+  for (const m of members) {
+    if (!m.poolId) continue;
+    const pool = pools.find((p) => p.id === m.poolId);
+    if (pool && !pool.actorUuid) pool.actorUuid = m.uuid;
+  }
+
   return { dataVersion: raw.dataVersion ?? CURRENT_REGISTRY_VERSION, groups, climate, members, pools };
 }

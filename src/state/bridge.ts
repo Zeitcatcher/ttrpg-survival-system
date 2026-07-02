@@ -4,7 +4,7 @@ import { type ActorState, type CaravanState, type ClimateBand, type DegreeOfSucc
 import { MODULE_ID } from "../settings";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
 import { type GroupView, projectGroups } from "./readModel";
-import { type RegistryData } from "./registryData";
+import { type RegistryData, type RegPool } from "./registryData";
 import { CaravanRegistry } from "./registryDoc";
 import { type ActorFacts, buildCaravanState, writeBackPoolCounts } from "./snapshot";
 
@@ -108,10 +108,25 @@ export async function cookHotMeal(adapter: SurvivalSystemAdapter, group = "Main"
   if (!adapter.applyHotMeal) return 0;
   const registry = await CaravanRegistry.findOrCreate();
   const reg = registry.load();
-  const pool = reg.pools.find((p) => p.withParty[group] === true && p.counts.firewood > 0);
-  if (!pool) return -1;
-  pool.counts.firewood -= 1;
-  await registry.save(reg);
+
+  // Burn 1 firewood from a with-party pool — real items in Ledger mode, day-counts otherwise.
+  let burned = false;
+  for (const pool of reg.pools) {
+    if (pool.withParty[group] !== true) continue;
+    const actor = isLedger() && pool.actorUuid ? fromUuidSync(pool.actorUuid) : null;
+    if (actor) {
+      if (adapter.getAvailable(actor, "firewood") > 0) {
+        await adapter.consume(actor, "firewood", 1);
+        burned = true;
+      }
+    } else if (pool.counts.firewood > 0) {
+      pool.counts.firewood -= 1;
+      await registry.save(reg);
+      burned = true;
+    }
+    if (burned) break;
+  }
+  if (!burned) return -1;
 
   let n = 0;
   for (const m of reg.members) {
@@ -149,8 +164,13 @@ export async function forage(actorUuid: string, adapter: SurvivalSystemAdapter):
       reg.pools.find((p) => (p.isStorage || p.isMount) && p.withParty[group] === true) ??
       reg.pools.find((p) => p.id === member?.poolId);
     if (target) {
-      target.counts.food += food;
-      await registry.save(reg);
+      const poolActor = isLedger() && target.actorUuid ? fromUuidSync(target.actorUuid) : null;
+      if (poolActor) {
+        await adapter.grant(poolActor, "food", food); // Ledger: credit real day-items
+      } else {
+        target.counts.food += food;
+        await registry.save(reg);
+      }
     }
   }
   return { degree, food, fatigued };
@@ -336,6 +356,83 @@ export async function resetSurvival(adapter: SurvivalSystemAdapter, group?: stri
     n++;
   }
   return n;
+}
+
+/** Party-member toggle: whether this creature consumes food/water (off = a structure or an
+ *  inactive character; its pool keeps existing either way). */
+export async function setMemberEnabled(uuid: string, enabled: boolean): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const m = reg.members.find((x) => x.uuid === uuid);
+  if (!m) return;
+  m.enabled = enabled;
+  await registry.save(reg);
+}
+
+/** Remove a creature from survival tracking entirely (death, retired player). Drops the member
+ *  and their own pool, strips module-applied conditions, and clears the tracking flags. */
+export async function removeMemberFromCaravan(uuid: string, adapter?: SurvivalSystemAdapter): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const m = reg.members.find((x) => x.uuid === uuid);
+  if (!m) return;
+  reg.members = reg.members.filter((x) => x.uuid !== uuid);
+  reg.pools = reg.pools.filter((p) => p.id !== m.poolId && p.actorUuid !== uuid);
+  await registry.save(reg);
+
+  const actor = fromUuidSync(uuid);
+  if (actor) {
+    if (adapter) await adapter.reconcileConsequences(actor, { hunger: 0, thirst: 0, cold: 0 });
+    for (const flag of ["state", "applied", "isMount", "warmth"]) {
+      await actor.unsetFlag?.(MODULE_ID, flag);
+    }
+  }
+}
+
+/** Remove a standalone base pool (a stockpile with no owning creature) from tracking. */
+export async function removeBasePool(poolId: string): Promise<void> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  reg.pools = reg.pools.filter((p) => p.id !== poolId);
+  for (const m of reg.members) if (m.poolId === poolId) m.poolId = null;
+  await registry.save(reg);
+}
+
+/** Deliberate sharing (never automatic): move up to `amount` of `kind` from one pool to another.
+ *  In Ledger mode actor-backed ends move REAL items (consume/grant); day-count pools adjust counts.
+ *  Returns the amount actually moved. */
+export async function transferSupply(
+  fromPoolId: string,
+  toPoolId: string,
+  kind: "food" | "water" | "firewood" | "provision",
+  amount: number,
+  adapter?: SurvivalSystemAdapter,
+): Promise<number> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const from = reg.pools.find((p) => p.id === fromPoolId);
+  const to = reg.pools.find((p) => p.id === toPoolId);
+  const want = Math.max(0, Math.floor(amount));
+  if (!from || !to || from === to || want === 0) return 0;
+
+  const actorOf = (p: RegPool) => (isLedger() && p.actorUuid ? fromUuidSync(p.actorUuid) : null);
+
+  const srcActor = actorOf(from);
+  let moved: number;
+  if (srcActor && adapter) {
+    moved = await adapter.consume(srcActor, kind, want);
+  } else {
+    moved = Math.min(from.counts[kind], want);
+    from.counts[kind] -= moved;
+  }
+
+  if (moved > 0) {
+    const dstActor = actorOf(to);
+    if (dstActor && adapter) await adapter.grant(dstActor, kind, moved);
+    else to.counts[kind] += moved;
+  }
+  await registry.save(reg);
+  return moved;
 }
 
 /** Promote/demote a member between a plain party member and a mount. A mount's own pool becomes

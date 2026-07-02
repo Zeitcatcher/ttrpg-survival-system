@@ -57,7 +57,7 @@ export class PartyHud extends HandlebarsApplicationMixin(ApplicationV2) {
       headline: g.headline,
       coldActive: g.coldActive,
       roster: g.roster
-        .filter((r) => !r.zeroNeeds)
+        .filter((r) => !r.zeroNeeds && r.enabled)
         .map((r) => {
           const actor = fromUuidSync(r.id);
           const warm = !!actor?.getFlag?.(MODULE_ID, "warmth");

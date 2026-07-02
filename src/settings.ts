@@ -19,7 +19,8 @@ export interface SettingDef {
 // upkeep only when wrong; communal-first; manual climate; cap at stage 3; single-party;
 // foraging off; week/N-day advance with a 14-day catch-up cap; ship en+ru.
 export const SETTINGS: readonly SettingDef[] = [
-  { key: "supplyDetail", scope: "world", type: "String", default: "abstract", config: true,
+  // Ledger by default since 0.4.0 — GMs expect items (rations, waterskins) to count automatically.
+  { key: "supplyDetail", scope: "world", type: "String", default: "ledger", config: true,
     choices: { abstract: "Abstract (day counts)", ledger: "Ledger (real inventory)" } },
   { key: "trackedNeeds", scope: "world", type: "Object", default: { food: true, water: true, firewood: true }, config: false },
   { key: "upkeepPrompt", scope: "world", type: "String", default: "onlyWhenWrong", config: true,
