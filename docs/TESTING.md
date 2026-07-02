@@ -1,4 +1,4 @@
-# Smoke-testing v0.5.0 in Foundry
+# Smoke-testing v0.5.1 in Foundry
 
 Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)** + the **v0.3–0.4 GM-play additions** (reset, member/base chips, remove, transfer, fungible provisions). The engine is unit-tested headless (62 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
@@ -9,7 +9,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
 4. **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
-> If you installed an earlier build, click **Update** so you get v0.5.0.
+> If you installed an earlier build, click **Update** so you get v0.5.1.
 
 ## 2. Sanity check
 - Console (**F12**) on load: `ttrpg-survival-system | ready (system adapter: pf2e)` + a **"Survival module loaded."** toast.
@@ -52,10 +52,10 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 
 ## 10. Ledger supply mode (M8; DEFAULT since v0.4.0)
 - **Supply detail = Ledger** is the **default** — pools read **real inventory**; the panel header shows which mode is active. Worlds that saved Abstract without ever typing counts are **auto-switched once** on load (you'll see a notification). Prefer typed day-counts? Switch back to Abstract.
-- Reload once (or run `game.modules.get("ttrpg-survival-system").api.seedSupplies()`) to get **"Ration / Water / Firewood (day)"** items in the world's Items sidebar. Drag them onto a token, or just give a token real **pf2e Rations**.
-- **Native pf2e Rations = 7 FOOD charges** (one week each) — never water. A stack's quantity drops as weeks are eaten through, day by day.
-- You can also **tag any item**: open a physical item's sheet → set the **"Survival resource"** dropdown to food/water/firewood.
-- **Add** that token to the caravan → the panel's pool numbers read **from its inventory**. **Advance** → the actual item quantities **drop**. Click-to-edit a pool number grants/consumes real items to match.
+- **Food = the native pf2e Rations item.** Just give a token real **Rations** (from the SRD compendium) and they count. When the module *adds* food — foraging, click-to-edit a pool up, a transfer — it **creates or tops up a native Rations item**, never a bespoke "Ration (day)". (Point the *Rations item (UUID)* setting at a specific item to clone a particular one.)
+- **Native pf2e Rations = 7 FOOD charges** (one week each) — never water. A stack's quantity drops as weeks are eaten through, day by day; a partially-added stack carries a hidden day-counter so the exact day-count is preserved (so granting 8 food shows Rations ×2 with 6 days pre-used = 8 available).
+- **Water / Firewood** have no per-day pf2e standard, so those stay module items — run `api.seedSupplies()` (or reload) to get **"Water (day)" / "Firewood (bundle)"** in the Items sidebar, or **tag any item** via the sheet's **"Survival resource"** dropdown (food/water/firewood).
+- **Add** the token to the caravan → the panel's pool numbers read **from its inventory**. **Advance** → the actual item quantities **drop**. Click-to-edit a pool number grants/consumes real items to match.
 - Numbers look wrong? Run `game.modules.get("ttrpg-survival-system").api.diagnose()` (F12 console) — it prints the mode, every pool's actor link, live counts, and how each inventory item was classified.
 
 ## 11. Create Water (v0.5.0)

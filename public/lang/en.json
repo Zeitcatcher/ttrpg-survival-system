@@ -55,6 +55,8 @@
   "SURVIVAL.Settings.waterSpellUnits.hint": "Water units one cast creates. Create Water makes 2 gallons; 1 gallon = 4 units → 8.",
   "SURVIVAL.Settings.waterSpellSlugs.name": "Water spell slugs",
   "SURVIVAL.Settings.waterSpellSlugs.hint": "Comma-separated spell slugs that count as water-creating (default: create-water).",
+  "SURVIVAL.Settings.rationsSourceUuid.name": "Rations item (UUID)",
+  "SURVIVAL.Settings.rationsSourceUuid.hint": "Optional: a specific Rations item (UUID) to clone when the module adds food. Blank = the pf2e SRD Rations.",
   "SURVIVAL.Pool.personalPack": "personal pack",
   "SURVIVAL.Pool.sharedStock": "shared stock",
   "SURVIVAL.Mode.ledger": "Supply: Ledger — pools read real inventory (rations count automatically).",
