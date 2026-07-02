@@ -52,8 +52,20 @@ describe("Pf2eAdapter inspection", () => {
 
   it("counts native Rations as FOOD (1 week = 7 charges) — never water", () => {
     const a = actor({ items: [{ slug: "rations", system: { quantity: 2 } }] });
-    expect(adapter.getAvailable(a, "food")).toBe(14); // 2 × 7 food charges
+    expect(adapter.getAvailable(a, "food")).toBe(14); // 2 × 7 food charges (no uses → 7/unit fallback)
     expect(adapter.getAvailable(a, "water")).toBe(0);
+  });
+
+  it("respects the native charge counter — a partly-used Rations stack isn't counted as full", () => {
+    // 1 pack, 1 of 7 charges left (6 eaten) → 1 food-day, NOT 7.
+    const partial = actor({ items: [{ slug: "rations", system: { quantity: 1, uses: { value: 1, max: 7 } } }] });
+    expect(adapter.getAvailable(partial, "food")).toBe(1);
+    // 2 packs, the current one at 3/7 → one full week (7) + 3 = 10.
+    const twoPacks = actor({ items: [{ slug: "rations", system: { quantity: 2, uses: { value: 3, max: 7 } } }] });
+    expect(adapter.getAvailable(twoPacks, "food")).toBe(10);
+    // Full 2 packs (7/7) → 14 — matches the quantity-only reading.
+    const full = actor({ items: [{ slug: "rations", system: { quantity: 2, uses: { value: 7, max: 7 } } }] });
+    expect(adapter.getAvailable(full, "food")).toBe(14);
   });
 
   it("reads the module's dedicated day-items into their own kind", () => {

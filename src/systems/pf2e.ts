@@ -62,6 +62,12 @@ interface AppliedRec {
   value?: number;
 }
 
+/** A ledger lot plus whether its partial counter lives in the item's native `system.uses`
+ *  (charge-based consumables like Rations) or the module's own `daysUsed` flag. */
+interface PfLot extends Lot {
+  usesBased: boolean;
+}
+
 // Pathfinder 2e (Remaster, system v8.2.0) adapter. The inspection methods are pure functions of
 // the actor object (unit-tested with mock actors). reconcileConsequences applies native pf2e
 // conditions via the verified API, tracking the exact embedded-item ids it created so recovery
@@ -70,20 +76,27 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
   readonly systemId = "pf2e";
 
   // --- Ledger inventory (v2 / M8) ---
-  #lots(actor: any, kind: ResourceKind): Lot[] {
-    const lots: Lot[] = [];
+  #lots(actor: any, kind: ResourceKind): PfLot[] {
+    const lots: PfLot[] = [];
     for (const item of actor?.items ?? []) {
       if (!item?.isOfType?.("physical") && !item?.system?.quantity && item?.system?.quantity !== 0) continue;
       const m = matchKind(item);
       if (!m || m.kind !== kind) continue;
       const quantity = item.quantity ?? item.system?.quantity ?? 0;
       if (quantity <= 0) continue;
-      lots.push({
-        itemId: item.id,
-        quantity,
-        daysPerUnit: m.daysPerUnit,
-        daysUsed: item.getFlag?.(MODULE_ID, "daysUsed") ?? 0,
-      });
+      // Charge-based consumables (native pf2e Rations = 7 uses) carry their OWN day counter in
+      // system.uses — use it, so a partly-eaten stack (e.g. 1 of 7) reads as 1 day, not a full 7.
+      // The module's `daysUsed` flag is the fallback for items with no uses (its own day-items).
+      const usesMax = Number(item.system?.uses?.max ?? 0);
+      if (usesMax > 0) {
+        const value = Math.max(0, Math.min(Number(item.system?.uses?.value ?? usesMax), usesMax));
+        lots.push({ itemId: item.id, quantity, daysPerUnit: usesMax, daysUsed: usesMax - value, usesBased: true });
+      } else {
+        lots.push({
+          itemId: item.id, quantity, daysPerUnit: m.daysPerUnit,
+          daysUsed: item.getFlag?.(MODULE_ID, "daysUsed") ?? 0, usesBased: false,
+        });
+      }
     }
     return lots;
   }
@@ -102,11 +115,24 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
   }
 
   async consume(actor: any, kind: ResourceKind, units: number): Promise<number> {
-    const plan = planConsume(this.#lots(actor, kind), units);
-    const updates = plan.changes
-      .filter((c) => !c.delete)
-      .map((c) => ({ _id: c.itemId, "system.quantity": c.newQuantity, [`flags.${MODULE_ID}.daysUsed`]: c.newDaysUsed }));
-    const deletes = plan.changes.filter((c) => c.delete).map((c) => c.itemId);
+    const lots = this.#lots(actor, kind);
+    const byId = new Map(lots.map((l) => [l.itemId, l]));
+    const plan = planConsume(lots, units);
+    const updates: any[] = [];
+    const deletes: string[] = [];
+    for (const c of plan.changes) {
+      if (c.delete) {
+        deletes.push(c.itemId);
+        continue;
+      }
+      const lot = byId.get(c.itemId);
+      if (lot?.usesBased) {
+        // Write the remaining charges back to the native counter so the sheet and module agree.
+        updates.push({ _id: c.itemId, "system.quantity": c.newQuantity, "system.uses.value": lot.daysPerUnit - c.newDaysUsed });
+      } else {
+        updates.push({ _id: c.itemId, "system.quantity": c.newQuantity, [`flags.${MODULE_ID}.daysUsed`]: c.newDaysUsed });
+      }
+    }
     if (updates.length) await actor.updateEmbeddedDocuments?.("Item", updates);
     if (deletes.length) await actor.deleteEmbeddedDocuments?.("Item", deletes);
     return plan.drawn;
@@ -131,17 +157,26 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
   async #grantFood(actor: any, days: number): Promise<void> {
     const existing = (actor?.items ?? []).find?.((i: any) => (i.slug ?? i.system?.slug) === RATIONS_SLUG);
     if (existing) {
+      const usesMax = Number(existing.system?.uses?.max ?? 0);
+      const hasUses = usesMax > 0;
+      const max = hasUses ? usesMax : RATIONS_DAYS;
       const q = existing.quantity ?? existing.system?.quantity ?? 0;
-      const used = existing.getFlag?.(MODULE_ID, "daysUsed") ?? 0;
-      const avail = Math.max(0, q * RATIONS_DAYS - used);
-      const stack = weekStackFor(avail + days, RATIONS_DAYS);
-      await actor.updateEmbeddedDocuments?.("Item", [
-        { _id: existing.id, "system.quantity": stack.quantity, [`flags.${MODULE_ID}.daysUsed`]: stack.daysUsed },
-      ]);
+      const daysUsed = hasUses
+        ? max - Math.max(0, Math.min(Number(existing.system?.uses?.value ?? max), max))
+        : (existing.getFlag?.(MODULE_ID, "daysUsed") ?? 0);
+      const stack = weekStackFor(Math.max(0, q * max - daysUsed) + days, max);
+      const update: any = { _id: existing.id, "system.quantity": stack.quantity };
+      if (hasUses) update["system.uses.value"] = max - stack.daysUsed;
+      else update[`flags.${MODULE_ID}.daysUsed`] = stack.daysUsed;
+      await actor.updateEmbeddedDocuments?.("Item", [update]);
     } else {
-      const stack = weekStackFor(days, RATIONS_DAYS);
-      const data = await this.#rationsItemData(stack.quantity);
-      if (stack.daysUsed > 0) data.flags = { ...(data.flags ?? {}), [MODULE_ID]: { daysUsed: stack.daysUsed } };
+      const data = await this.#rationsItemData(1);
+      const usesMax = Number(data.system?.uses?.max ?? 0);
+      const max = usesMax > 0 ? usesMax : RATIONS_DAYS;
+      const stack = weekStackFor(days, max);
+      data.system.quantity = stack.quantity;
+      if (usesMax > 0) data.system.uses = { ...data.system.uses, value: max - stack.daysUsed };
+      else if (stack.daysUsed > 0) data.flags = { ...(data.flags ?? {}), [MODULE_ID]: { daysUsed: stack.daysUsed } };
       await actor.createEmbeddedDocuments?.("Item", [data]);
     }
   }
