@@ -42,6 +42,8 @@ export const SETTINGS: readonly SettingDef[] = [
   { key: "waterSpell", scope: "world", type: "Boolean", default: true, config: true },
   { key: "waterSpellUnits", scope: "world", type: "Number", default: 8, config: true },
   { key: "waterSpellSlugs", scope: "world", type: "String", default: "create-water", config: true },
+  // Optional: a specific Rations item to clone when the module adds food. Blank = the pf2e SRD one.
+  { key: "rationsSourceUuid", scope: "world", type: "String", default: "", config: true },
   { key: "maxCatchUpDays", scope: "world", type: "Number", default: 14, config: true },
   { key: "mountDefaultApplyConsequences", scope: "world", type: "Boolean", default: false, config: true },
   { key: "hudDensity", scope: "client", type: "String", default: "full", config: true,

@@ -55,3 +55,13 @@ export function planConsume(lots: readonly Lot[], units: number): ConsumePlan {
   }
   return { drawn: Math.floor(units) - remaining, changes };
 }
+
+/** Inverse of lotAvailable: represent `availableDays` as a whole-unit stack + partial counter —
+ *  quantity = ceil(days / daysPerUnit), daysUsed = quantity*daysPerUnit − days (0..dpu−1). Used
+ *  when GRANTING food as native week-Rations so the exact day-count is preserved. Pure. */
+export function weekStackFor(availableDays: number, daysPerUnit: number): { quantity: number; daysUsed: number } {
+  const avail = Math.max(0, Math.floor(availableDays));
+  if (daysPerUnit <= 1) return { quantity: avail, daysUsed: 0 };
+  const quantity = Math.ceil(avail / daysPerUnit);
+  return { quantity, daysUsed: quantity * daysPerUnit - avail };
+}

@@ -2,23 +2,26 @@ import { computeDegree } from "../core/foraging";
 import type { ResourceKind } from "../core/types";
 import { MODULE_ID } from "../settings";
 import type { DegreeOfSuccess, ResourceLot, SurvivalSystemAdapter } from "./adapter";
-import { type Lot, planConsume, totalAvailable } from "./ledgerMath";
+import { type Lot, planConsume, totalAvailable, weekStackFor } from "./ledgerMath";
 import { type ConditionSpec, planConditions } from "./pf2eConditions";
 import { canCastNow, type CastAvailability } from "./spellSlots";
 
-// Day-unit supply items the module seeds / grants in Ledger mode.
-const SUPPLY_SLUG: Record<ResourceKind, string> = {
-  food: "survival-ration-day",
+// The native pf2e Rations item = one week of food. Food is read AND granted through it.
+const RATIONS_SLUG = "rations";
+const RATIONS_DAYS = 7;
+
+// Day-unit supply items for WATER / FIREWOOD (pf2e has no per-day standard for these). Food is
+// intentionally absent — it is the native Rations item, not a bespoke "Ration (day)".
+const SUPPLY_SLUG: Record<"water" | "firewood", string> = {
   water: "survival-water-day",
   firewood: "survival-firewood-bundle",
 };
-const SUPPLY_NAME: Record<ResourceKind, string> = {
-  food: "Ration (day)",
+const SUPPLY_NAME: Record<"water" | "firewood", string> = {
   water: "Water (day)",
   firewood: "Firewood (bundle)",
 };
 
-export function supplyItemData(kind: ResourceKind, quantity: number): any {
+export function supplyItemData(kind: "water" | "firewood", quantity: number): any {
   return {
     name: SUPPLY_NAME[kind],
     type: "consumable",
@@ -42,10 +45,10 @@ function matchKind(item: any): { kind: ResourceKind; daysPerUnit: number } | nul
   if (override === "food" || override === "water" || override === "firewood") {
     return { kind: override, daysPerUnit: slug === "rations" ? 7 : 1 };
   }
-  if (slug === SUPPLY_SLUG.food) return { kind: "food", daysPerUnit: 1 };
+  if (slug === "survival-ration-day") return { kind: "food", daysPerUnit: 1 }; // legacy pre-0.5.1 food item
   if (slug === SUPPLY_SLUG.water) return { kind: "water", daysPerUnit: 1 };
   if (slug === SUPPLY_SLUG.firewood) return { kind: "firewood", daysPerUnit: 1 };
-  if (slug === "rations") return { kind: "food", daysPerUnit: 7 }; // 1 week = 7 food charges
+  if (slug === RATIONS_SLUG) return { kind: "food", daysPerUnit: RATIONS_DAYS }; // native pf2e Rations = 1 week
   const name = String(item.name ?? "").toLowerCase();
   if (/water|waterskin|canteen|flask/.test(name)) return { kind: "water", daysPerUnit: 1 };
   if (/firewood|kindling|\bfuel\b|\blogs?\b/.test(name)) return { kind: "firewood", daysPerUnit: 1 };
@@ -90,7 +93,7 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
       kind,
       available: Math.max(0, l.quantity * l.daysPerUnit - l.daysUsed),
       itemId: l.itemId,
-      label: SUPPLY_NAME[kind],
+      label: kind === "food" ? "Rations" : SUPPLY_NAME[kind],
     }));
   }
 
@@ -111,12 +114,69 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
 
   async grant(actor: any, kind: ResourceKind, units: number): Promise<void> {
     if (units <= 0) return;
+    // Food is granted as the native pf2e Rations item (1 week = 7 charges), not a bespoke item.
+    if (kind === "food") return this.#grantFood(actor, units);
+    // Water/firewood have no per-day pf2e standard — use the module's day-unit consumables.
     const existing = (actor?.items ?? []).find?.((i: any) => (i.slug ?? i.system?.slug) === SUPPLY_SLUG[kind]);
     if (existing) {
       const q = existing.quantity ?? existing.system?.quantity ?? 0;
       await actor.updateEmbeddedDocuments?.("Item", [{ _id: existing.id, "system.quantity": q + units }]);
     } else {
       await actor.createEmbeddedDocuments?.("Item", [supplyItemData(kind, units)]);
+    }
+  }
+
+  /** Add `days` of food as native Rations, preserving the exact day-count via the partial-week
+   *  counter: bump an existing Rations stack, else create one (cloned from the SRD when possible). */
+  async #grantFood(actor: any, days: number): Promise<void> {
+    const existing = (actor?.items ?? []).find?.((i: any) => (i.slug ?? i.system?.slug) === RATIONS_SLUG);
+    if (existing) {
+      const q = existing.quantity ?? existing.system?.quantity ?? 0;
+      const used = existing.getFlag?.(MODULE_ID, "daysUsed") ?? 0;
+      const avail = Math.max(0, q * RATIONS_DAYS - used);
+      const stack = weekStackFor(avail + days, RATIONS_DAYS);
+      await actor.updateEmbeddedDocuments?.("Item", [
+        { _id: existing.id, "system.quantity": stack.quantity, [`flags.${MODULE_ID}.daysUsed`]: stack.daysUsed },
+      ]);
+    } else {
+      const stack = weekStackFor(days, RATIONS_DAYS);
+      const data = await this.#rationsItemData(stack.quantity);
+      if (stack.daysUsed > 0) data.flags = { ...(data.flags ?? {}), [MODULE_ID]: { daysUsed: stack.daysUsed } };
+      await actor.createEmbeddedDocuments?.("Item", [data]);
+    }
+  }
+
+  /** A native Rations item to create: a GM-pointed source, else the pf2e SRD Rations, else a
+   *  well-formed inline fallback (always slug `rations`, so the reader treats it as 7-day food). */
+  async #rationsItemData(quantity: number): Promise<any> {
+    const uuid = game.settings.get(MODULE_ID, "rationsSourceUuid") as string;
+    if (uuid) {
+      const obj = (await fromUuid(uuid))?.toObject?.();
+      if (obj) return { ...obj, system: { ...obj.system, quantity } };
+    }
+    const srd = await this.#findCompendiumRations();
+    if (srd) {
+      const obj = srd.toObject();
+      obj.system.quantity = quantity;
+      return obj;
+    }
+    return {
+      name: "Rations", type: "consumable", img: "icons/consumables/food/bowl-oatmeal-brown.webp",
+      system: { slug: RATIONS_SLUG, quantity, category: "other", description: { value: "" }, traits: { value: [], rarity: "common" } },
+    };
+  }
+
+  async #findCompendiumRations(): Promise<any> {
+    try {
+      const pack = game.packs?.get?.("pf2e.equipment-srd");
+      if (!pack) return null;
+      const index = pack.index?.size ? pack.index : await pack.getIndex();
+      const entries = [...index];
+      const entry = entries.find((e: any) => e.system?.slug === RATIONS_SLUG) ?? entries.find((e: any) => e.name === "Rations");
+      return entry ? await pack.getDocument(entry._id) : null;
+    } catch (e) {
+      console.warn(`${MODULE_ID} | SRD Rations lookup failed — using inline fallback`, e);
+      return null;
     }
   }
 
@@ -233,7 +293,8 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
   }
 
   async seedSupplies(): Promise<void> {
-    for (const kind of ["food", "water", "firewood"] as const) {
+    // Food is the native Rations item (in the pf2e SRD compendium) — only water/firewood are seeded.
+    for (const kind of ["water", "firewood"] as const) {
       const has = (game.items ?? []).some?.((i: any) => (i.slug ?? i.system?.slug) === SUPPLY_SLUG[kind]);
       if (!has) await Item.create?.(supplyItemData(kind, 1));
     }
