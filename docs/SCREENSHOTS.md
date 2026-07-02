@@ -1,7 +1,8 @@
 # Screenshots — shot list
 
-The README front page references the eight images below. Capture them and drop them in
+The README front page references the ten images below. Capture them and drop them in
 `docs/images/` with these exact names; until then GitHub shows broken-image placeholders.
+The two `survival-mode*` shots were added for Survival mode in 1.2.0.
 
 General tips
 - Use the dark Foundry theme (the module UI is dark) on a Pathfinder 2e world.
@@ -20,3 +21,5 @@ General tips
 | `docs/images/item-resource.png` | An item sheet (e.g. Rations or a waterskin) with the **"Survival resource"** dropdown at the bottom of the sheet. |
 | `docs/images/transfer.png` | The **Transfer supplies** dialog (the ⇄ button on a pool): target pool, resource, amount. |
 | `docs/images/create-water.png` | The **Create Water** prompt — the GM coordination dialog listing eligible casters, or the player's "Conjure water?" dialog. |
+| `docs/images/survival-mode-and-pace-settings.png` | The **module-settings** rows for **Survival mode** (Off / Harsh / Survival) and **Survival mode pace** (Slower / Balanced / Faster), so the three tiers and the pace are visible. |
+| `docs/images/survival-mode.png` | The **death prompt** with Survival mode on — the "at death's door" dialog for a character (Confirm death / Knock to Dying / Spare). Turn `Survival mode` on, advance a stranded party until someone hits the fatal stage. Bonus: frame it with the roster behind, showing a red "Dying of thirst" status. |
