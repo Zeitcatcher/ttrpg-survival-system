@@ -1,4 +1,4 @@
-# Smoke-testing v0.4.0 in Foundry
+# Smoke-testing v0.4.1 in Foundry
 
 Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)** + the **v0.3–0.4 GM-play additions** (reset, member/base chips, remove, transfer, fungible provisions). The engine is unit-tested headless (62 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
@@ -9,7 +9,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
 4. **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
-> If you installed an earlier build, click **Update** so you get v0.4.0.
+> If you installed an earlier build, click **Update** so you get v0.4.1.
 
 ## 2. Sanity check
 - Console (**F12**) on load: `ttrpg-survival-system | ready (system adapter: pf2e)` + a **"Survival module loaded."** toast.
@@ -44,18 +44,19 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 - **Reset** (Roster header) clears every member's hunger/thirst/cold and removes module-applied conditions — supplies and the day count stay.
 
 ## 8. Transfer supplies (v0.4.0)
-- Each pool row has a **⇄** button → pick the target pool, the resource (food/water/provisions/firewood), and the amount. Sharing is **always deliberate** — the engine never auto-drains one PC's pack for another.
+- Each pool row has a **⇄** button → pick the target pool, the resource (food/water/firewood), and the amount. Sharing is **always deliberate** — the engine never auto-drains one PC's pack for another.
 - In Ledger mode the transfer moves **real items** (consume on the source actor, grant on the target); day-count pools just adjust numbers. Mixed transfers (PC → standalone base) work too.
 
 ## 9. Separation + mounts (advanced)
-- Put supplies on a base/mount pool, then toggle its **With party** off (or hit **Delving**): the pool greys, the headline **drops** (the "cliff"), and shortfalls name the separated base. A **Huge** creature auto-consumes **×4** (size-based).
+- Put supplies on a base/mount pool, then toggle its **With party** off (or hit **Delving**): the pool greys, the headline **drops** (the "cliff"), and shortfalls name the separated base. Consumption scales with the **real size trait**: Large ×2, Huge ×4, **Gargantuan ×8** — and the roster shows the actual size name.
 
 ## 10. Ledger supply mode (M8; DEFAULT since v0.4.0)
-- **Supply detail = Ledger** is now the **default** — pools read **real inventory**; the panel header shows which mode is active. (Prefer typed day-counts? Switch back to Abstract.)
-- Reload once (or run `game.modules.get("ttrpg-survival-system").api.seedSupplies()`) to get **"Ration / Water / Firewood / Provisions (day)"** items in the world's Items sidebar. Drag them onto a token, or just give a token real **pf2e Rations**.
-- **Native pf2e Rations = 7 fungible "provision" charges** (🥫 in the pool row): each charge covers a day of food **or** water, spent only after dedicated food/water runs out.
-- You can also **tag any item**: open a physical item's sheet → set the **"Survival resource"** dropdown to food/water/provisions/firewood.
-- **Add** that token to the caravan → the panel's pool numbers read **from its inventory**. **Advance** → the actual item quantities **drop** (a 1-week Rations item decomposes 7 charges at a time — watch its quantity). Click-to-edit a pool number grants/consumes real items to match.
+- **Supply detail = Ledger** is the **default** — pools read **real inventory**; the panel header shows which mode is active. Worlds that saved Abstract without ever typing counts are **auto-switched once** on load (you'll see a notification). Prefer typed day-counts? Switch back to Abstract.
+- Reload once (or run `game.modules.get("ttrpg-survival-system").api.seedSupplies()`) to get **"Ration / Water / Firewood (day)"** items in the world's Items sidebar. Drag them onto a token, or just give a token real **pf2e Rations**.
+- **Native pf2e Rations = 7 FOOD charges** (one week each) — never water. A stack's quantity drops as weeks are eaten through, day by day.
+- You can also **tag any item**: open a physical item's sheet → set the **"Survival resource"** dropdown to food/water/firewood.
+- **Add** that token to the caravan → the panel's pool numbers read **from its inventory**. **Advance** → the actual item quantities **drop**. Click-to-edit a pool number grants/consumes real items to match.
+- Numbers look wrong? Run `game.modules.get("ttrpg-survival-system").api.diagnose()` (F12 console) — it prints the mode, every pool's actor link, live counts, and how each inventory item was classified.
 
 ## What to report back
 - Any **red console errors** (F12) — especially opening the panel/HUD, Add selected, editing a pool, Advance, the warm toggle, or Forage.

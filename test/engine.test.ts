@@ -6,13 +6,13 @@ const headlineWater = (state: ReturnType<typeof buildShardsState>) =>
   computeTick(state, state.lastTickDay).headlineByGroup.Main.water;
 
 describe("SurvivalEngine — the Shards desert scenario", () => {
-  it("charges the Huge mount ×4 (and ×2 water in the heat)", () => {
+  it("charges the Gargantuan mount ×8 (and ×2 water in the heat)", () => {
     const state = buildShardsState();
     const res = computeTick(state, 1);
     const chiga = res.perDay[0].draws.find((d) => d.consumerId === "chiga");
     expect(chiga).toBeDefined();
-    expect(chiga!.food.need).toBe(4); // Huge ×4
-    expect(chiga!.water.need).toBe(8); // ×4 × Hot ×2
+    expect(chiga!.food.need).toBe(8); // Gargantuan ×8
+    expect(chiga!.water.need).toBe(16); // ×8 × Hot ×2
   });
 
   it("never draws a pool negative (transactional)", () => {

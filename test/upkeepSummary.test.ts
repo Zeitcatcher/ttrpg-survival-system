@@ -10,14 +10,14 @@ function greenState(): CaravanState {
     climate: { Main: "temperate" },
     consumers: [
       {
-        id: "a", name: "A", group: "Main", sizeMult: 1,
+        id: "a", name: "A", group: "Main", sizeMult: 1, sizeName: "Medium",
         ration: { food: 1, water: 1 }, graceDays: { hunger: 3, thirst: 3, cold: 3 },
         isMount: false, applyConsequences: false, enabled: true, needsConsumption: true,
         poolId: null, keptWarm: false, warmAuto: false,
       },
     ],
     pools: [
-      { id: "base", label: "Base", counts: { food: 10, water: 10, firewood: 0, provision: 0 }, withParty: { Main: true }, isMount: false, isStorage: true },
+      { id: "base", label: "Base", counts: { food: 10, water: 10, firewood: 0 }, withParty: { Main: true }, isMount: false, isStorage: true },
     ],
     actorState: {},
     lastTickDay: 0,

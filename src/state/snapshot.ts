@@ -7,6 +7,8 @@ import type { RegistryData } from "./registryData";
 export interface ActorFacts {
   name: string;
   sizeMult: number;
+  /** Display name of the size trait ("Gargantuan"); null = unknown. */
+  sizeName?: string | null;
   ration: { food: number; water: number };
   graceDays: Record<TrackKey, number>;
   needsConsumption: boolean;
@@ -31,6 +33,7 @@ export function buildCaravanState(
         name: f.name,
         group: m.group,
         sizeMult: f.sizeMult,
+        sizeName: f.sizeName ?? null,
         ration: {
           food: m.needsOverride?.food ?? f.ration.food,
           water: m.needsOverride?.water ?? f.ration.water,

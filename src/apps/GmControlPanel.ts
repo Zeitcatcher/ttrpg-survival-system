@@ -54,12 +54,7 @@ async function onSetClimate(this: any, _e: Event, target: HTMLElement): Promise<
 async function onEditPool(this: any, _e: Event, target: HTMLElement): Promise<void> {
   const value = await promptNumber(Number(target.dataset.current ?? "0"));
   if (value === null) return;
-  await editPool(
-    target.dataset.pool!,
-    target.dataset.kind as "food" | "water" | "firewood" | "provision",
-    value,
-    panelAdapter,
-  );
+  await editPool(target.dataset.pool!, target.dataset.kind as "food" | "water" | "firewood", value, panelAdapter);
   this.render();
 }
 async function onAddSelected(this: any): Promise<void> {
@@ -109,7 +104,7 @@ async function onTransfer(this: any, _e: Event, target: HTMLElement): Promise<vo
   const others = pools.filter((p) => p.id !== fromId);
   if (!from || !others.length) return;
 
-  const kinds = ["food", "water", "provision", "firewood"] as const;
+  const kinds = ["food", "water", "firewood"] as const;
   const toOptions = others
     .map((p) => `<option value="${esc(p.id)}">${esc(p.label)}${p.separated ? " ⚠" : ""}</option>`)
     .join("");
@@ -301,12 +296,12 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         food: p.counts.food,
         water: p.counts.water,
         firewood: p.counts.firewood,
-        provision: p.counts.provision,
       })),
       roster: g.roster.map((r) => ({
         id: r.id,
         name: r.name,
-        size: r.isMount ? `Huge ×${r.sizeMult}` : r.sizeMult > 1 ? `×${r.sizeMult}` : "×1",
+        // The REAL size trait ("Gargantuan ×8"), not a hardcoded guess.
+        size: r.sizeName ? (r.sizeMult > 1 ? `${r.sizeName} ×${r.sizeMult}` : r.sizeName) : `×${r.sizeMult}`,
         isMount: r.isMount,
         roleNext: (!r.isMount).toString(),
         enabled: r.enabled,
