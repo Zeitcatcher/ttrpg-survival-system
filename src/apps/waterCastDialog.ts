@@ -1,4 +1,4 @@
-import { closeUserWaterPrompt, promptUserWaterCast } from "../net/socket";
+import { closeUserWaterPrompt, isSocketReady, promptUserWaterCast } from "../net/socket";
 import type { WaterCaster, WaterCastPick, WaterConfirm } from "../state/bridge";
 
 // The GM-side coordination dialog for Create Water. One compact row per eligible caster: the owning
@@ -20,6 +20,12 @@ export async function negotiateWaterCasts(
   units: number,
 ): Promise<WaterConfirm[]> {
   if (!candidates.length) return [];
+
+  // If players own casters but socketlib isn't live, they can't be prompted — tell the GM so it's
+  // not a silent failure; the GM can still decide every row here.
+  if (candidates.some((c) => c.ownerUserId) && !isSocketReady()) {
+    ui.notifications?.warn(L("SURVIVAL.WaterSpell.NoSocket"));
+  }
 
   const decisions = new Map<string, WaterCastPick[]>();
   let dialog: any = null;

@@ -2,6 +2,11 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.1.1
+
+- The player's Create Water picker now shows one row per castable spell — the spell's own icon and name — so you tick the ones to cast (three prepared Create Waters show three rows) instead of typing counts.
+- Added diagnostics for the player prompt: the prompt travels over socketlib, so if socketlib isn't active the GM is now warned instead of it failing silently, and the browser console logs the flow on both sides.
+
 ## 1.1.0
 
 Create Water rework.

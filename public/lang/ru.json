@@ -43,6 +43,7 @@
   "SURVIVAL.WaterSpell.Total": "Итого: {casts} × → +{water} воды",
   "SURVIVAL.WaterSpell.CastMax": "Скастовать всё (+{water})",
   "SURVIVAL.WaterSpell.CastOne": "Скастовать один",
+  "SURVIVAL.WaterSpell.NoSocket": "Выживание: socketlib не активен, поэтому игрокам нельзя отправить запрос на Create Water. Включите socketlib или решите здесь, на панели ГМ.",
   "SURVIVAL.WaterSpell.PromptBody": "Без воды сегодня кто-то останется с жаждой. Скастовать ли {name} заклинание {spell}? Это потратит подготовленное заклинание (ячейку или использование). Неиспользованная наколдованная вода испарится в конце дня.",
   "SURVIVAL.WaterSpell.Cast": "Кастовать",
   "SURVIVAL.WaterSpell.Decline": "Не кастовать",

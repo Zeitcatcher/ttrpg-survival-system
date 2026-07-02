@@ -97,6 +97,12 @@
 .ss-wc-count { width: 42px; text-align: center; padding: 1px 2px; }
 .ss-wc-max { font-size: 11px; opacity: 0.6; }
 .ss-wc-total { margin: 8px 0 0; font-weight: 500; text-align: right; }
+.ss-wc-opt { display: flex; align-items: center; gap: 8px; padding: 5px 4px; cursor: pointer; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+.ss-wc-opt:hover { background: rgba(127, 127, 127, 0.08); }
+.ss-wc-img { width: 26px; height: 26px; flex: 0 0 auto; border: none; border-radius: 4px; object-fit: cover; }
+.ss-wc-lbl { flex: 1 1 auto; }
+.ss-wc-lbl small { opacity: 0.6; margin-left: 4px; }
+.ss-wc-pick { flex: 0 0 auto; }
 
 /* ---- Upkeep chat card ---- */
 .ss-card h3 { margin: 0 0 4px; font-size: 15px; }

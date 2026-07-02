@@ -1,4 +1,4 @@
-# Smoke-testing v1.1.0 in Foundry
+# Smoke-testing v1.1.1 in Foundry
 
 Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)** + the **v0.3–0.4 GM-play additions** (reset, member/base chips, remove, transfer, fungible provisions). The engine is unit-tested headless (62 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
@@ -9,7 +9,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
 4. **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
-> If you installed an earlier build, click **Update** so you get v1.1.0.
+> If you installed an earlier build, click **Update** so you get v1.1.1.
 
 ## 2. Sanity check
 - Console (**F12**) on load: `ttrpg-survival-system | ready (system adapter: pf2e)` + a **"Survival module loaded."** toast.
@@ -63,7 +63,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 ## 11. Create Water (v1.1.0)
 - Give a caster the **Create Water** spell, **prepared** (or a spontaneous slot / innate use). Merely knowing it is not enough.
 - Empty the party's water and hit **Advance Day**. A dry-run detects the coming thirst and:
-  - the **owning player** (if online) gets a compact **picker**: each castable water spell with a **count stepper** (0…available) and a running total, so they can spend **several slots / several spells** when one casting isn't enough (e.g. Extreme Heat). *This is the fix — the player used to get nothing.*
+  - the **owning player** (if online) gets a compact **picker**: one row per castable spell, showing its **spellbook icon and name** — tick the ones to cast (three prepared Create Waters show three rows), so you pick one, two, or three. **If the player still sees nothing:** the prompt travels over **socketlib**, so confirm socketlib is *enabled* in Manage Modules (the GM gets a warning toast when it's off), and check that the character is genuinely **Owned** by that player. F12 on the player's client logs `Create Water: prompt received` the moment it arrives; the GM's console logs each caster's resolved owner.
   - the **GM** gets a small coordination dialog, one row per caster: **Cast all** / **Cast one** / **Skip**. A GM decision wins and **closes the player's prompt**; offline owners are GM-only rows.
 - Both dialogs are now **compact** (fixed width) — no more oversized window.
 - Confirming **expends each slot/use and posts a spell card** per cast, then the tick runs with **+8 water per casting for that day** (2 gallons × 4 units; configurable) — so N casts = +N×8. On a **Week** advance the consent applies to each day.

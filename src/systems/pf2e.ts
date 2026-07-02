@@ -355,14 +355,18 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     return out;
   }
 
-  /** Water spells CASTABLE RIGHT NOW, each with how many times it can be cast (slots/uses), so a
-   *  player can spend several when one casting isn't enough. */
-  findWaterSpells(actor: any): { spellId: string; label: string; rank: number; maxCasts: number }[] {
-    const result: { spellId: string; label: string; rank: number; maxCasts: number }[] = [];
+  /** Water spells CASTABLE RIGHT NOW, each with its spellbook icon and how many times it can be
+   *  cast (slots/uses), so the player can pick several when one casting isn't enough. */
+  findWaterSpells(actor: any): { spellId: string; label: string; img: string; rank: number; maxCasts: number }[] {
+    const result: { spellId: string; label: string; img: string; rank: number; maxCasts: number }[] = [];
     for (const { spell, entry, type, rank, isCantrip } of this.#waterSpells(actor)) {
       const innateUsesLeft = spell.system?.location?.uses?.value ?? 0;
       const maxCasts = countCastable(type, entry.system?.slots ?? {}, spell.id, rank, { isCantrip, innateUsesLeft });
-      if (maxCasts > 0) result.push({ spellId: spell.id, label: spell.name, rank, maxCasts });
+      if (maxCasts > 0) {
+        result.push({
+          spellId: spell.id, label: spell.name, img: spell.img ?? spell.system?.img ?? "icons/svg/water.svg", rank, maxCasts,
+        });
+      }
     }
     return result;
   }

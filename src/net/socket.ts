@@ -20,6 +20,7 @@ export function registerSocket(): void {
 export interface WaterSpellOption {
   spellId: string;
   label: string;
+  img: string;
   rank: number;
   maxCasts: number;
 }
@@ -44,74 +45,53 @@ const escHtml = (s: string): string =>
 /** Open prompt dialogs by actor uuid, so a GM override can close them remotely. */
 const openWaterPrompts = new Map<string, any>();
 
+/** One row per castable copy — the spell's own icon + name — so the player just ticks the ones to
+ *  cast (three prepared Create Waters = three rows), instead of reading text and typing a number. */
 function pickerContent(p: WaterPromptPayload): string {
-  const rows = p.spells
-    .map(
-      (s) => `<div class="ss-wc-row" data-spell="${escHtml(s.spellId)}">
-        <span class="ss-wc-name">${escHtml(s.label)} <span class="ss-wc-rank">${L("SURVIVAL.WaterSpell.Rank", { n: s.rank })}</span></span>
-        <span class="ss-wc-ctl">
-          <button type="button" class="ss-wc-step" data-d="-1">−</button>
-          <input type="number" class="ss-wc-count" min="0" max="${s.maxCasts}" value="0" inputmode="numeric">
-          <span class="ss-wc-max">/ ${s.maxCasts}</span>
-          <button type="button" class="ss-wc-step" data-d="1">+</button>
-        </span>
-      </div>`,
-    )
-    .join("");
+  let opts = "";
+  for (const s of p.spells) {
+    for (let i = 0; i < s.maxCasts; i++) {
+      opts += `<label class="ss-wc-opt">
+        <input type="checkbox" class="ss-wc-pick" data-spell="${escHtml(s.spellId)}">
+        <img class="ss-wc-img" src="${escHtml(s.img)}" alt="">
+        <span class="ss-wc-lbl">${escHtml(s.label)} <small>${L("SURVIVAL.WaterSpell.Rank", { n: s.rank })}</small></span>
+      </label>`;
+    }
+  }
   return `<div class="ss-wc">
     <p class="ss-wc-hint">${L("SURVIVAL.WaterSpell.PlayerHint", { need: p.deficitUnits, units: p.units })}</p>
-    ${rows}
+    ${opts}
     <p class="ss-wc-total" data-total>${L("SURVIVAL.WaterSpell.Total", { casts: 0, water: 0 })}</p>
   </div>`;
 }
 
 function readPicks(dialog: any): WaterCastPick[] {
-  const picks: WaterCastPick[] = [];
-  (dialog?.element?.querySelectorAll?.(".ss-wc-row") ?? []).forEach((row: HTMLElement) => {
-    const input = row.querySelector(".ss-wc-count") as HTMLInputElement | null;
-    const n = Math.max(0, Math.floor(Number(input?.value ?? 0)));
-    if (n > 0) picks.push({ spellId: row.dataset.spell!, count: n });
+  const counts = new Map<string, number>();
+  (dialog?.element?.querySelectorAll?.(".ss-wc-pick:checked") ?? []).forEach((cb: HTMLInputElement) => {
+    const id = cb.dataset.spell!;
+    counts.set(id, (counts.get(id) ?? 0) + 1);
   });
-  return picks;
+  return [...counts.entries()].map(([spellId, count]) => ({ spellId, count }));
 }
 
 function wirePicker(dialog: any, units: number): void {
   const root: HTMLElement | null = dialog?.element ?? null;
   if (!root) return;
-  const clamp = (input: HTMLInputElement) => {
-    let v = Math.floor(Number(input.value || 0));
-    const max = Number(input.max || 0);
-    if (!Number.isFinite(v) || v < 0) v = 0;
-    if (v > max) v = max;
-    input.value = String(v);
-  };
-  const updateTotal = () => {
-    let casts = 0;
-    root.querySelectorAll(".ss-wc-count").forEach((i: any) => (casts += Math.max(0, Math.floor(Number(i.value || 0)))));
+  const update = () => {
+    const casts = root.querySelectorAll(".ss-wc-pick:checked").length;
     const total = root.querySelector("[data-total]");
     if (total) total.textContent = L("SURVIVAL.WaterSpell.Total", { casts, water: casts * units });
   };
-  root.querySelectorAll(".ss-wc-step").forEach((btn: any) =>
-    btn.addEventListener("click", () => {
-      const input = btn.parentElement?.querySelector(".ss-wc-count") as HTMLInputElement | null;
-      if (!input) return;
-      input.value = String(Math.floor(Number(input.value || 0)) + Number(btn.dataset.d));
-      clamp(input);
-      updateTotal();
-    }),
-  );
-  root.querySelectorAll(".ss-wc-count").forEach((i: any) =>
-    i.addEventListener("input", () => {
-      clamp(i);
-      updateTotal();
-    }),
-  );
-  updateTotal();
+  root.querySelectorAll(".ss-wc-pick").forEach((cb: any) => cb.addEventListener("change", update));
+  update();
 }
 
 /** Ask this player which water spells (and how many casts) to spend. Returns the picks (possibly
  *  empty = declined); null = the dialog was closed without answering (e.g. the GM decided first). */
 async function promptWaterCastLocal(p: WaterPromptPayload): Promise<WaterCastPick[] | null> {
+  // If you (the player) see this in F12 but no dialog, it's a render error; if you DON'T see it,
+  // the socket never reached you (socketlib off, or the GM resolved the row first).
+  console.log(`${MODULE_ID} | Create Water: prompt received on this client for ${p.name}`, p.spells);
   try {
     const result = await foundry.applications.api.DialogV2.wait({
       window: { title: L("SURVIVAL.WaterSpell.PromptTitle") },
@@ -143,16 +123,27 @@ function closeWaterPromptLocal(actorUuid: string): void {
   openWaterPrompts.delete(actorUuid);
 }
 
+/** True once socketlib has handed us a module socket (i.e. socketlib is installed AND active). */
+export function isSocketReady(): boolean {
+  return !!socket;
+}
+
 /** GM → player: show the cast prompt on the owner's client. Resolves with their per-spell picks. */
 export async function promptUserWaterCast(
   userId: string,
   payload: WaterPromptPayload,
 ): Promise<WaterCastPick[] | null> {
-  if (!socket) return null;
+  if (!socket) {
+    console.warn(`${MODULE_ID} | Create Water: socketlib not ready — cannot prompt the player. Is socketlib enabled in this world?`);
+    return null;
+  }
   try {
-    return await socket.executeAsUser("promptWaterCast", userId, payload);
+    console.log(`${MODULE_ID} | Create Water: sending prompt to user ${userId} for ${payload.name}`);
+    const res = await socket.executeAsUser("promptWaterCast", userId, payload);
+    console.log(`${MODULE_ID} | Create Water: user ${userId} replied`, res);
+    return res;
   } catch (e) {
-    console.warn(`${MODULE_ID} | promptWaterCast failed`, e);
+    console.warn(`${MODULE_ID} | Create Water: prompt delivery to user ${userId} failed`, e);
     return null;
   }
 }
