@@ -101,13 +101,18 @@ Hooks.once("ready", () => {
   // before this module was ready, force one re-render so they appear on first load.
   ui.controls?.render?.();
 
-  // Keep open surfaces fresh when survival state changes (warmth flag, registry doc).
-  const refresh = () => {
+  // Keep open surfaces fresh when survival state changes: actor flags/hp, the registry doc, and
+  // embedded ITEM changes (rations charges, waterskins) — the last were missing, so an open panel
+  // only updated on reopen. Debounced so a burst of edits coalesces into one re-render.
+  const refresh = foundry.utils.debounce(() => {
     refreshGmPanel();
     refreshPartyHud();
-  };
+  }, 100);
   Hooks.on("updateActor", refresh);
   Hooks.on("updateJournalEntry", refresh);
+  Hooks.on("createItem", refresh);
+  Hooks.on("updateItem", refresh);
+  Hooks.on("deleteItem", refresh);
 
   // One survival day per world-clock day-boundary crossing, primary GM only. Rest and an
   // "Advance Day/Week" control will call runTick directly in later milestones.
