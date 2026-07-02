@@ -3,6 +3,7 @@ import { MODULE_ID } from "../settings";
 import { readModel } from "../state/bridge";
 import type { GroupView, RosterView } from "../state/readModel";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
+import { buildHeadlineView } from "./headline";
 
 // The players' party HUD: read-mostly. Shows the pool headline and each member's worst status; a
 // player can toggle "kept warm" on the character(s) they own (routed to the GM via socketlib).
@@ -54,7 +55,7 @@ export class PartyHud extends HandlebarsApplicationMixin(ApplicationV2) {
 
     return {
       hasData: true,
-      headline: g.headline,
+      supply: buildHeadlineView(g),
       coldActive: g.coldActive,
       roster: g.roster
         .filter((r) => !r.zeroNeeds && r.enabled)

@@ -1,6 +1,24 @@
 {{#if hasData}}
 <div class="ss-hud-panel">
-  <div class="ss-hud-headline">🍖 {{headline.food}} · 💧 {{headline.water}}{{#if coldActive}} · 🔥 {{headline.firewood}}{{/if}}</div>
+  <div class="ss-supply">
+    <div class="ss-supply-head">👥 {{localize "SURVIVAL.Headline.Pooled"}}{{#if supply.partyCount}} · {{supply.partyCount}}{{/if}}</div>
+    <div class="ss-climate-eff">{{supply.climateLine}}</div>
+    <div class="ss-headline">
+      {{#each supply.cells}}
+      <div class="ss-stat {{cls}}">
+        <span class="k">{{icon}} {{label}}</span>
+        <span class="v">{{#if needed}}{{days}}{{else}}—{{/if}}</span>{{#if needed}}<span class="unit">{{localize "SURVIVAL.Headline.Days"}}</span>{{/if}}
+        <span class="math">{{math}}</span>
+      </div>
+      {{/each}}
+    </div>
+    <div class="ss-sources-lbl">{{localize "SURVIVAL.Headline.CountedFrom"}}</div>
+    <div class="ss-sources">
+      {{#each supply.sources}}
+      <span class="ss-srcchip {{#if isStorage}}base{{/if}}{{#if separated}} out{{/if}}">{{#if separated}}<s>{{label}}</s> · {{localize "SURVIVAL.Headline.LeftBehind"}}{{else}}{{label}}{{/if}}</span>
+      {{/each}}
+    </div>
+  </div>
   <div class="ss-hud-rows">
     {{#each roster}}
     <div class="ss-hud-row">
