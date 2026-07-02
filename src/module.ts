@@ -7,7 +7,14 @@ import { registerSocket } from "./net/socket";
 import { MODULE_ID, registerSettings } from "./settings";
 import type { SurvivalSystemAdapter } from "./systems/adapter";
 import { resolveActiveAdapter } from "./systems/registry";
-import { addSelectedTokens, readHeadline, readModel, runTickViaFoundry } from "./state/bridge";
+import {
+  addSelectedTokens,
+  diagnoseSurvival,
+  migrateAbstractToLedger,
+  readHeadline,
+  readModel,
+  runTickViaFoundry,
+} from "./state/bridge";
 
 // Foundry entry point. Wiring only — survival logic lives in the system-neutral core (src/core)
 // and the adapter seam (src/systems). The registry document, UI surfaces, and Rest trigger land
@@ -64,6 +71,17 @@ Hooks.once("ready", () => {
   setHudAdapter(activeAdapter);
   registerSheetInjection();
 
+  // One-shot heal (0.4.1): a world that persisted Abstract but never typed any counts is
+  // switched to Ledger, so inventory (rations, waterskins) counts as the default intends.
+  if (game.user?.isGM && game.settings.get(MODULE_ID, "autoLedgerMigrated") !== true) {
+    migrateAbstractToLedger()
+      .then(async (flipped) => {
+        if (flipped) ui.notifications?.info(game.i18n.localize("SURVIVAL.MigratedLedger"));
+        await game.settings.set(MODULE_ID, "autoLedgerMigrated", true);
+      })
+      .catch((e: unknown) => console.warn(`${MODULE_ID} | ledger migration failed`, e));
+  }
+
   // Ledger mode: seed the day-unit supply items once (GM only, if missing).
   if (game.user?.isGM && game.settings.get(MODULE_ID, "supplyDetail") === "ledger" && activeAdapter.seedSupplies) {
     activeAdapter.seedSupplies().catch((e: unknown) => console.warn(`${MODULE_ID} | seed supplies failed`, e));
@@ -81,6 +99,7 @@ Hooks.once("ready", () => {
       runTick: (targetDay: number) => runTickViaFoundry(targetDay, activeAdapter!),
       addSelected: () => addSelectedTokens(),
       seedSupplies: () => activeAdapter?.seedSupplies?.() ?? Promise.resolve(),
+      diagnose: () => diagnoseSurvival(activeAdapter!),
       openPanel: () => openGmPanel(),
       openHud: () => openPartyHud(),
     };

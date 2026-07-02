@@ -18,7 +18,7 @@ describe("registry normalization", () => {
     });
     const base = reg.pools[0];
     expect(base.label).toBe("base");
-    expect(base.counts).toEqual({ food: 0, water: 5, firewood: 0, provision: 0 });
+    expect(base.counts).toEqual({ food: 0, water: 5, firewood: 0 });
     expect(base.isMount).toBe(false);
     expect(base.isStorage).toBe(false);
     expect(base.withParty).toEqual({ Main: true });

@@ -31,6 +31,7 @@ function gatherFacts(reg: RegistryData, adapter: SurvivalSystemAdapter): Record<
     facts[m.uuid] = {
       name: actor.name ?? m.uuid,
       sizeMult: adapter.getSizeMult(actor),
+      sizeName: adapter.getSizeName?.(actor) ?? null,
       ration: adapter.getCreatureRation(actor),
       graceDays: {
         hunger: adapter.getGraceDays(actor, "hunger"),
@@ -80,7 +81,7 @@ export async function runTickViaFoundry(
       const actor = uuid ? fromUuidSync(uuid) : null;
       if (!actor) continue;
       const before = pre.get(p.id)!;
-      for (const kind of ["food", "water", "firewood", "provision"] as const) {
+      for (const kind of ["food", "water", "firewood"] as const) {
         const delta = before[kind] - p.counts[kind];
         if (delta > 0) await adapter.consume(actor, kind, delta);
       }
@@ -218,7 +219,6 @@ async function loadLive(
           food: adapter.getAvailable(actor, "food"),
           water: adapter.getAvailable(actor, "water"),
           firewood: adapter.getAvailable(actor, "firewood"),
-          provision: adapter.getAvailable(actor, "provision"),
         };
       }
     }
@@ -268,7 +268,7 @@ export async function setWithParty(poolId: string, group: string, withParty: boo
 
 export async function editPool(
   poolId: string,
-  kind: "food" | "water" | "firewood" | "provision",
+  kind: "food" | "water" | "firewood",
   value: number,
   adapter?: SurvivalSystemAdapter,
 ): Promise<void> {
@@ -330,7 +330,7 @@ export async function addActorToCaravan(
     reg.pools.push({
       id: poolId,
       label: isMount ? "Mount supply" : "Personal pack",
-      counts: { food: 0, water: 0, firewood: 0, provision: 0 },
+      counts: { food: 0, water: 0, firewood: 0 },
       withParty: { [group]: true },
       isMount,
       isStorage: isMount,
@@ -404,7 +404,7 @@ export async function removeBasePool(poolId: string): Promise<void> {
 export async function transferSupply(
   fromPoolId: string,
   toPoolId: string,
-  kind: "food" | "water" | "firewood" | "provision",
+  kind: "food" | "water" | "firewood",
   amount: number,
   adapter?: SurvivalSystemAdapter,
 ): Promise<number> {
@@ -448,7 +448,7 @@ export async function setMemberRole(uuid: string, isMount: boolean): Promise<voi
   if (!pool && isMount) {
     const id = m.poolId ?? `mount-${uuid}`;
     pool = {
-      id, label: "Mount supply", counts: { food: 0, water: 0, firewood: 0, provision: 0 },
+      id, label: "Mount supply", counts: { food: 0, water: 0, firewood: 0 },
       withParty: { [m.group]: true }, isMount: true, isStorage: true, actorUuid: uuid,
     };
     reg.pools.push(pool);
@@ -471,12 +471,58 @@ export async function addBasePool(label: string, group = "Main"): Promise<void> 
   reg.pools.push({
     id: `base-${foundry.utils.randomID()}`,
     label: label || "Base",
-    counts: { food: 0, water: 0, firewood: 0, provision: 0 },
+    counts: { food: 0, water: 0, firewood: 0 },
     withParty: { [group]: true },
     isMount: false,
     isStorage: true,
   });
   await registry.save(reg);
+}
+
+/** One-shot 0.4.1 heal: worlds that stored Abstract explicitly but never actually used it
+ *  (every pool count is zero) are switched to Ledger — the mode the 0.4.x default intends,
+ *  so real inventory (rations, waterskins) counts. Returns true if the mode was flipped. */
+export async function migrateAbstractToLedger(): Promise<boolean> {
+  if (game.settings.get(MODULE_ID, "supplyDetail") !== "abstract") return false;
+  const uuid = game.settings.get(MODULE_ID, "caravanDocUuid") as string;
+  if (!uuid) return false; // fresh world — the default is already Ledger
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  if (!reg.pools.length) return false;
+  const allZero = reg.pools.every(
+    (p) => p.counts.food === 0 && p.counts.water === 0 && p.counts.firewood === 0,
+  );
+  if (!allZero) return false; // typed counts exist — Abstract is genuinely in use, leave it
+  await game.settings.set(MODULE_ID, "supplyDetail", "ledger");
+  return true;
+}
+
+/** Console diagnostic (api.diagnose()): the supply mode, each pool's actor resolution + live
+ *  counts, and how every inventory item was classified — so "why is it 0" is answerable. */
+export async function diagnoseSurvival(adapter: SurvivalSystemAdapter): Promise<string> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  const ledger = isLedger();
+  const lines: string[] = [
+    `supply mode: ${game.settings.get(MODULE_ID, "supplyDetail")} | system adapter: ${adapter.systemId}`,
+  ];
+  for (const p of reg.pools) {
+    const actor = p.actorUuid ? fromUuidSync(p.actorUuid) : null;
+    const link = p.actorUuid
+      ? actor
+        ? `actor OK (${actor.name})`
+        : `actor MISSING (${p.actorUuid})`
+      : "no actor (manual counts)";
+    const counts =
+      actor && ledger
+        ? `live: food ${adapter.getAvailable(actor, "food")} · water ${adapter.getAvailable(actor, "water")} · wood ${adapter.getAvailable(actor, "firewood")}`
+        : `stored: food ${p.counts.food} · water ${p.counts.water} · wood ${p.counts.firewood}`;
+    lines.push(`pool "${p.label}" [${p.id}] — ${link} — ${counts}`);
+    if (actor && adapter.diagnoseActor) for (const l of adapter.diagnoseActor(actor)) lines.push(`    ${l}`);
+  }
+  const text = lines.join("\n");
+  console.log(`${MODULE_ID} | diagnose\n${text}`);
+  return text;
 }
 
 /** GM-side write of a creature's "kept warm tonight" flag (called via socketlib from a player). */

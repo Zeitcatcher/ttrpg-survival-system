@@ -5,6 +5,9 @@
   --ss-danger: #d8584e;
   --ss-ok: #5fb27a;
 }
+/* Resizable windows must scroll their content, never clip it. */
+.application.ss-gm .window-content,
+.application.ss-hud .window-content { overflow-y: auto; overflow-x: hidden; }
 .ss-panel { display: flex; flex-direction: column; gap: 10px; padding: 4px; color: #e6e8ee; font-size: 13px; }
 .ss-header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .ss-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8a8f9c; display: block; margin-bottom: 4px; }
@@ -33,7 +36,7 @@
 .ss-toggle:not(.on) { background: #2a1d10; border-color: #5a4a28; color: var(--ss-warn); }
 .ss-pool-counts { display: flex; gap: 6px; margin-top: 6px; }
 .ss-num { background: #101217; border: 1px solid #333845; color: #e6e8ee; border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
-.ss-num.prov { border-color: #4a3f2a; }
+.ss-pool-counts { flex-wrap: wrap; }
 .ss-chips { display: flex; gap: 4px; margin-top: 3px; }
 .ss-chip { background: #1b1e25; border: 1px solid #333845; color: #8a8f9c; border-radius: 9px; padding: 0 7px; font-size: 10px; line-height: 16px; font-weight: 400; cursor: pointer; }
 .ss-chip.on { background: #1d3326; border-color: #3f6b54; color: #7fdca0; }

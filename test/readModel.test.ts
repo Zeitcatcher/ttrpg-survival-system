@@ -30,7 +30,7 @@ describe("readModel projection", () => {
     const state = buildShardsState();
     state.consumers.find((c) => c.id === "grog")!.enabled = false; // e.g. a retired character
     state.pools.push({
-      id: "fort", label: "Fort", counts: { food: 5, water: 5, firewood: 0, provision: 0 },
+      id: "fort", label: "Fort", counts: { food: 5, water: 5, firewood: 0 },
       withParty: { Main: true }, isMount: false, isStorage: true,
     });
     const headline = computeTick(state, state.lastTickDay).headlineByGroup;

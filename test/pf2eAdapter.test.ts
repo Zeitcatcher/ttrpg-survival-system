@@ -22,12 +22,19 @@ describe("Pf2eAdapter inspection", () => {
     expect(adapter.getGraceDays(actor({ conMod: -2 }), "thirst")).toBe(0); // clamped, never negative
   });
 
-  it("size multiplier maps the pf2e size trait", () => {
+  it("size multiplier maps the pf2e size trait (true doubling: 1/2/4/8)", () => {
+    expect(adapter.getSizeMult(actor({ size: "grg" }))).toBe(8);
     expect(adapter.getSizeMult(actor({ size: "huge" }))).toBe(4);
-    expect(adapter.getSizeMult(actor({ size: "grg" }))).toBe(4);
     expect(adapter.getSizeMult(actor({ size: "lg" }))).toBe(2);
     expect(adapter.getSizeMult(actor({ size: "med" }))).toBe(1);
     expect(adapter.getSizeMult(actor({ size: "sm" }))).toBe(1);
+  });
+
+  it("reports the real size name for display (no hardcoded 'Huge')", () => {
+    expect(adapter.getSizeName(actor({ size: "grg" }))).toBe("Gargantuan");
+    expect(adapter.getSizeName(actor({ size: "huge" }))).toBe("Huge");
+    expect(adapter.getSizeName(actor({ size: "med" }))).toBe("Medium");
+    expect(adapter.getSizeName(actor({ size: "weird" }))).toBeNull();
   });
 
   it("a downed creature (0 HP) does not consume", () => {
@@ -43,10 +50,9 @@ describe("Pf2eAdapter inspection", () => {
     expect(adapter.isWarmSourceEquipped(actor())).toBe(false);
   });
 
-  it("counts native Rations as fungible provisions (1 week = 7 charges), not plain food", () => {
+  it("counts native Rations as FOOD (1 week = 7 charges) — never water", () => {
     const a = actor({ items: [{ slug: "rations", system: { quantity: 2 } }] });
-    expect(adapter.getAvailable(a, "provision")).toBe(14); // 2 × 7 charges, spendable on food OR water
-    expect(adapter.getAvailable(a, "food")).toBe(0);
+    expect(adapter.getAvailable(a, "food")).toBe(14); // 2 × 7 food charges
     expect(adapter.getAvailable(a, "water")).toBe(0);
   });
 
@@ -54,10 +60,10 @@ describe("Pf2eAdapter inspection", () => {
     const a = actor({
       items: [
         { slug: "survival-water-day", system: { quantity: 3 } },
-        { slug: "survival-provision-day", system: { quantity: 4 } },
+        { slug: "survival-ration-day", system: { quantity: 4 } },
       ],
     });
     expect(adapter.getAvailable(a, "water")).toBe(3);
-    expect(adapter.getAvailable(a, "provision")).toBe(4);
+    expect(adapter.getAvailable(a, "food")).toBe(4);
   });
 });
