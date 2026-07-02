@@ -4,7 +4,7 @@ import { MODULE_ID } from "../settings";
 import type { DegreeOfSuccess, ResourceLot, SurvivalSystemAdapter } from "./adapter";
 import { type Lot, planConsume, totalAvailable, weekStackFor } from "./ledgerMath";
 import { type ConditionSpec, planConditions } from "./pf2eConditions";
-import { canCastNow, type CastAvailability } from "./spellSlots";
+import { canCastNow, countCastable } from "./spellSlots";
 
 // The native pf2e Rations item = one week of food. Food is read AND granted through it.
 const RATIONS_SLUG = "rations";
@@ -336,11 +336,12 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
   }
 
   // --- Water spells (Create Water) ---
-  /** Find a configured water spell CASTABLE RIGHT NOW (prepared & unexpended / slot / use left). */
-  #castableWaterSpell(actor: any): { spell: any; entry: any; avail: CastAvailability } | null {
+  /** Every configured water spell the actor knows, with its live casting entry, type, and rank. */
+  #waterSpells(actor: any): { spell: any; entry: any; type: string; rank: number; isCantrip: boolean }[] {
     const raw = String(game.settings.get(MODULE_ID, "waterSpellSlugs") ?? "create-water");
     const slugs = raw.split(",").map((s: string) => s.trim().toLowerCase()).filter(Boolean);
     const spells = actor?.itemTypes?.spell ?? (actor?.items ?? []).filter?.((i: any) => i.type === "spell") ?? [];
+    const out: { spell: any; entry: any; type: string; rank: number; isCantrip: boolean }[] = [];
     for (const spell of spells) {
       const slug = String(spell.slug ?? spell.system?.slug ?? "").toLowerCase();
       if (!slugs.includes(slug)) continue;
@@ -349,31 +350,43 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
       const type = entry.system?.prepared?.value ?? "prepared";
       const rank = spell.rank ?? spell.system?.level?.value ?? 1;
       const isCantrip = spell.isCantrip ?? spell.system?.traits?.value?.includes?.("cantrip") ?? false;
+      out.push({ spell, entry, type, rank, isCantrip });
+    }
+    return out;
+  }
+
+  /** Water spells CASTABLE RIGHT NOW, each with how many times it can be cast (slots/uses), so a
+   *  player can spend several when one casting isn't enough. */
+  findWaterSpells(actor: any): { spellId: string; label: string; rank: number; maxCasts: number }[] {
+    const result: { spellId: string; label: string; rank: number; maxCasts: number }[] = [];
+    for (const { spell, entry, type, rank, isCantrip } of this.#waterSpells(actor)) {
+      const innateUsesLeft = spell.system?.location?.uses?.value ?? 0;
+      const maxCasts = countCastable(type, entry.system?.slots ?? {}, spell.id, rank, { isCantrip, innateUsesLeft });
+      if (maxCasts > 0) result.push({ spellId: spell.id, label: spell.name, rank, maxCasts });
+    }
+    return result;
+  }
+
+  /** Cast one specific water spell up to `count` times, expending a slot/use and posting the card
+   *  each time. Re-checks castability every iteration; returns how many actually went off. */
+  async castWaterSpellById(actor: any, spellId: string, count: number): Promise<number> {
+    const found = this.#waterSpells(actor).find((f) => f.spell.id === spellId);
+    if (!found) return 0;
+    const { spell, entry, type, rank, isCantrip } = found;
+    let done = 0;
+    for (let i = 0; i < Math.max(0, count); i++) {
       const innateUsesLeft = spell.system?.location?.uses?.value ?? 0;
       const avail = canCastNow(type, entry.system?.slots ?? {}, spell.id, rank, { isCantrip, innateUsesLeft });
-      if (avail.ok) return { spell, entry, avail };
+      if (!avail.ok) break;
+      try {
+        await entry.cast(spell, { rank: avail.rankUsed ?? rank, slotId: avail.slotId, consume: true });
+      } catch (e) {
+        console.warn(`${MODULE_ID} | entry.cast failed, posting card without slot bookkeeping`, e);
+        await spell.toMessage?.();
+      }
+      done++;
     }
-    return null;
-  }
-
-  findWaterSpell(actor: any): { label: string } | null {
-    const found = this.#castableWaterSpell(actor);
-    return found ? { label: found.spell.name } : null;
-  }
-
-  async castWaterSpell(actor: any): Promise<boolean> {
-    const found = this.#castableWaterSpell(actor);
-    if (!found) return false;
-    const { spell, entry, avail } = found;
-    try {
-      // The system's own cast path: posts the spell card AND expends the slot/use.
-      await entry.cast(spell, { rank: avail.rankUsed ?? spell.rank, slotId: avail.slotId, consume: true });
-      return true;
-    } catch (e) {
-      console.warn(`${MODULE_ID} | entry.cast failed, posting card without slot bookkeeping`, e);
-      await spell.toMessage?.();
-      return true;
-    }
+    return done;
   }
 
   /** One line per inventory item: how it was (or wasn't) classified. Consumed by api.diagnose(). */

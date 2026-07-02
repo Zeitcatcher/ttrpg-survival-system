@@ -56,3 +56,31 @@ export function canCastNow(
 
   return NOT_CASTABLE; // focus/charge/unknown — not supported for daily water
 }
+
+/** How many times this spell can be cast RIGHT NOW, so a player can spend several slots when one
+ *  casting isn't enough (e.g. Extreme Heat). Prepared counts unexpended prepared copies across all
+ *  ranks; spontaneous/flexible counts remaining slots at the spell's rank or higher; innate counts
+ *  uses; a cantrip is effectively unlimited (returns the cap). Pure. */
+export function countCastable(
+  type: CastingType,
+  slots: Record<string, SlotGroupData>,
+  spellId: string,
+  rank: number,
+  opts: { isCantrip?: boolean; innateUsesLeft?: number; cantripCap?: number } = {},
+): number {
+  if (opts.isCantrip) return opts.cantripCap ?? 20;
+  if (type === "prepared") {
+    let n = 0;
+    for (const key of Object.keys(slots)) {
+      for (const s of slots[key]?.prepared ?? []) if (s.id === spellId && s.expended !== true) n++;
+    }
+    return n;
+  }
+  if (type === "spontaneous" || type === "flexible") {
+    let n = 0;
+    for (let r = rank; r <= 10; r++) n += Math.max(0, slots[`slot${r}`]?.value ?? 0);
+    return n;
+  }
+  if (type === "innate") return Math.max(0, opts.innateUsesLeft ?? 0);
+  return 0;
+}

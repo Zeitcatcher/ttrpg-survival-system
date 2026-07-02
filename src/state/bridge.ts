@@ -486,60 +486,89 @@ export async function addBasePool(label: string, group = "Main"): Promise<void> 
 
 // ---- Water spells (Create Water) ----
 
-export interface WaterCastPlan {
+export interface WaterSpellOption {
+  spellId: string;
+  label: string;
+  rank: number;
+  maxCasts: number;
+}
+export interface WaterCaster {
   actorUuid: string;
   name: string;
-  spellLabel: string;
+  /** An ONLINE owning player, if any — who gets the socket prompt. null = the GM decides this row. */
   ownerUserId: string | null;
+  spells: WaterSpellOption[];
+}
+export interface WaterCastPick {
+  spellId: string;
+  count: number;
+}
+export interface WaterConfirm {
+  actorUuid: string;
+  casts: WaterCastPick[];
 }
 
-/** Dry-run the advance: if anyone would go short on WATER, list every enabled member who can
- *  cast a water spell RIGHT NOW (prepared/slot/use available — knowing it is not enough). */
+/** The per-day water the module's unit setting says one casting makes (Create Water = 8). */
+export function waterSpellUnits(): number {
+  return (game.settings.get(MODULE_ID, "waterSpellUnits") as number) ?? 8;
+}
+
+/** Dry-run the advance: if anyone would go short on WATER, list every enabled member who can cast a
+ *  water spell RIGHT NOW (with how many casts each has), plus the biggest daily water shortfall so
+ *  the prompts can say how much is needed. */
 export async function planWaterCandidates(
   adapter: SurvivalSystemAdapter,
   targetDay: number,
-): Promise<WaterCastPlan[]> {
-  if (game.settings.get(MODULE_ID, "waterSpell") !== true || !adapter.findWaterSpell) return [];
+): Promise<{ candidates: WaterCaster[]; deficitUnits: number }> {
+  if (game.settings.get(MODULE_ID, "waterSpell") !== true || !adapter.findWaterSpells) {
+    return { candidates: [], deficitUnits: 0 };
+  }
   const { reg, state } = await loadLive(adapter);
   const dry = computeTick(state, targetDay, tickOptionsFromSettings()); // scratch copy — never persisted
-  const thirstAhead = dry.perDay.some((d) =>
-    d.shortfalls.some((s) => s.kind === "water" && !s.isMountNarrateOnly),
-  );
-  if (!thirstAhead) return [];
+  let deficit = 0;
+  for (const d of dry.perDay) {
+    const dayWater = d.shortfalls
+      .filter((s) => s.kind === "water" && !s.isMountNarrateOnly)
+      .reduce((a, s) => a + s.missing, 0);
+    deficit = Math.max(deficit, dayWater);
+  }
+  if (deficit <= 0) return { candidates: [], deficitUnits: 0 };
 
-  const out: WaterCastPlan[] = [];
+  const candidates: WaterCaster[] = [];
   for (const m of reg.members) {
     if (!m.enabled || m.isMount) continue;
     const actor = fromUuidSync(m.uuid);
     if (!actor) continue;
-    const found = adapter.findWaterSpell(actor);
-    if (!found) continue;
+    const spells = adapter.findWaterSpells(actor);
+    if (!spells.length) continue;
     const owner = (game.users ?? []).find(
       (u: any) => u.active && !u.isGM && actor.testUserPermission?.(u, "OWNER"),
     );
-    out.push({ actorUuid: m.uuid, name: actor.name, spellLabel: found.label, ownerUserId: owner?.id ?? null });
+    candidates.push({ actorUuid: m.uuid, name: actor.name, ownerUserId: owner?.id ?? null, spells });
   }
-  return out;
+  return { candidates, deficitUnits: Math.round(deficit) };
 }
 
-/** Cast for each confirmed actor (slot expended + spell card in chat) and return the water
- *  conjured PER DAY (casters × units). The engine holds it in an ephemeral pool that expires
- *  at each day's end — undrunk spell water is never carried over. */
+/** Cast each confirmed pick (slot expended + spell card in chat) and return the water conjured PER
+ *  DAY (total casts × units). The engine holds it in an ephemeral pool that expires at each day's
+ *  end — undrunk spell water is never carried over. */
 export async function castConfirmedWaterSpells(
   adapter: SurvivalSystemAdapter,
-  actorUuids: string[],
+  confirms: WaterConfirm[],
 ): Promise<number> {
-  if (!actorUuids.length || !adapter.castWaterSpell) return 0;
-  let casters = 0;
-  for (const uuid of actorUuids) {
-    const actor = fromUuidSync(uuid);
-    if (actor && (await adapter.castWaterSpell(actor))) casters++;
+  if (!confirms.length || !adapter.castWaterSpellById) return 0;
+  let totalCasts = 0;
+  for (const c of confirms) {
+    const actor = fromUuidSync(c.actorUuid);
+    if (!actor) continue;
+    for (const pick of c.casts) {
+      if (pick.count > 0) totalCasts += await adapter.castWaterSpellById(actor, pick.spellId, pick.count);
+    }
   }
-  const units = (game.settings.get(MODULE_ID, "waterSpellUnits") as number) ?? 8;
-  const conjured = casters * units;
+  const conjured = totalCasts * waterSpellUnits();
   if (conjured > 0) {
     await ChatMessage.create({
-      content: `<p>${game.i18n.format("SURVIVAL.WaterSpell.Conjured", { n: conjured })}</p>`,
+      content: `<p>${game.i18n.format("SURVIVAL.WaterSpell.Conjured", { n: conjured, casts: totalCasts })}</p>`,
       speaker: { alias: game.i18n.localize("SURVIVAL.Panel.Title") },
     });
   }

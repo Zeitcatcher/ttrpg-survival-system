@@ -51,11 +51,12 @@ export interface SurvivalSystemAdapter {
   // LEDGER MODE: seed the module's day-unit supply items into the world (GM convenience).
   seedSupplies?(): Promise<void>;
 
-  // WATER SPELLS (optional extra): a water-creating spell (Create Water) castable RIGHT NOW —
-  // prepared & unexpended, or a slot/use remaining. Knowing the spell is not enough.
-  findWaterSpell?(actor: any): { label: string } | null;
-  /** Cast it: expend the slot/use and post the spell card to chat. True on success. */
-  castWaterSpell?(actor: any): Promise<boolean>;
+  // WATER SPELLS (optional extra): water-creating spells (Create Water) castable RIGHT NOW —
+  // prepared & unexpended, or slots/uses remaining. Knowing the spell is not enough. `maxCasts`
+  // is how many times each can go off now, so a caster can spend several when one isn't enough.
+  findWaterSpells?(actor: any): { spellId: string; label: string; rank: number; maxCasts: number }[];
+  /** Cast one water spell up to `count` times (expend slot/use + post card each). Returns casts done. */
+  castWaterSpellById?(actor: any, spellId: string, count: number): Promise<number>;
 
   // DIAGNOSTICS: human-readable lines explaining how each inventory item was classified.
   diagnoseActor?(actor: any): string[];

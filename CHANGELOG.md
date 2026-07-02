@@ -2,6 +2,14 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.1.0
+
+Create Water rework.
+
+- The owning player now gets a compact prompt to pick which water spell(s) to cast and how many — so a caster can spend several slots when one casting isn't enough (e.g. Extreme Heat). Previously the player saw nothing at all.
+- The GM coordination dialog is compact, with Cast all / Cast one / Skip per caster; a GM decision closes the player's prompt.
+- Each casting makes the configured amount of water for that day (default 8), and multiple casts stack. Unused conjured water still evaporates at day's end.
+
 ## 1.0.0
 
 First public release. A survival tracker for Foundry VTT: food, water, and firewood for a travelling party, with hunger, thirst, and cold as consequences.
