@@ -1,4 +1,4 @@
-# Smoke-testing v0.4.1 in Foundry
+# Smoke-testing v0.5.0 in Foundry
 
 Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)** + the **v0.3–0.4 GM-play additions** (reset, member/base chips, remove, transfer, fungible provisions). The engine is unit-tested headless (62 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
@@ -9,7 +9,7 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
 4. **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
-> If you installed an earlier build, click **Update** so you get v0.4.1.
+> If you installed an earlier build, click **Update** so you get v0.5.0.
 
 ## 2. Sanity check
 - Console (**F12**) on load: `ttrpg-survival-system | ready (system adapter: pf2e)` + a **"Survival module loaded."** toast.
@@ -57,6 +57,15 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
 - You can also **tag any item**: open a physical item's sheet → set the **"Survival resource"** dropdown to food/water/firewood.
 - **Add** that token to the caravan → the panel's pool numbers read **from its inventory**. **Advance** → the actual item quantities **drop**. Click-to-edit a pool number grants/consumes real items to match.
 - Numbers look wrong? Run `game.modules.get("ttrpg-survival-system").api.diagnose()` (F12 console) — it prints the mode, every pool's actor link, live counts, and how each inventory item was classified.
+
+## 11. Create Water (v0.5.0)
+- Give a caster the **Create Water** spell, **prepared** (or a spontaneous slot / innate use). Merely knowing it is not enough.
+- Empty the party's water and hit **Advance Day**. A dry-run detects the coming thirst and:
+  - the **owning player** (if online) gets a *"Conjure water?"* dialog;
+  - the **GM** gets a coordination dialog listing every eligible caster — you can decide any row yourself (**Cast/Skip**), which **closes the player's prompt**; offline owners are GM-only rows.
+- Confirming **expends the slot/use and posts the spell card** to chat, then the tick runs with **+8 water for that day** (2 gallons × 4 units; configurable). On a **Week** advance the consent applies to each day of the span.
+- **Expiry rule:** conjured water not drunk that day **evaporates** — check that no pool number went *up* after the tick.
+- Settings: *Water spells* (on/off), *Water per cast*, *Water spell slugs* (add homebrew slugs, comma-separated). Note: prompts fire from the panel's **Advance** buttons (world-clock time changes tick without prompting).
 
 ## What to report back
 - Any **red console errors** (F12) — especially opening the panel/HUD, Add selected, editing a pool, Advance, the warm toggle, or Forage.

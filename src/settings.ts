@@ -38,6 +38,10 @@ export const SETTINGS: readonly SettingDef[] = [
   { key: "nextWaterDays", scope: "world", type: "Number", default: 0, config: true },
   { key: "hotMeal", scope: "world", type: "Boolean", default: false, config: true },
   { key: "hotMealEffectUuid", scope: "world", type: "String", default: "", config: true },
+  // Create Water: prompt eligible casters when an advance would leave someone thirsty.
+  { key: "waterSpell", scope: "world", type: "Boolean", default: true, config: true },
+  { key: "waterSpellUnits", scope: "world", type: "Number", default: 8, config: true },
+  { key: "waterSpellSlugs", scope: "world", type: "String", default: "create-water", config: true },
   { key: "maxCatchUpDays", scope: "world", type: "Number", default: 14, config: true },
   { key: "mountDefaultApplyConsequences", scope: "world", type: "Boolean", default: false, config: true },
   { key: "hudDensity", scope: "client", type: "String", default: "full", config: true,

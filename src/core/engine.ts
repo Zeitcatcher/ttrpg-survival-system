@@ -16,13 +16,21 @@ export interface TickOptions {
   lethal: LethalMode;
   /** Days a single advance will process before flagging montage/lump (default 14). */
   maxCatchUpDays: number;
+  /** Water conjured by spells (e.g. Create Water), refreshed EACH processed day. It lives in an
+   *  ephemeral pool drawn before any stored water and is discarded at day's end — spell water
+   *  that isn't drunk the day it was created evaporates (never persisted). */
+  conjuredWaterPerDay: number;
 }
 
 export const DEFAULT_TICK_OPTIONS: TickOptions = {
   sourceMode: "communalFirst",
   lethal: "capStage3",
   maxCatchUpDays: 14,
+  conjuredWaterPerDay: 0,
 };
+
+/** The ephemeral spell-water pool id. Never appears in CaravanState.pools or the write-back. */
+const CONJURED_ID = "__conjured";
 
 export interface ConsumerDraw {
   consumerId: string;
@@ -107,7 +115,21 @@ function resolveDayForGroup(
   const band = forBand(state.climate[group] ?? "temperate");
   const present = state.pools.filter((p) => p.withParty[group] === true);
   const classified = classifyPools(present);
-  const ledger = new AllocationLedger(present);
+
+  // Spell water (if any) is an extra ephemeral pool for THIS day only: drawn before stored
+  // water (it evaporates anyway), shared by everyone, and never written back.
+  const conjured = Math.max(0, opts.conjuredWaterPerDay);
+  const ledgerPools =
+    conjured > 0
+      ? [
+          {
+            id: CONJURED_ID, label: "conjured", counts: { food: 0, water: conjured, firewood: 0 },
+            withParty: {}, isMount: false, isStorage: false,
+          },
+          ...present,
+        ]
+      : present;
+  const ledger = new AllocationLedger(ledgerPools);
 
   const consumers = state.consumers.filter(
     (c) => c.group === group && c.enabled && c.needsConsumption,
@@ -123,7 +145,7 @@ function resolveDayForGroup(
     const waterNeed = c.ration.water * c.sizeMult * band.waterMult;
     const order = sourceOrder(c, classified, opts.sourceMode);
     const gotFood = ledger.draw(order, "food", foodNeed);
-    const gotWater = ledger.draw(order, "water", waterNeed);
+    const gotWater = ledger.draw(conjured > 0 ? [CONJURED_ID, ...order] : order, "water", waterNeed);
 
     draws.push({
       consumerId: c.id,
