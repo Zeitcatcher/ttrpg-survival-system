@@ -28,3 +28,4 @@ coverage/
 
 # Foundry symlink artifacts (local dev linking into a Data/modules folder)
 *.local
+module.zip

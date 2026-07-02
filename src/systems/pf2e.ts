@@ -226,7 +226,7 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
   }
 
   async seedSupplies(): Promise<void> {
-    for (const kind of ["food", "water", "firewood"] as const) {
+    for (const kind of ["food", "water", "firewood", "provision"] as const) {
       const has = (game.items ?? []).some?.((i: any) => (i.slug ?? i.system?.slug) === SUPPLY_SLUG[kind]);
       if (!has) await Item.create?.(supplyItemData(kind, 1));
     }

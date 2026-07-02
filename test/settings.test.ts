@@ -5,7 +5,7 @@ describe("settings registry", () => {
   const byKey = Object.fromEntries(SETTINGS.map((s) => [s.key, s]));
 
   it("ships the locked Shards defaults", () => {
-    expect(byKey.supplyDetail.default).toBe("abstract");
+    expect(byKey.supplyDetail.default).toBe("ledger"); // flipped 0.4.0: inventory counts by default
     expect(byKey.upkeepPrompt.default).toBe("onlyWhenWrong");
     expect(byKey.sourceMode.default).toBe("communalFirst");
     expect(byKey.climateModel.default).toBe("manual");

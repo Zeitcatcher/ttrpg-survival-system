@@ -9,10 +9,14 @@ import {
   editPool,
   forage,
   readModel,
+  removeBasePool,
+  removeMemberFromCaravan,
   resetSurvival,
   setClimate,
+  setMemberEnabled,
   setMemberRole,
   setWithParty,
+  transferSupply,
 } from "../state/bridge";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
 import { postUpkeepCard } from "./upkeepCard";
@@ -66,6 +70,87 @@ async function onAddSelected(this: any): Promise<void> {
 async function onSetRole(this: any, _e: Event, target: HTMLElement): Promise<void> {
   await setMemberRole(target.dataset.actor!, target.dataset.mount === "true");
   this.render();
+}
+async function onToggleMember(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  await setMemberEnabled(target.dataset.actor!, target.dataset.enabled === "true");
+  this.render();
+}
+async function onRemoveMember(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  const name = target.dataset.name ?? "";
+  const ok = await foundry.applications.api.DialogV2.confirm({
+    window: { title: game.i18n.localize("SURVIVAL.Panel.Remove") },
+    content: `<p>${game.i18n.format("SURVIVAL.Panel.RemoveMemberConfirm", { name })}</p>`,
+  }).catch(() => false);
+  if (!ok) return;
+  await removeMemberFromCaravan(target.dataset.actor!, panelAdapter);
+  this.render();
+}
+async function onRemovePool(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  const name = target.dataset.name ?? "";
+  const ok = await foundry.applications.api.DialogV2.confirm({
+    window: { title: game.i18n.localize("SURVIVAL.Panel.Remove") },
+    content: `<p>${game.i18n.format("SURVIVAL.Panel.RemovePoolConfirm", { name })}</p>`,
+  }).catch(() => false);
+  if (!ok) return;
+  await removeBasePool(target.dataset.pool!);
+  this.render();
+}
+
+const esc = (s: string): string =>
+  foundry.utils?.escapeHTML?.(s) ??
+  s.replace(/[&<>"]/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+
+/** Deliberate sharing (item→item in Ledger mode): pick a target pool, a resource, an amount. */
+async function onTransfer(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  if (!panelAdapter) return;
+  const fromId = target.dataset.pool!;
+  const pools = (await readModel(panelAdapter))[0]?.pools ?? [];
+  const from = pools.find((p) => p.id === fromId);
+  const others = pools.filter((p) => p.id !== fromId);
+  if (!from || !others.length) return;
+
+  const kinds = ["food", "water", "provision", "firewood"] as const;
+  const toOptions = others
+    .map((p) => `<option value="${esc(p.id)}">${esc(p.label)}${p.separated ? " ⚠" : ""}</option>`)
+    .join("");
+  const kindOptions = kinds
+    .map((k) => `<option value="${k}">${esc(game.i18n.localize(`SURVIVAL.Resource.${k}`))} (${from.counts[k]})</option>`)
+    .join("");
+  const row = (label: string, field: string) =>
+    `<div class="form-group"><label>${esc(game.i18n.localize(label))}</label>${field}</div>`;
+
+  try {
+    const r = await foundry.applications.api.DialogV2.prompt({
+      window: { title: `${game.i18n.localize("SURVIVAL.Panel.Transfer")} — ${from.label}` },
+      content:
+        row("SURVIVAL.Panel.TransferTo", `<select name="to">${toOptions}</select>`) +
+        row("SURVIVAL.Panel.TransferKind", `<select name="kind">${kindOptions}</select>`) +
+        row("SURVIVAL.Panel.TransferAmount", `<input type="number" name="amount" value="1" min="1" step="1">`),
+      ok: {
+        label: game.i18n.localize("SURVIVAL.Panel.Transfer"),
+        callback: (_ev: Event, button: any) => ({
+          to: String(button.form.elements.to.value),
+          kind: String(button.form.elements.kind.value) as (typeof kinds)[number],
+          amount: Number(button.form.elements.amount.value),
+        }),
+      },
+    });
+    if (!r) return;
+    const moved = await transferSupply(fromId, r.to, r.kind, r.amount, panelAdapter);
+    if (moved > 0) {
+      const toLabel = others.find((p) => p.id === r.to)?.label ?? "";
+      ui.notifications?.info(
+        game.i18n.format("SURVIVAL.Panel.TransferDone", {
+          n: moved, kind: game.i18n.localize(`SURVIVAL.Resource.${r.kind}`), from: from.label, to: toLabel,
+        }),
+      );
+    } else {
+      ui.notifications?.warn(game.i18n.localize("SURVIVAL.Panel.TransferNone"));
+    }
+    this.render();
+  } catch {
+    /* dialog dismissed */
+  }
 }
 async function onAddBase(this: any): Promise<void> {
   const name = await promptText(game.i18n.localize("SURVIVAL.Panel.BaseNameDefault"));
@@ -170,6 +255,10 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       addSelected: onAddSelected,
       addBase: onAddBase,
       setRole: onSetRole,
+      toggleMember: onToggleMember,
+      removeMember: onRemoveMember,
+      removePool: onRemovePool,
+      transfer: onTransfer,
       reset: onReset,
       forage: onForage,
       cook: onCook,
@@ -194,6 +283,9 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       foragingOn: game.settings.get(MODULE_ID, "foraging") === true,
       hotMealOn: game.settings.get(MODULE_ID, "hotMeal") === true,
       nextWaterDays: (game.settings.get(MODULE_ID, "nextWaterDays") as number) ?? 0,
+      supplyModeLabel: game.i18n.localize(
+        game.settings.get(MODULE_ID, "supplyDetail") === "ledger" ? "SURVIVAL.Mode.ledger" : "SURVIVAL.Mode.abstract",
+      ),
       bands: BANDS.map((b) => ({
         band: b,
         active: b === g.climate,
@@ -202,9 +294,10 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       pools: g.pools.map((p) => ({
         id: p.id,
         label: p.label,
-        isMount: p.isMount,
+        isStorage: p.isStorage,
         separated: p.separated,
         withNext: (!p.withParty).toString(),
+        hasOwner: p.hasOwner,
         food: p.counts.food,
         water: p.counts.water,
         firewood: p.counts.firewood,
@@ -216,7 +309,15 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         size: r.isMount ? `Huge ×${r.sizeMult}` : r.sizeMult > 1 ? `×${r.sizeMult}` : "×1",
         isMount: r.isMount,
         roleNext: (!r.isMount).toString(),
+        enabled: r.enabled,
+        enabledNext: (!r.enabled).toString(),
         zeroNeeds: r.zeroNeeds,
+        // One muted label replaces the three clock cells when the row doesn't consume.
+        inactiveLabel: r.zeroNeeds
+          ? game.i18n.localize("SURVIVAL.Panel.NoNeeds")
+          : !r.enabled
+            ? game.i18n.localize("SURVIVAL.Panel.NotConsuming")
+            : null,
         hunger: fmtClock(r.tracks.hunger),
         thirst: fmtClock(r.tracks.thirst),
         cold: fmtClock(r.tracks.cold),

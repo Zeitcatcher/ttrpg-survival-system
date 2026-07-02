@@ -24,6 +24,7 @@
     <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.water"}}</span><span class="v">{{headline.water}}</span></div>
     <div class="ss-stat"><span class="k">{{localize "SURVIVAL.Resource.firewood"}}</span><span class="v">{{#if firewoodNeeded}}{{headline.firewood}}{{else}}—{{/if}}</span></div>
   </div>
+  <div class="ss-mode">{{supplyModeLabel}}</div>
   {{#if nextWaterDays}}<div class="ss-nextwater">💧 {{localize "SURVIVAL.Panel.NextWater"}}: {{nextWaterDays}}</div>{{/if}}
 
   <div class="ss-section">
@@ -39,9 +40,11 @@
     <div class="ss-pool {{#if separated}}separated{{/if}}">
       <div class="ss-pool-top">
         <span class="ss-pool-name">{{label}}</span>
-        {{#if isMount}}<span class="ss-tag">mount</span>{{/if}}
+        {{#if isStorage}}<span class="ss-tag">{{localize "SURVIVAL.Panel.BaseTag"}}</span>{{/if}}
         {{#if separated}}<span class="ss-tag warn">{{localize "SURVIVAL.Panel.Separated"}}</span>{{/if}}
         <button type="button" class="ss-toggle {{#unless separated}}on{{/unless}}" data-action="toggleParty" data-pool="{{id}}" data-with="{{withNext}}">{{localize "SURVIVAL.Panel.WithParty"}}</button>
+        <button type="button" class="ss-num" data-action="transfer" data-pool="{{id}}" title="{{localize "SURVIVAL.Panel.Transfer"}}">⇄</button>
+        {{#unless hasOwner}}<button type="button" class="ss-x" data-action="removePool" data-pool="{{id}}" data-name="{{label}}" title="{{localize "SURVIVAL.Panel.Remove"}}">✕</button>{{/unless}}
       </div>
       <div class="ss-pool-counts">
         <button type="button" class="ss-num" data-action="editPool" data-pool="{{id}}" data-kind="food" data-current="{{food}}">🍖 {{food}}</button>
@@ -73,11 +76,17 @@
       </thead>
       <tbody>
         {{#each roster}}
-        <tr class="{{#if zeroNeeds}}zero{{/if}}">
-          <td class="nm">{{name}} <button type="button" class="ss-role {{#if isMount}}on{{/if}}" data-action="setRole" data-actor="{{id}}" data-mount="{{roleNext}}" title="{{localize "SURVIVAL.Panel.RoleHint"}}">{{#if isMount}}🐴{{else}}🎒{{/if}}</button>{{#if @root.foragingOn}}{{#unless zeroNeeds}} <button type="button" class="ss-forage" data-action="forage" data-actor="{{id}}" data-name="{{name}}" title="{{localize "SURVIVAL.Panel.Forage"}}">🌿</button>{{/unless}}{{/if}}</td>
+        <tr class="{{#if inactiveLabel}}zero{{/if}}">
+          <td class="nm">
+            <div class="ss-nm-line">{{name}}{{#if @root.foragingOn}}{{#unless inactiveLabel}} <button type="button" class="ss-forage" data-action="forage" data-actor="{{id}}" data-name="{{name}}" title="{{localize "SURVIVAL.Panel.Forage"}}">🌿</button>{{/unless}}{{/if}} <button type="button" class="ss-x" data-action="removeMember" data-actor="{{id}}" data-name="{{name}}" title="{{localize "SURVIVAL.Panel.Remove"}}">✕</button></div>
+            <div class="ss-chips">
+              <button type="button" class="ss-chip {{#if enabled}}on{{/if}}" data-action="toggleMember" data-actor="{{id}}" data-enabled="{{enabledNext}}" title="{{localize "SURVIVAL.Panel.PartyMemberHint"}}">{{localize "SURVIVAL.Panel.PartyMember"}}</button>
+              <button type="button" class="ss-chip base {{#if isMount}}on{{/if}}" data-action="setRole" data-actor="{{id}}" data-mount="{{roleNext}}" title="{{localize "SURVIVAL.Panel.BaseHint"}}">{{localize "SURVIVAL.Panel.Base"}}</button>
+            </div>
+          </td>
           <td>{{size}}</td>
-          {{#if zeroNeeds}}
-          <td colspan="3" class="muted">{{localize "SURVIVAL.Panel.NoNeeds"}}</td>
+          {{#if inactiveLabel}}
+          <td colspan="3" class="muted">{{inactiveLabel}}</td>
           {{else}}
           <td class="{{hunger.cls}}">{{hunger.label}} <span class="clk">{{hunger.clock}}</span></td>
           <td class="{{thirst.cls}}">{{thirst.label}} <span class="clk">{{thirst.clock}}</span></td>

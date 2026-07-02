@@ -24,6 +24,21 @@ describe("registry normalization", () => {
     expect(base.withParty).toEqual({ Main: true });
   });
 
+  it("backfills actorUuid on a member's own pool (pre-0.2.0 registries) so Ledger can read it", () => {
+    const reg = normalizeRegistry({
+      members: [
+        { uuid: "Actor.abc", poolId: "pack-1" } as any,
+        { uuid: "Actor.def", poolId: "pack-2" } as any,
+      ],
+      pools: [
+        { id: "pack-1", counts: {}, withParty: { Main: true } } as any, // old pool, no actorUuid
+        { id: "pack-2", counts: {}, withParty: { Main: true }, actorUuid: "Actor.explicit" } as any,
+      ],
+    });
+    expect(reg.pools[0].actorUuid).toBe("Actor.abc"); // backfilled from the member link
+    expect(reg.pools[1].actorUuid).toBe("Actor.explicit"); // an explicit link is never overwritten
+  });
+
   it("guarantees a climate band for every group", () => {
     const reg = normalizeRegistry({ groups: ["Main", "Delve"], climate: { Main: "hot" } });
     expect(reg.climate.Main).toBe("hot");
