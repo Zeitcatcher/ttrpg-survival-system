@@ -2,6 +2,14 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.2.0
+
+- Added an optional **Survival mode**. By default nothing changes — consequences still cap at stage 3, and no one dies by accident. Turn it on and unchecked hunger, thirst, or cold keep escalating past stage 3 into worse conditions and, eventually, death.
+  - Three tiers: **Off** (today's behaviour), **Harsh** (extra debuff stages 4–5, but never fatal), and **Survival** (the full ladder, ending in death).
+  - Death is never automatic: at the fatal moment the GM gets a prompt for that character — **Confirm death**, **Knock to Dying** (0 HP, allies can still save them), or **Spare**.
+  - New stages 4–5 pile on Drained and Doomed (each track keeps its own flavour — hunger weakens, thirst sickens, cold stiffens), so a dying character genuinely can't cheat the end.
+  - A **pace** setting — Slower / Balanced / Faster — controls how fast the fatal descent unfolds. Stages 1–3 are the same in every pace; only the climb to death speeds up or slows down.
+
 ## 1.1.3
 
 - The actual fix for players never receiving the Create Water prompt: the manifest never declared `"socket": true`, so Foundry's server refused to relay the module's socket messages and socketlib refused to register it — on every client, no matter the settings. One manifest line fixes prompt delivery and the player "kept warm" toggle, which had been silently broken by the same cause. After updating, relaunch the world (Return to Setup → Launch) so the server reads the new manifest — a browser reload is not enough.

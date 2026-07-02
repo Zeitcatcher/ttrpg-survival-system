@@ -297,6 +297,33 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     await actor.setFlag?.(MODULE_ID, "applied", next);
   }
 
+  // Survival-mode terminal outcomes (GM-confirmed upstream). Foundry-coupled; smoke-tested live.
+  async applyDying(actor: any): Promise<void> {
+    await actor.update?.({ "system.attributes.hp.value": 0 });
+    // Dying 1 = unconscious and dying; PF2e's recovery checks / allies decide the outcome.
+    const dying = actor.conditions?.bySlug?.("dying")?.[0] ?? actor.getCondition?.("dying");
+    if (dying?.id) {
+      const v = Math.max(1, dying.value ?? 1);
+      await game.pf2e?.ConditionManager?.updateConditionValue?.(dying.id, actor, v);
+    } else {
+      await actor.increaseCondition?.("dying", { value: 1 });
+    }
+  }
+
+  async applyDeath(actor: any): Promise<void> {
+    await actor.update?.({ "system.attributes.hp.value": 0 });
+    // Push Dying to its maximum so the PF2e system resolves the character as dead (Doomed from the
+    // late stages makes this land even sooner)...
+    const max = actor.system?.attributes?.dying?.max ?? 4;
+    await actor.increaseCondition?.("dying", { value: max });
+    // ...and set the token's "dead" overlay directly as a belt-and-suspenders visual.
+    try {
+      await actor.toggleStatusEffect?.("dead", { active: true });
+    } catch {
+      /* some cores name the overlay differently; the maxed Dying already marks death */
+    }
+  }
+
   async rollForage(actor: any, dc: number): Promise<DegreeOfSuccess | null> {
     const stat = actor?.getStatistic?.("survival");
     if (!stat?.roll) return null;

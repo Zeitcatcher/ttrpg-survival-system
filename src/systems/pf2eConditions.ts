@@ -9,30 +9,36 @@ export interface ConditionSpec {
 }
 
 // The full set of conditions demanded AT each stage (Fatigued carries through every active stage).
-// Mirrors survival-mechanics §4. Stage 4 is only reached when the lethal dial = climbToDeath.
+// Mirrors survival-mechanics §4. Stages 4–5 are only reached in the lethal modes (climbHarsh /
+// climbToDeath); each track keeps its own flavour (hunger→enfeebled, thirst→sickened, cold→clumsy)
+// and escalates Drained + Doomed toward the end. Stage 6 is DEATH — it carries no condition
+// signature (the character dies), so `signature` clamps at 5.
 const STAGE_MAP: Record<TrackKey, Record<number, ConditionSpec[]>> = {
   hunger: {
     1: [{ slug: "fatigued" }],
     2: [{ slug: "fatigued" }, { slug: "enfeebled", value: 1 }],
     3: [{ slug: "fatigued" }, { slug: "drained", value: 1 }],
-    4: [{ slug: "fatigued" }, { slug: "drained", value: 2 }, { slug: "doomed", value: 1 }],
+    4: [{ slug: "fatigued" }, { slug: "enfeebled", value: 2 }, { slug: "drained", value: 2 }, { slug: "doomed", value: 1 }],
+    5: [{ slug: "fatigued" }, { slug: "enfeebled", value: 2 }, { slug: "drained", value: 3 }, { slug: "doomed", value: 2 }],
   },
   thirst: {
     1: [{ slug: "fatigued" }],
     2: [{ slug: "fatigued" }, { slug: "sickened", value: 1 }],
     3: [{ slug: "fatigued" }, { slug: "drained", value: 1 }],
-    4: [{ slug: "fatigued" }, { slug: "drained", value: 2 }, { slug: "doomed", value: 1 }],
+    4: [{ slug: "fatigued" }, { slug: "sickened", value: 2 }, { slug: "drained", value: 2 }, { slug: "doomed", value: 1 }],
+    5: [{ slug: "fatigued" }, { slug: "sickened", value: 3 }, { slug: "drained", value: 3 }, { slug: "doomed", value: 2 }],
   },
   cold: {
     1: [{ slug: "fatigued" }],
     2: [{ slug: "fatigued" }, { slug: "clumsy", value: 1 }],
     3: [{ slug: "fatigued" }, { slug: "clumsy", value: 2 }, { slug: "drained", value: 1 }],
-    4: [{ slug: "fatigued" }, { slug: "drained", value: 2 }, { slug: "doomed", value: 1 }],
+    4: [{ slug: "fatigued" }, { slug: "clumsy", value: 2 }, { slug: "drained", value: 2 }, { slug: "doomed", value: 1 }],
+    5: [{ slug: "fatigued" }, { slug: "clumsy", value: 3 }, { slug: "drained", value: 3 }, { slug: "doomed", value: 2 }],
   },
 };
 
 function signature(track: TrackKey, stage: number): ConditionSpec[] {
-  return stage >= 1 ? (STAGE_MAP[track][Math.min(stage, 4)] ?? []) : [];
+  return stage >= 1 ? (STAGE_MAP[track][Math.min(stage, 5)] ?? []) : [];
 }
 
 /** Merge condition specs the PF2e-correct way: different condition TYPES coexist, but the SAME

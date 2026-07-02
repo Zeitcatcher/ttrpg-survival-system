@@ -41,6 +41,20 @@ describe("planConditions (pf2e stage → conditions)", () => {
     expect(mixed.some((s) => s.slug === "doomed")).toBe(true);
   });
 
+  it("stage 5 escalates the descent (thirst 5 = Fatigued + Sickened 3 + Drained 3 + Doomed 2)", () => {
+    const t5 = planConditions({ hunger: 0, thirst: 5, cold: 0 });
+    expect(slugs(t5)).toEqual(["doomed", "drained", "fatigued", "sickened"]);
+    expect(val(t5, "drained")).toBe(3);
+    expect(val(t5, "doomed")).toBe(2);
+    expect(val(t5, "sickened")).toBe(3);
+  });
+
+  it("the death stage (6) carries no new conditions — clamps to the stage-5 signature", () => {
+    expect(planConditions({ hunger: 6, thirst: 0, cold: 0 })).toEqual(
+      planConditions({ hunger: 5, thirst: 0, cold: 0 }),
+    );
+  });
+
   it("Fatigued is never duplicated even when every track demands it", () => {
     const all = planConditions({ hunger: 1, thirst: 1, cold: 1 });
     expect(all).toEqual([{ slug: "fatigued" }]);

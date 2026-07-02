@@ -1,6 +1,7 @@
 import { openGmPanel, refreshGmPanel, setPanelAdapter } from "./apps/GmControlPanel";
 import { openPartyHud, refreshPartyHud, setHudAdapter } from "./apps/PartyHud";
 import { registerSheetInjection } from "./apps/sheet-injection";
+import { resolveDeaths } from "./apps/deathDialog";
 import { postUpkeepCard } from "./apps/upkeepCard";
 import { computeTick, DEFAULT_TICK_OPTIONS } from "./core";
 import { ensureSocket, registerSocket } from "./net/socket";
@@ -127,7 +128,10 @@ Hooks.once("ready", () => {
     const newDay = Math.floor(worldTime / SECS_PER_DAY);
     if (newDay === prevDay) return;
     runTickViaFoundry(newDay, activeAdapter)
-      .then((result) => postUpkeepCard(result))
+      .then(async (result) => {
+        await postUpkeepCard(result);
+        await resolveDeaths(result, activeAdapter!);
+      })
       .catch((e: unknown) => console.error(`${MODULE_ID} | tick failed`, e));
   });
 

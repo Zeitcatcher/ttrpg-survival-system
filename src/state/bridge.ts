@@ -19,6 +19,7 @@ function tickOptionsFromSettings(): Partial<TickOptions> {
   return {
     sourceMode: game.settings.get(MODULE_ID, "sourceMode"),
     lethal: game.settings.get(MODULE_ID, "lethalDeprivation"),
+    pace: game.settings.get(MODULE_ID, "deprivationPace"),
     maxCatchUpDays: game.settings.get(MODULE_ID, "maxCatchUpDays"),
   };
 }

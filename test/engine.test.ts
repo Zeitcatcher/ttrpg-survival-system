@@ -123,4 +123,35 @@ describe("SurvivalEngine — the Shards desert scenario", () => {
       expect(state.actorState.grog.thirst.stage).toBe(0);
     });
   });
+
+  describe("survival mode — deaths", () => {
+    const stranded = () => {
+      const s = buildShardsState();
+      s.pools.find((p) => p.id === "chiga")!.withParty.Main = false; // strand the party (no water for Грог)
+      return s;
+    };
+
+    it("reports a fatal-stage character ONLY under climbToDeath; harsh caps at 5, off at 3", () => {
+      const lethal = stranded();
+      const res = computeTick(lethal, 10, { lethal: "climbToDeath", pace: "fast" });
+      expect(lethal.actorState.grog.thirst.stage).toBe(6);
+      expect(res.deaths.some((d) => d.consumerId === "grog" && d.tracks.includes("thirst"))).toBe(true);
+
+      const harsh = stranded();
+      const rh = computeTick(harsh, 10, { lethal: "climbHarsh", pace: "fast" });
+      expect(harsh.actorState.grog.thirst.stage).toBe(5);
+      expect(rh.deaths).toEqual([]);
+
+      const off = stranded();
+      const ro = computeTick(off, 10, { lethal: "capStage3", pace: "fast" });
+      expect(off.actorState.grog.thirst.stage).toBe(3);
+      expect(ro.deaths).toEqual([]);
+    });
+
+    it("a narrate-only mount never appears in deaths, even when starving", () => {
+      const state = stranded();
+      const res = computeTick(state, 12, { lethal: "climbToDeath", pace: "fast" });
+      expect(res.deaths.some((d) => d.consumerId === "chiga")).toBe(false);
+    });
+  });
 });

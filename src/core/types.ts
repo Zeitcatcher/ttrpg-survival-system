@@ -7,7 +7,13 @@ export type DegreeOfSuccess = "critFail" | "fail" | "success" | "critSuccess";
 export type TrackKey = "hunger" | "thirst" | "cold";
 export type ClimateBand = "temperate" | "hot" | "extremeHeat" | "cold" | "extremeCold";
 export type SourceMode = "communalFirst" | "personalFirst";
-export type LethalMode = "capStage3" | "climbToDeath";
+/** How far the consequence ladder is allowed to climb:
+ *  - capStage3: today's safe default — debuffs stop at stage 3, no death (Decision E).
+ *  - climbHarsh: extra debuff stages 4–5, but still stops short of death.
+ *  - climbToDeath: the full ladder, ending in a (GM-confirmed) death at stage 6. */
+export type LethalMode = "capStage3" | "climbHarsh" | "climbToDeath";
+/** How fast the LETHAL descent (stages 4→6) unfolds; stages 1–3 are identical across paces. */
+export type Pace = "slow" | "balanced" | "fast";
 
 /** Per-band climate effects (see ClimateModel). */
 export interface BandEffects {

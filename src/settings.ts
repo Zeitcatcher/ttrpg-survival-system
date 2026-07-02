@@ -29,8 +29,12 @@ export const SETTINGS: readonly SettingDef[] = [
     choices: { communalFirst: "Communal first", personalFirst: "Personal first" } },
   { key: "climateModel", scope: "world", type: "String", default: "manual", config: true,
     choices: { off: "Off", manual: "Manual band", auto: "Read weather module (later)" } },
+  // Survival mode: how far deprivation is allowed to climb. Off = today's safe cap at stage 3.
   { key: "lethalDeprivation", scope: "world", type: "String", default: "capStage3", config: true,
-    choices: { capStage3: "Cap at stage 3", climbToDeath: "Climb to death" } },
+    choices: { capStage3: "Off — cap at stage 3", climbHarsh: "Harsh — extra debuffs, no death", climbToDeath: "Survival — climb to death" } },
+  // How fast the fatal descent (stages 4→death) unfolds. Stages 1–3 are unaffected.
+  { key: "deprivationPace", scope: "world", type: "String", default: "balanced", config: true,
+    choices: { slow: "Slower", balanced: "Balanced", fast: "Faster / deadlier" } },
   { key: "splitPartyMode", scope: "world", type: "String", default: "single", config: true,
     choices: { single: "Single party", named: "Named groups" } },
   { key: "foraging", scope: "world", type: "Boolean", default: false, config: true },

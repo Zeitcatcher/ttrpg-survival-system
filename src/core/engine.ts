@@ -7,13 +7,17 @@ import {
   type Consumer,
   emptyActorState,
   type LethalMode,
+  type Pace,
   type ResourceKind,
   type SourceMode,
+  type TrackKey,
 } from "./types";
 
 export interface TickOptions {
   sourceMode: SourceMode;
   lethal: LethalMode;
+  /** How fast the fatal descent (stages 4→6) unfolds. Ignored below stage 4. */
+  pace: Pace;
   /** Days a single advance will process before flagging montage/lump (default 14). */
   maxCatchUpDays: number;
   /** Water conjured by spells (e.g. Create Water), refreshed EACH processed day. It lives in an
@@ -25,6 +29,7 @@ export interface TickOptions {
 export const DEFAULT_TICK_OPTIONS: TickOptions = {
   sourceMode: "communalFirst",
   lethal: "capStage3",
+  pace: "balanced",
   maxCatchUpDays: 14,
   conjuredWaterPerDay: 0,
 };
@@ -66,6 +71,17 @@ export interface Headline {
   firewood: number;
 }
 
+/** Stage at which a character dies — only reachable in climbToDeath. It carries no condition
+ *  signature: death itself is applied outside the pure engine, GM-confirmed. */
+export const DEATH_STAGE = 6;
+
+export interface DeathEvent {
+  consumerId: string;
+  name: string;
+  /** Which track(s) have reached the fatal stage (usually one, but heat + starvation can coincide). */
+  tracks: TrackKey[];
+}
+
 export interface TickResult {
   fromDay: number;
   toDay: number;
@@ -74,8 +90,25 @@ export interface TickResult {
   perDay: DayGroupResolution[];
   /** Consolidated shortfalls from the LAST processed day (what the upkeep card shows). */
   lastDayShortfalls: Shortfall[];
+  /** Consumers who reached the fatal stage this tick (climbToDeath only). The GM confirms each. */
+  deaths: DeathEvent[];
   headlineByGroup: Record<string, Headline>;
   state: CaravanState;
+}
+
+/** Consumers whose deprivation has reached the fatal stage on at least one track. Narrate-only
+ *  mounts are excluded (they never take conditions), as are the disabled / non-eaters. */
+function collectDeaths(state: CaravanState): DeathEvent[] {
+  const out: DeathEvent[] = [];
+  for (const c of state.consumers) {
+    if (!c.enabled || !c.needsConsumption) continue;
+    if (c.isMount && !c.applyConsequences) continue;
+    const st = state.actorState[c.id];
+    if (!st) continue;
+    const tracks = (["hunger", "thirst", "cold"] as TrackKey[]).filter((t) => st[t].stage >= DEATH_STAGE);
+    if (tracks.length) out.push({ consumerId: c.id, name: c.name, tracks });
+  }
+  return out;
 }
 
 export function dailyGroupNeed(
@@ -192,10 +225,10 @@ function resolveDayForGroup(
     const warm = c.warmAuto || c.keptWarm || campfireLit;
     const coldSatisfied = !band.cold || warm;
 
-    advanceTrack(st.hunger, TRACKS.hunger, sat.food, c.graceDays.hunger, opts.lethal);
+    advanceTrack(st.hunger, TRACKS.hunger, sat.food, c.graceDays.hunger, opts.lethal, opts.pace);
     const thirstGrace = Math.max(0, c.graceDays.thirst - band.thirstGracePenalty);
-    advanceTrack(st.thirst, TRACKS.thirst, sat.water, thirstGrace, opts.lethal);
-    advanceTrack(st.cold, TRACKS.cold, coldSatisfied, c.graceDays.cold, opts.lethal, band.cold ? band.coldStagePerNight : 0);
+    advanceTrack(st.thirst, TRACKS.thirst, sat.water, thirstGrace, opts.lethal, opts.pace);
+    advanceTrack(st.cold, TRACKS.cold, coldSatisfied, c.graceDays.cold, opts.lethal, opts.pace, band.cold ? band.coldStagePerNight : 0);
 
     const d = draws.find((x) => x.consumerId === c.id);
     if (d) d.warm = warm;
@@ -224,7 +257,7 @@ export function computeTick(
     state.lastTickDay = targetDay;
     return {
       fromDay, toDay: targetDay, daysProcessed: 0, overflow: false, perDay: [],
-      lastDayShortfalls: [], headlineByGroup: headlines(state), state,
+      lastDayShortfalls: [], deaths: [], headlineByGroup: headlines(state), state,
     };
   }
 
@@ -247,7 +280,7 @@ export function computeTick(
 
   return {
     fromDay, toDay: targetDay, daysProcessed: lastProcessed - fromDay, overflow,
-    perDay, lastDayShortfalls, headlineByGroup: headlines(state), state,
+    perDay, lastDayShortfalls, deaths: collectDeaths(state), headlineByGroup: headlines(state), state,
   };
 }
 

@@ -83,7 +83,7 @@ export function buildUpkeepSummary(result: TickResult, group: string): UpkeepSum
           name: c.name,
           track,
           stage,
-          statusKey: `SURVIVAL.Status.${track}.${Math.min(stage, 3)}`,
+          statusKey: `SURVIVAL.Status.${track}.${Math.min(stage, 6)}`,
         });
       }
     }

@@ -24,6 +24,7 @@ import {
 import { buildHeadlineView } from "./headline";
 import { negotiateWaterCasts } from "./waterCastDialog";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
+import { resolveDeaths } from "./deathDialog";
 import { postUpkeepCard } from "./upkeepCard";
 
 const BANDS: ClimateBand[] = ["temperate", "hot", "extremeHeat", "cold", "extremeCold"];
@@ -51,6 +52,7 @@ async function onAdvance(this: any, _e: Event, target: HTMLElement): Promise<voi
     }
     const result = await advanceDays(days, panelAdapter, conjuredWaterPerDay > 0 ? { conjuredWaterPerDay } : {});
     await postUpkeepCard(result);
+    await resolveDeaths(result, panelAdapter);
   }
   this.render();
 }
@@ -243,7 +245,7 @@ function fmtClock(t: { stage: number; daysDeprived: number; grace: number; statu
   return {
     label: t.statusKey ? game.i18n.localize(t.statusKey) : "—",
     clock: `${t.daysDeprived}/${t.grace}`,
-    cls: t.stage >= 3 ? "danger" : t.stage >= 1 ? "warn" : "",
+    cls: t.stage >= 5 ? "critical" : t.stage >= 3 ? "danger" : t.stage >= 1 ? "warn" : "",
   };
 }
 

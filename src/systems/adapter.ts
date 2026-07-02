@@ -39,6 +39,12 @@ export interface SurvivalSystemAdapter {
   // CONSEQUENCES — ONE idempotent reconcile over ALL tracks (union, combined-cap clamped)
   reconcileConsequences(actor: any, stages: Record<TrackKey, number>): Promise<void>;
 
+  // DEATH (survival mode only, GM-confirmed): the terminal outcome of unchecked deprivation.
+  /** Kill the actor outright (drop to 0 HP and apply the system's dead state). */
+  applyDeath?(actor: any): Promise<void>;
+  /** Knock the actor to 0 HP / dying instead of killing — allies can still stabilize. */
+  applyDying?(actor: any): Promise<void>;
+
   // WARMTH
   isWarmSourceEquipped(actor: any): boolean;
 

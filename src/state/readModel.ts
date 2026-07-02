@@ -92,7 +92,7 @@ export function projectGroup(state: CaravanState, group: string, headline: Headl
           stage: ts.stage,
           daysDeprived: ts.daysDeprived,
           grace: c.graceDays[t],
-          statusKey: ts.stage >= 1 ? `SURVIVAL.Status.${t}.${Math.min(ts.stage, 3)}` : null,
+          statusKey: ts.stage >= 1 ? `SURVIVAL.Status.${t}.${Math.min(ts.stage, 6)}` : null,
           blockedHealing: ts.blockedHealing,
         };
       }

@@ -65,6 +65,7 @@
 .ss-roster tr.zero td { color: #6c707c; }
 .ss-roster td.warn { color: var(--ss-warn); }
 .ss-roster td.danger { color: var(--ss-danger); font-weight: 600; }
+.ss-roster td.critical { color: #ff3b30; font-weight: 700; text-shadow: 0 0 6px rgba(255, 59, 48, 0.45); }
 .ss-roster td.muted { color: #6c707c; font-style: italic; }
 .ss-roster .clk { color: #8a8f9c; font-size: 10px; }
 .ss-empty { padding: 16px; text-align: center; color: #8a8f9c; }
@@ -81,6 +82,12 @@
 .ss-hud-status.ok { color: var(--ss-ok); }
 .ss-hud-status.warn { color: var(--ss-warn); }
 .ss-hud-status.danger { color: var(--ss-danger); font-weight: 600; }
+.ss-hud-status.critical { color: #ff3b30; font-weight: 700; }
+
+/* ---- Death (survival mode) chat card ---- */
+.ss-death-card { border-left: 3px solid #ff3b30; padding: 4px 8px; }
+.ss-death-card h3 { margin: 0 0 4px; color: #b3271e; font-weight: 700; }
+.ss-death-card p { margin: 0; }
 .ss-warm { background: #2a1d10; border: 1px solid #5a4a28; color: var(--ss-warn); border-radius: 5px; padding: 2px 7px; font-size: 11px; cursor: pointer; }
 .ss-warm.on { background: #1d3326; border-color: #3f6b54; color: #7fdca0; }
 
