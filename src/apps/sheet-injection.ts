@@ -25,14 +25,12 @@ function onRender(app: any, html: any): void {
 
     const current = item.getFlag?.(MODULE_ID, "resource") ?? "auto";
     const field = document.createElement("div");
-    field.className = "ss-resource-field";
-    field.style.cssText = "display:flex;gap:6px;align-items:center;padding:4px 8px;font-size:12px;";
+    field.className = "ss-resource-field"; // sized as a one-line footer via survival.css
 
     const label = document.createElement("label");
     label.textContent = game.i18n.localize("SURVIVAL.Item.Resource");
 
     const select = document.createElement("select");
-    select.style.flex = "1";
     for (const k of KINDS) {
       const opt = document.createElement("option");
       opt.value = k;
@@ -46,7 +44,14 @@ function onRender(app: any, html: any): void {
     });
 
     field.append(label, select);
-    (root.querySelector(".window-content") ?? root).appendChild(field);
+    // Anchor to the FORM as a one-line footer below the scrollable body — NOT `.window-content`,
+    // which on pf2e V2 sheets is a flex row that stretched this field to fill the whole window.
+    const anchor =
+      root.querySelector("form") ??
+      root.querySelector(".sheet-body") ??
+      root.querySelector(".window-content") ??
+      root;
+    anchor.appendChild(field);
   } catch (e) {
     console.warn(`${MODULE_ID} | item sheet injection failed`, e);
   }
