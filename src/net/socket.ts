@@ -6,21 +6,32 @@ import { setWarm } from "../state/bridge";
 // prompts go the other way: GM → owning player (with a GM override that closes the player dialog).
 
 let socket: any = null;
-let registerAttempted = false;
+let refusalLogged = false;
 
-/** Idempotent, self-healing socket acquisition. socketlib fires `socketlib.ready` during core
- *  `init`; if a hook-ordering hiccup means our once-listener misses it (or the bare `socketlib`
- *  global wasn't defined yet), this re-acquires the socket the next time it's needed. Runs on EVERY
- *  client — the player's inbound `promptWaterCast` handler is wired here too, so skipping it silently
- *  breaks prompt delivery in BOTH directions. Returns true once a live socket is held. */
+/** Idempotent, self-healing socket acquisition — safe to call from any hook and lazily on demand
+ *  (socketlib's registerModule returns the existing socket when called again). Runs on EVERY
+ *  client — the player's inbound `promptWaterCast` handler is wired here too, so skipping it
+ *  silently breaks prompt delivery in BOTH directions. Returns true once a live socket is held.
+ *  registerModule returns `undefined` when it REFUSES: module inactive, or the manifest lacks
+ *  `"socket": true` (Foundry's server won't relay `module.<id>` events without it) — the exact
+ *  bug that shipped until 1.1.3. */
 export function ensureSocket(): boolean {
   if (socket) return true;
   const lib: any = (globalThis as any).socketlib;
   if (!lib?.registerModule) return false; // socketlib not loaded/active yet — retry later
-  if (registerAttempted) return false; // registerModule throws if called twice; don't spam it
-  registerAttempted = true;
   try {
-    socket = lib.registerModule(MODULE_ID);
+    const s = lib.registerModule(MODULE_ID);
+    if (!s) {
+      if (!refusalLogged) {
+        refusalLogged = true;
+        console.error(
+          `${MODULE_ID} | socketlib refused this module's socket — see socketlib's own error above ` +
+            `(usually a manifest without "socket": true). Update the module, then relaunch the world.`,
+        );
+      }
+      return false;
+    }
+    socket = s;
     socket.register("setWarm", (actorUuid: string, warm: boolean) => setWarm(actorUuid, warm));
     socket.register("promptWaterCast", promptWaterCastLocal);
     socket.register("closeWaterPrompt", closeWaterPromptLocal);

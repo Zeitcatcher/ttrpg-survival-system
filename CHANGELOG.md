@@ -2,6 +2,10 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.1.3
+
+- The actual fix for players never receiving the Create Water prompt: the manifest never declared `"socket": true`, so Foundry's server refused to relay the module's socket messages and socketlib refused to register it — on every client, no matter the settings. One manifest line fixes prompt delivery and the player "kept warm" toggle, which had been silently broken by the same cause. After updating, relaunch the world (Return to Setup → Launch) so the server reads the new manifest — a browser reload is not enough.
+
 ## 1.1.2
 
 - Fixed Create Water not reaching players even with socketlib enabled. The socket is now wired on every client at world load and re-acquired when needed, so a missed startup hook no longer leaves the GM unable to send or the player unable to receive — and the false "socketlib isn't active" warning is gone when it actually is active.
