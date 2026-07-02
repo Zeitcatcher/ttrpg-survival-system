@@ -20,10 +20,24 @@
 .ss-btn.primary { background: #5a7fd6; border-color: #2c3f73; color: #fff; }
 .ss-btn.delve { background: #523774; border-color: #2e1f44; color: #f2e9ff; }
 .ss-btn.danger { background: #5a2d2a; border-color: #3a1c1a; color: #f2d9d6; }
+.ss-supply { background: var(--ss-panel); border: 1px solid var(--ss-line); border-radius: 6px; padding: 8px; }
+.ss-supply-head { font-size: 11px; color: #c3c7d1; display: flex; align-items: center; gap: 5px; }
+.ss-climate-eff { font-size: 11px; color: var(--ss-warn); margin: 3px 0 8px; }
 .ss-headline { display: flex; gap: 8px; }
-.ss-stat { flex: 1; background: var(--ss-panel); border: 1px solid var(--ss-line); border-radius: 6px; padding: 8px; text-align: center; }
-.ss-stat .k { display: block; font-size: 10px; text-transform: uppercase; color: #8a8f9c; }
+.ss-stat { flex: 1; background: #1b1e25; border: 1px solid var(--ss-line); border-radius: 6px; padding: 8px; text-align: center; }
+.ss-stat .k { display: block; font-size: 10px; color: #8a8f9c; }
 .ss-stat .v { font-size: 20px; font-weight: 600; }
+.ss-stat .unit { font-size: 11px; font-weight: 400; color: #8a8f9c; }
+.ss-stat .math { display: block; font-size: 10px; color: #8a8f9c; margin-top: 2px; }
+.ss-stat.ok .v { color: var(--ss-ok); }
+.ss-stat.warn .v { color: var(--ss-warn); }
+.ss-stat.danger .v { color: var(--ss-danger); }
+.ss-stat.muted .v { color: #6c707c; }
+.ss-sources-lbl { font-size: 10px; color: #8a8f9c; margin: 8px 0 4px; }
+.ss-sources { display: flex; flex-wrap: wrap; gap: 4px; }
+.ss-srcchip { font-size: 10px; padding: 1px 6px; border: 1px solid #333845; border-radius: 5px; color: #c3c7d1; }
+.ss-srcchip.base { border-color: #3f6b54; color: #7fdca0; }
+.ss-srcchip.out { color: #6c707c; border-color: #2a2d35; }
 .ss-section { background: var(--ss-panel); border: 1px solid var(--ss-line); border-radius: 6px; padding: 8px; }
 .ss-section-h { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8a8f9c; margin-bottom: 6px; }
 .ss-pool { background: #1b1e25; border: 1px solid var(--ss-line); border-radius: 5px; padding: 6px 8px; margin-bottom: 6px; }
@@ -56,7 +70,8 @@
 .ss-empty { padding: 16px; text-align: center; color: #8a8f9c; }
 
 /* ---- Party HUD (players) ---- */
-.application.ss-hud { --ss-warn: #d9a441; --ss-danger: #d8584e; --ss-ok: #5fb27a; }
+.application.ss-hud { --ss-warn: #d9a441; --ss-danger: #d8584e; --ss-ok: #5fb27a; --ss-panel: #262934; --ss-line: #11131a; }
+.application.ss-hud .ss-supply { margin-bottom: 6px; }
 .ss-hud-panel { color: #e6e8ee; font-size: 13px; padding: 4px; }
 .ss-hud-headline { font-weight: 600; padding: 6px 8px; border-bottom: 1px solid #11131a; margin-bottom: 6px; }
 .ss-hud-rows { display: flex; flex-direction: column; gap: 3px; }

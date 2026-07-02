@@ -1,4 +1,4 @@
-# Smoke-testing v0.5.3 in Foundry
+# Smoke-testing v0.6.0 in Foundry
 
 Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (M5)** + **foraging & hot meal (M6)** + **Ledger supply mode (M8)** + the **v0.3–0.4 GM-play additions** (reset, member/base chips, remove, transfer, fungible provisions). The engine is unit-tested headless (62 tests); this pass verifies the **Foundry-coupled layer** in a real world. Test as the **GM** (and, for the HUD, as a player if you can).
 
@@ -9,12 +9,13 @@ Covers the engine (M0–M3) + GM panel (M4) + **player HUD & daily upkeep card (
    `https://github.com/Zeitcatcher/ttrpg-survival-system/releases/latest/download/module.json`
 4. **Game Settings → Manage Modules** → enable **socketlib** and **TTRPG Survival System** → Save.
 
-> If you installed an earlier build, click **Update** so you get v0.5.3.
+> If you installed an earlier build, click **Update** so you get v0.6.0.
 
 ## 2. Sanity check
 - Console (**F12**) on load: `ttrpg-survival-system | ready (system adapter: pf2e)` + a **"Survival module loaded."** toast.
 - **Configure Settings → TTRPG Survival System**: the dials are there (Supply detail, Upkeep prompt, Source priority, Climate, Foraging, Forage DC, Next water, Catch-up cap…).
 - **Open the GM panel:** click the single **Survival** (campground) button in the Token Controls toolbar — as GM it opens the panel — or `game.modules.get("ttrpg-survival-system").api.openPanel()`. *(There's now one survival button per user, not two.)*
+- **Read the header (v0.6.0):** the top shows **"Party supply — pooled · N"** (N = consuming creatures), a **climate-effects line** ("Hot — water ×2 · no firewood"), then Food/Water/Firewood each as **days of supply** with the `stored ÷ need/day` math and a colour (green 3+, amber 1–2, red 0, grey — not needed). Below, **"Counted from:"** chips list every pool feeding the number; a **base/mount left behind is struck through** and labelled "left behind" — that's the number dropping because its stores stopped counting. The same header appears on the player HUD.
 
 ## 3. Core loop
 1. Put **2–3 PC tokens** on a scene, **select them**, and click **"+ Add selected tokens"** → they appear in the **Roster**.

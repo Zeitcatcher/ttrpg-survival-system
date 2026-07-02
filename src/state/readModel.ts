@@ -1,5 +1,5 @@
 import { forBand } from "../core/climate";
-import type { Headline } from "../core/engine";
+import { dailyGroupNeed, type Headline } from "../core/engine";
 import type { CaravanState, ClimateBand, TrackKey } from "../core/types";
 
 // PURE projection of the engine snapshot into a view-model the UI surfaces render. No Foundry,
@@ -45,7 +45,14 @@ export interface RosterView {
 export interface GroupView {
   group: string;
   climate: ClimateBand;
+  /** Days of supply per resource (the numerator ÷ denominator below). */
   headline: Headline;
+  /** Numerator: total of each resource across pools CURRENTLY WITH THE PARTY (separated excluded). */
+  stored: { food: number; water: number; firewood: number };
+  /** Denominator: the whole party's per-day need (size- and climate-scaled); firewood = bundles/night. */
+  need: { food: number; water: number; firewood: number };
+  /** Count of creatures that actually consume (enabled, alive, non-zero ration). */
+  partyCount: number;
   waterMult: number;
   coldActive: boolean;
   firewoodNeeded: boolean;
@@ -102,10 +109,23 @@ export function projectGroup(state: CaravanState, group: string, headline: Headl
       };
     });
 
+  const present = state.pools.filter((p) => p.withParty[group] === true);
+  const storedOf = (kind: "food" | "water" | "firewood") => present.reduce((s, p) => s + p.counts[kind], 0);
+  const partyCount = state.consumers.filter(
+    (c) => c.group === group && c.enabled && c.needsConsumption && (c.ration.food > 0 || c.ration.water > 0),
+  ).length;
+
   return {
     group,
     climate: state.climate[group] ?? "temperate",
     headline,
+    stored: { food: storedOf("food"), water: storedOf("water"), firewood: storedOf("firewood") },
+    need: {
+      food: dailyGroupNeed(state.consumers, group, "food", band.waterMult),
+      water: dailyGroupNeed(state.consumers, group, "water", band.waterMult),
+      firewood: band.bundles, // whole-camp bundles per night
+    },
+    partyCount,
     waterMult: band.waterMult,
     coldActive: band.cold,
     firewoodNeeded: band.bundles > 0,
