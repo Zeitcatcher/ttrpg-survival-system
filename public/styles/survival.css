@@ -69,6 +69,12 @@
 .ss-warm { background: #2a1d10; border: 1px solid #5a4a28; color: var(--ss-warn); border-radius: 5px; padding: 2px 7px; font-size: 11px; cursor: pointer; }
 .ss-warm.on { background: #1d3326; border-color: #3f6b54; color: #7fdca0; }
 
+/* ---- Water-cast GM dialog ---- */
+.ss-wc-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; border-bottom: 1px solid rgba(0,0,0,0.15); }
+.ss-wc-spell { font-style: italic; opacity: 0.8; }
+.ss-wc-state { flex: 1; text-align: right; font-size: 11px; opacity: 0.75; }
+.ss-wc-row button { flex: 0 0 auto; width: auto; padding: 2px 10px; font-size: 12px; }
+
 /* ---- Upkeep chat card ---- */
 .ss-card h3 { margin: 0 0 4px; font-size: 15px; }
 .ss-card-consumed { font-size: 13px; margin: 2px 0 6px; }

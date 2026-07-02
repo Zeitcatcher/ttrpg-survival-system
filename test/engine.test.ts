@@ -89,4 +89,38 @@ describe("SurvivalEngine — the Shards desert scenario", () => {
     computeTick(state, 1); // same target — should be a no-op
     expect(state.pools.find((p) => p.id === "chiga")!.counts.water).toBe(waterAfterOne);
   });
+
+  describe("conjured water (Create Water)", () => {
+    it("is drunk BEFORE stored water and satisfies the thirsty", () => {
+      const state = buildShardsState();
+      state.pools.find((p) => p.id === "chiga")!.withParty.Main = false; // strand the party
+      // Грог has an empty skin; +8 conjured covers him (2 in the heat) with leftovers.
+      const res = computeTick(state, 1, { conjuredWaterPerDay: 8 });
+      const grog = res.lastDayShortfalls.find((s) => s.consumerId === "grog" && s.kind === "water");
+      expect(grog).toBeUndefined();
+      // Others drank conjured water first — their skins are untouched.
+      expect(state.pools.find((p) => p.id === "pack-irime")!.counts.water).toBe(2);
+    });
+
+    it("EXPIRES at day's end: leftovers are never persisted anywhere", () => {
+      const state = buildShardsState();
+      state.pools.find((p) => p.id === "chiga")!.withParty.Main = false;
+      const before = new Map(state.pools.map((p) => [p.id, p.counts.water]));
+      computeTick(state, 1, { conjuredWaterPerDay: 50 }); // far more than one day's need
+      // No pool GAINED water (leftovers evaporate), and no ghost pool appeared.
+      expect(state.pools.every((p) => p.counts.water <= before.get(p.id)!)).toBe(true);
+      expect(state.pools.some((p) => p.id === "__conjured")).toBe(false);
+      // The next day (no cast) the shortfall returns — yesterday's leftovers are gone.
+      const res2 = computeTick(state, 2);
+      expect(res2.lastDayShortfalls.some((s) => s.consumerId === "grog" && s.kind === "water")).toBe(true);
+    });
+
+    it("refreshes EACH day of a multi-day advance (cast daily on consent)", () => {
+      const state = buildShardsState();
+      state.pools.find((p) => p.id === "chiga")!.withParty.Main = false;
+      const res = computeTick(state, 3, { conjuredWaterPerDay: 30 }); // covers the whole party daily
+      expect(res.perDay.every((d) => d.shortfalls.every((s) => s.kind !== "water"))).toBe(true);
+      expect(state.actorState.grog.thirst.stage).toBe(0);
+    });
+  });
 });
