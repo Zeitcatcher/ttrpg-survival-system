@@ -273,7 +273,7 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
       const wanted = target.some((t) => t.slug === rec.slug);
       const stillOurs = actor.items?.get?.(rec.itemId);
       if (!wanted && stillOurs) {
-        await actor.deleteEmbeddedDocuments?.("Item", [rec.itemId]);
+        await this.#safeDelete(actor, [rec.itemId]);
       }
     }
 
@@ -335,8 +335,8 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
 
   async applyHotMeal(actor: any): Promise<void> {
     // Refresh rather than stack: drop any prior hot-meal marker first.
-    const prior = (actor.items ?? []).filter?.((i: any) => (i.slug ?? i.system?.slug) === "hot-meal") ?? [];
-    if (prior.length) await actor.deleteEmbeddedDocuments?.("Item", prior.map((i: any) => i.id));
+    const prior = (actor.items ?? []).filter?.((i: any) => (i.slug ?? i.system?.slug) === "hot-meal").map((i: any) => i.id) ?? [];
+    await this.#safeDelete(actor, prior);
 
     // Effect source: a GM-configured effect UUID, else the built-in marker.
     const uuid = game.settings.get(MODULE_ID, "hotMealEffectUuid") as string;
@@ -355,8 +355,22 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
   /** Remove the hot-meal effect (and, via its TempHP rule element, the temp HP it granted). Used when
    *  a survival day advances or the party takes a Rest for the Night. */
   async clearHotMeal(actor: any): Promise<void> {
-    const marks = (actor.items ?? []).filter?.((i: any) => (i.slug ?? i.system?.slug) === "hot-meal") ?? [];
-    if (marks.length) await actor.deleteEmbeddedDocuments?.("Item", marks.map((i: any) => i.id));
+    const ids = (actor.items ?? []).filter?.((i: any) => (i.slug ?? i.system?.slug) === "hot-meal").map((i: any) => i.id) ?? [];
+    await this.#safeDelete(actor, ids);
+  }
+
+  /** Delete embedded items by id, tolerant of ids another process already removed (pf2e's own effect
+   *  duration expiry racing our cleanup, or a GM deleting a condition by hand). Filters to ids still
+   *  present and swallows a lost delete race, so a stale id never throws or aborts the surrounding
+   *  tick — the "Item does not exist" errors. */
+  async #safeDelete(actor: any, ids: string[]): Promise<void> {
+    const alive = ids.filter((id) => actor.items?.get?.(id));
+    if (!alive.length) return;
+    try {
+      await actor.deleteEmbeddedDocuments?.("Item", alive);
+    } catch (e) {
+      console.debug?.(`${MODULE_ID} | delete race: some items were already gone`, e);
+    }
   }
 
   async seedSupplies(): Promise<void> {

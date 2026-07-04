@@ -1,7 +1,7 @@
 {
   "name": "ttrpg-survival-system",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.5.0",
   "type": "module",
   "description": "System-agnostic survival module for Foundry VTT (water/food/firewood, hunger/thirst/cold). PF2e first.",
   "scripts": {

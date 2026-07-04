@@ -103,7 +103,12 @@ export async function runTickViaFoundry(
   if (result.daysProcessed > 0 && adapter.clearHotMeal) {
     for (const c of state.consumers) {
       const actor = fromUuidSync(c.id);
-      if (actor) await adapter.clearHotMeal(actor);
+      if (!actor) continue;
+      try {
+        await adapter.clearHotMeal(actor);
+      } catch (e) {
+        console.warn(`${MODULE_ID} | clearHotMeal failed`, e); // never let one actor abort the tick
+      }
     }
   }
 
@@ -423,9 +428,12 @@ export async function resetSurvival(adapter: SurvivalSystemAdapter, group?: stri
     if (!actor) continue;
     // Remove module-applied deprivation conditions (idempotent; also clears the `applied` flag).
     await adapter.reconcileConsequences(actor, { hunger: 0, thirst: 0, cold: 0 });
+    await adapter.clearHotMeal?.(actor); // also drop any well-fed buff, so Reset is a clean slate
     if (actor.setFlag) await actor.setFlag(MODULE_ID, "state", emptyActorState());
     n++;
   }
+  // Reset frees the Cook button too: clear its once-per-day lock so a hot meal can be cooked again.
+  await game.settings.set(MODULE_ID, "hotMealCookedDay", -1);
   return n;
 }
 
