@@ -55,8 +55,8 @@
       <div class="ss-pool-top">
         <span class="ss-pool-name">{{label}}</span>
         {{#if isStorage}}<span class="ss-tag">{{localize "SURVIVAL.Panel.BaseTag"}}</span>{{/if}}
-        {{#if separated}}<span class="ss-tag warn">{{localize "SURVIVAL.Panel.Separated"}}</span>{{/if}}
-        <button type="button" class="ss-toggle {{#unless separated}}on{{/unless}}" data-action="toggleParty" data-pool="{{id}}" data-with="{{withNext}}">{{localize "SURVIVAL.Panel.WithParty"}}</button>
+        {{#if separated}}<span class="ss-state sep">{{localize "SURVIVAL.Panel.Separated"}}</span>{{else}}<span class="ss-state with">{{localize "SURVIVAL.Panel.WithParty"}}</span>{{/if}}
+        <button type="button" class="ss-sep-btn {{#if separated}}rejoin{{else}}leave{{/if}}" data-action="toggleParty" data-pool="{{id}}" data-with="{{withNext}}"><i class="fa-solid {{#if separated}}fa-arrow-right-to-bracket{{else}}fa-arrow-right-from-bracket{{/if}}"></i> {{#if separated}}{{localize "SURVIVAL.Panel.Rejoin"}}{{else}}{{localize "SURVIVAL.Panel.Leave"}}{{/if}}</button>
         <button type="button" class="ss-num" data-action="transfer" data-pool="{{id}}" title="{{localize "SURVIVAL.Panel.Transfer"}}">⇄</button>
         {{#unless hasOwner}}<button type="button" class="ss-x" data-action="removePool" data-pool="{{id}}" data-name="{{label}}" title="{{localize "SURVIVAL.Panel.Remove"}}">✕</button>{{/unless}}
       </div>

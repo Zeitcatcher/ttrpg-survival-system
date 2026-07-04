@@ -41,13 +41,25 @@
 .ss-section { background: var(--ss-panel); border: 1px solid var(--ss-line); border-radius: 6px; padding: 8px; }
 .ss-section-h { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8a8f9c; margin-bottom: 6px; }
 .ss-pool { background: #1b1e25; border: 1px solid var(--ss-line); border-radius: 5px; padding: 6px 8px; margin-bottom: 6px; }
-.ss-pool.separated { opacity: 0.55; }
+/* Separated: dim only the name and counts, so the state chip and the action button stay bright
+   and clearly clickable (a parent opacity would drag the button down with it). */
+.ss-pool.separated .ss-pool-name,
+.ss-pool.separated .ss-pool-counts { opacity: 0.45; }
+.ss-pool.separated .ss-tag { opacity: 0.55; }
 .ss-pool-top { display: flex; align-items: center; gap: 6px; }
 .ss-pool-name { font-weight: 600; }
 .ss-tag { font-size: 9px; background: #1b1e25; border: 1px solid #333845; border-radius: 4px; padding: 1px 5px; color: #aab0bc; }
 .ss-tag.warn { color: var(--ss-warn); border-color: #5a4a28; }
-.ss-toggle { margin-left: auto; background: #1d3326; border: 1px solid #3f6b54; color: #7fdca0; border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer; }
-.ss-toggle:not(.on) { background: #2a1d10; border-color: #5a4a28; color: var(--ss-warn); }
+/* Always-present state label next to the pool name. */
+.ss-state { margin-left: 2px; font-size: 9.5px; font-weight: 700; letter-spacing: .02em; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.ss-state.with { color: #7fdca0; border: 1px solid #3f6b54; background: rgba(63, 107, 84, 0.16); }
+.ss-state.sep { color: var(--ss-warn); border: 1px solid #5a4a28; background: rgba(90, 74, 40, 0.18); }
+/* The action button: names what a click DOES (Leave / Rejoin), and stays bright in a greyed row. */
+.ss-sep-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; border: 1px solid; border-radius: 5px; padding: 2px 9px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.ss-sep-btn i { font-size: 10px; }
+.ss-sep-btn.leave { background: #272c35; border-color: #464d59; color: #c9cfd9; }
+.ss-sep-btn.rejoin { background: #1d3326; border-color: #3f6b54; color: #7fdca0; }
+.ss-sep-btn:hover { filter: brightness(1.2); }
 .ss-pool-counts { display: flex; gap: 6px; margin-top: 6px; }
 .ss-num { background: #101217; border: 1px solid #333845; color: #e6e8ee; border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
 .ss-pool-counts { flex-wrap: wrap; }

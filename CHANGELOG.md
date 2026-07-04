@@ -2,6 +2,10 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.2.1
+
+- Clearer separate and rejoin control in Pools and mounts. Each pool now always shows its state next to the name (with party or separated), and the button says what a click does: Leave when the pool is with the party, Rejoin once it's been left behind. The button stays bright and clickable even when the row is greyed out.
+
 ## 1.2.0
 
 Added an optional Survival mode. By default nothing changes: consequences still cap at stage 3, and no one dies by accident. Turn it on and unchecked hunger, thirst, or cold keep climbing past stage 3 into worse conditions and, eventually, death.
