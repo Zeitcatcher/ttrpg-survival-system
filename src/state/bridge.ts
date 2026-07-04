@@ -1,6 +1,7 @@
 import { computeTick, type Headline, type TickOptions, type TickResult } from "../core/engine";
 import { forageYield } from "../core/foraging";
-import { type ActorState, type CaravanState, type ClimateBand, type DegreeOfSuccess, emptyActorState } from "../core/types";
+import { recoverStep } from "../core/ladder";
+import { type ActorState, type CaravanState, type ClimateBand, type DegreeOfSuccess, emptyActorState, type TrackKey } from "../core/types";
 import { MODULE_ID } from "../settings";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
 import { type GroupView, projectGroups } from "./readModel";
@@ -336,10 +337,43 @@ export function takePendingConjuredWater(): number {
   return n;
 }
 
-/** Advance the Foundry world clock by whole days; the updateWorldTime hook runs the survival tick. */
+/** Advance the Foundry world clock by whole days, landing on the next MIDNIGHT (00:00) so the day's
+ *  upkeep is charged at a fixed, predictable time rather than at whatever hour it currently is. The
+ *  updateWorldTime hook runs the survival tick. */
 export async function advanceWorldClockDays(days: number, conjuredWaterPerDay = 0): Promise<void> {
   pendingConjuredWater = conjuredWaterPerDay;
-  await game.time.advance(days * SECS_PER_DAY);
+  const now = (game.time?.worldTime as number) ?? 0;
+  const target = (Math.floor(now / SECS_PER_DAY) + days) * SECS_PER_DAY;
+  await game.time.advance(target - now);
+}
+
+/** Manually step ONE character's track down (a mid-day meal, drink, or warmth). Only acts at stage
+ *  1+. Resets the deprivation clock and reconciles conditions to the new lower stage. A partial
+ *  recovery: one step, never a full clear, and it never spends tracked supplies. Returns whether it
+ *  stepped anything. */
+export async function recoverTrack(actorUuid: string, track: TrackKey, adapter: SurvivalSystemAdapter): Promise<boolean> {
+  const actor = fromUuidSync(actorUuid);
+  if (!actor) return false;
+  const st: ActorState = actor.getFlag?.(MODULE_ID, "state") ?? emptyActorState();
+  if (st[track].stage < 1) return false;
+  recoverStep(st[track]);
+  await actor.setFlag?.(MODULE_ID, "state", st);
+  await adapter.reconcileConsequences(actor, { hunger: st.hunger.stage, thirst: st.thirst.stage, cold: st.cold.stage });
+  return true;
+}
+
+/** Step the whole party's track down at once (every enabled member affected on that track). Skips
+ *  narrate-only mounts. Returns how many characters stepped. */
+export async function recoverPartyTrack(track: TrackKey, adapter: SurvivalSystemAdapter, group = "Main"): Promise<number> {
+  const registry = await CaravanRegistry.findOrCreate();
+  const reg = registry.load();
+  let n = 0;
+  for (const m of reg.members) {
+    if (m.group !== group || !m.enabled) continue;
+    if (m.isMount && !m.applyConsequences) continue;
+    if (await recoverTrack(m.uuid, track, adapter)) n++;
+  }
+  return n;
 }
 
 /** Realign the survival-day pointer to the world-clock day (clock = source of truth). Called on

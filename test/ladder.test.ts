@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advanceTrack, TRACKS } from "../src/core/ladder";
+import { advanceTrack, recoverStep, TRACKS } from "../src/core/ladder";
 import { emptyTrackState } from "../src/core/types";
 
 describe("LadderEngine", () => {
@@ -86,5 +86,22 @@ describe("LadderEngine", () => {
     }
     expect(fast.daysDeprived).toBeGreaterThan(slow.daysDeprived);
     expect(fast.stage).toBeGreaterThan(slow.stage);
+  });
+
+  it("recoverStep is a manual recovery step: stage down one, clock reset, healing unblocked", () => {
+    const st = emptyTrackState();
+    for (let i = 0; i < 6; i++) advanceTrack(st, TRACKS.thirst, false, 1, "capStage3", "balanced");
+    expect(st.stage).toBe(3);
+    expect(st.blockedHealing).toBe(true);
+    recoverStep(st);
+    expect(st.stage).toBe(2);
+    expect(st.daysDeprived).toBe(0);
+    expect(st.blockedHealing).toBe(false);
+  });
+
+  it("recoverStep never drops below stage 0", () => {
+    const st = emptyTrackState();
+    recoverStep(st);
+    expect(st.stage).toBe(0);
   });
 });

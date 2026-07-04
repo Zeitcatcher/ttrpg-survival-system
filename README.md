@@ -33,8 +33,8 @@ It's verified on Pathfinder 2e (Foundry v13 and up, tested on v14). The architec
 - Size-scaled consumption: Large ×2, Huge ×4, Gargantuan ×8.
 - Two supply modes: Ledger reads real actor inventory (Rations counted by their charges, waterskins, and any item you tag); Abstract is simple typed day-counts.
 - A GM panel and a read-only player HUD, plus one consolidated daily upkeep card in chat, grouped by character.
-- Advance a day, a week, or any number of days, or let the world clock drive it. Advancing moves the Foundry clock too, so the module and the clock stay in sync (no calendar module needed).
-- Roster tools: add selected tokens, mark a creature as a mount or a base, transfer supplies between pools, remove the dead, and reset statuses.
+- Advance a day, a week, or any number of days, or let the world clock drive it. Advancing moves the Foundry clock to the next midnight, where the day's food, water, and firewood are spent, so the module and the clock stay in sync (no calendar module needed).
+- Roster tools: add selected tokens, mark a creature as a mount or a base, transfer supplies between pools, remove the dead, reset statuses, and step hunger, thirst, or cold back a stage (one character or the whole party) when they find food, water, or warmth during the day.
 - Foraging (a Survival check), hot meals (a well-fed buff), and water-creating spells like Create Water, prompted with the player deciding and unused water evaporating at day's end.
 - English and Russian.
 

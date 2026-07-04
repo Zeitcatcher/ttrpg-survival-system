@@ -78,3 +78,12 @@ export function advanceTrack(
   state.stage = Math.min(lethalCap(lethal), Math.max(state.stage, computed));
   state.blockedHealing = cfg.blockHealingAtStage3 && state.stage >= 3;
 }
+
+/** A manual mid-day recovery step for one track (a meal, a drink, warmth): the same as a satisfied
+ *  day — step the stage down by one, reset the deprivation clock, and unblock healing. Partial by
+ *  design; call it once per resource the GM decides the party actually consumed. */
+export function recoverStep(state: TrackState): void {
+  state.daysDeprived = 0;
+  state.stage = Math.max(0, state.stage - 1);
+  state.blockedHealing = false;
+}

@@ -2,6 +2,11 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.4.0
+
+- The daily deduction now happens at midnight. Advancing a day or a week lands the world clock on 00:00, and that is where the day's food, water, and firewood come off, so the timing is predictable instead of landing on whatever hour you were at.
+- Added a mid-day recovery control in the Roster. When a character carries a hunger, thirst, or cold stage, a small step-down button appears on that track, and there are whole-party Fed, Watered, and Warmed buttons above the roster. Each click steps that track down one stage, resets its day counter, and re-syncs the Pathfinder conditions. It is a partial recovery for food the party finds mid-day, at your discretion, and it never spends your tracked supplies.
+
 ## 1.3.1
 
 - Advancing a day or a week now moves the Foundry world clock too, so the module and the clock stay in sync. Before, the panel's Advance changed the survival day on its own and left the date and time untouched, while moving the clock did charge upkeep. The clock is now the single source of truth: Advance moves it, and crossing a day, by the button or the clock, runs that day's upkeep once. No calendar module needed. On load the survival day realigns to the clock, so a world that drifted before this lines back up. Only the day pointer moves; supplies and conditions are untouched.

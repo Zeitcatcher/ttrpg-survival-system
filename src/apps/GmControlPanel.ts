@@ -1,4 +1,4 @@
-import type { ClimateBand } from "../core/types";
+import type { ClimateBand, TrackKey } from "../core/types";
 import { MODULE_ID } from "../settings";
 import {
   addBasePool,
@@ -11,6 +11,8 @@ import {
   forage,
   planWaterCandidates,
   readModel,
+  recoverPartyTrack,
+  recoverTrack,
   removeBasePool,
   removeMemberFromCaravan,
   resetSurvival,
@@ -198,6 +200,19 @@ async function onCook(this: any): Promise<void> {
   }
   this.render();
 }
+async function onRecover(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  if (!panelAdapter) return;
+  const actor = target.dataset.actor;
+  const track = target.dataset.track as TrackKey | undefined;
+  if (actor && track) await recoverTrack(actor, track, panelAdapter);
+  this.render();
+}
+async function onRecoverParty(this: any, _e: Event, target: HTMLElement): Promise<void> {
+  if (!panelAdapter) return;
+  const track = target.dataset.track as TrackKey | undefined;
+  if (track) await recoverPartyTrack(track, panelAdapter);
+  this.render();
+}
 async function onForage(this: any, _e: Event, target: HTMLElement): Promise<void> {
   if (!panelAdapter) return;
   const outcome = await forage(target.dataset.actor!, panelAdapter);
@@ -250,6 +265,7 @@ function fmtClock(t: { stage: number; daysDeprived: number; grace: number; statu
     label: t.statusKey ? game.i18n.localize(t.statusKey) : "—",
     clock: `${t.daysDeprived}/${t.grace}`,
     cls: t.stage >= 5 ? "critical" : t.stage >= 3 ? "danger" : t.stage >= 1 ? "warn" : "",
+    recoverable: t.stage >= 1, // show the mid-day "recover a step" control only when there's a stage to shed
   };
 }
 
@@ -278,6 +294,8 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       reset: onReset,
       forage: onForage,
       cook: onCook,
+      recover: onRecover,
+      recoverParty: onRecoverParty,
     },
   };
 

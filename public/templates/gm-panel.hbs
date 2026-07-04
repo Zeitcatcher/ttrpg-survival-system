@@ -77,6 +77,12 @@
         <button type="button" class="ss-btn" data-action="addSelected">{{localize "SURVIVAL.Panel.AddSelected"}}</button>
       </span>
     </div>
+    <div class="ss-recover-party">
+      <span class="ss-rp-lbl">{{localize "SURVIVAL.Panel.WholeParty"}}</span>
+      <button type="button" class="ss-rp-btn" data-action="recoverParty" data-track="hunger" title="{{localize "SURVIVAL.Panel.RecoverHunger"}}">🍖 {{localize "SURVIVAL.Panel.Fed"}}</button>
+      <button type="button" class="ss-rp-btn" data-action="recoverParty" data-track="thirst" title="{{localize "SURVIVAL.Panel.RecoverThirst"}}">💧 {{localize "SURVIVAL.Panel.Watered"}}</button>
+      <button type="button" class="ss-rp-btn" data-action="recoverParty" data-track="cold" title="{{localize "SURVIVAL.Panel.RecoverCold"}}">🔥 {{localize "SURVIVAL.Panel.Warmed"}}</button>
+    </div>
     <table class="ss-roster">
       <thead>
         <tr>
@@ -101,9 +107,9 @@
           {{#if inactiveLabel}}
           <td colspan="3" class="muted">{{inactiveLabel}}</td>
           {{else}}
-          <td class="{{hunger.cls}}">{{hunger.label}} <span class="clk">{{hunger.clock}}</span></td>
-          <td class="{{thirst.cls}}">{{thirst.label}} <span class="clk">{{thirst.clock}}</span></td>
-          <td class="{{cold.cls}}">{{cold.label}} <span class="clk">{{cold.clock}}</span></td>
+          <td class="{{hunger.cls}}">{{hunger.label}} <span class="clk">{{hunger.clock}}</span>{{#if hunger.recoverable}} <button type="button" class="ss-recover" data-action="recover" data-actor="{{id}}" data-track="hunger" title="{{localize "SURVIVAL.Panel.RecoverHunger"}}">▾</button>{{/if}}</td>
+          <td class="{{thirst.cls}}">{{thirst.label}} <span class="clk">{{thirst.clock}}</span>{{#if thirst.recoverable}} <button type="button" class="ss-recover" data-action="recover" data-actor="{{id}}" data-track="thirst" title="{{localize "SURVIVAL.Panel.RecoverThirst"}}">▾</button>{{/if}}</td>
+          <td class="{{cold.cls}}">{{cold.label}} <span class="clk">{{cold.clock}}</span>{{#if cold.recoverable}} <button type="button" class="ss-recover" data-action="recover" data-actor="{{id}}" data-track="cold" title="{{localize "SURVIVAL.Panel.RecoverCold"}}">▾</button>{{/if}}</td>
           {{/if}}
         </tr>
         {{/each}}
