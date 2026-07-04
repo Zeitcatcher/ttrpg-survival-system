@@ -9,6 +9,8 @@ Track a party's food, water, and firewood in Foundry VTT, and let hunger, thirst
 
 ![The GM survival panel](docs/images/panel.png)
 
+_All screenshots are from a Pathfinder 2e game, the module's first supported system._
+
 ## What it is
 
 TTRPG Survival System keeps the day-to-day bookkeeping of travel so you don't have to. Each day the party draws food and water from a shared pool: the characters' own packs, a base or stockpile, and mounts that carry supplies. The module tells you how many days are left before someone goes without. Run dry and hunger, thirst, or cold set in as escalating, readable statuses that ease back off once the party recovers.
@@ -98,10 +100,21 @@ Nothing dies on its own, though. When a character reaches the edge, you get a pr
 
 ![The survival-mode death prompt](docs/images/survival-mode.png)
 
+## Recovering
+
+When the party finds food, water, or a fire during the day, you can reflect it right away instead of waiting for the next daily upkeep. Each character's hunger, thirst, and cold in the roster carries a small step-down control, and there are whole-party Fed, Watered, and Warmed buttons above the roster. One click steps that track down a stage and clears the matching condition. It's a partial recovery you apply at your discretion, and it never spends your tracked supplies.
+
+![Mid-day recovery in the roster](docs/images/recovery.png)
+
+## Hot meals
+
+Cooking a hot meal burns one firewood and grants the party a well-fed buff: temporary Hit Points equal to each character's level, carried by an effect on the sheet so it clears cleanly. You can cook once a day, and the buff wears off when the next day begins or the party takes a Rest for the Night. Point the setting at your own effect item to grant something else instead.
+
+![A hot meal and its well-fed effect](docs/images/hot-meal.png)
+
 ## Extras
 
 - Foraging: a once-a-day Survival check that adds food to the shared pool.
-- Hot meal: burn one firewood to give the party a well-fed buff, temporary Hit Points equal to each character's level. You can cook once a day, and the buff clears when the next day begins or the party takes a Rest for the Night.
 - Create Water: when the party would otherwise go thirsty, a caster with a water spell prepared is prompted to cast it. The player decides, the GM can override, and any water the party doesn't drink that day evaporates.
 
 ![The Create Water prompt](docs/images/create-water.png)
