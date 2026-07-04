@@ -2,7 +2,7 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
-## 1.5.0
+## 1.4.1
 
 - Fixed the "Item does not exist" errors (and the "tick failed" that came with them) when advancing a day after cooking a hot meal, and in a few other spots. The module and Pathfinder 2e could both try to remove the same effect or condition at the same moment; the module's cleanup now tolerates an item another process already deleted, so it no longer throws or aborts the rest of the day's tick.
 - Reset on the Roster now also frees the Cook button and clears any well-fed buff, so after a reset you can cook a fresh hot meal right away.
