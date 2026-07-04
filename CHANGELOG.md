@@ -2,6 +2,10 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.3.1
+
+- Advancing a day or a week now moves the Foundry world clock too, so the module and the clock stay in sync. Before, the panel's Advance changed the survival day on its own and left the date and time untouched, while moving the clock did charge upkeep. The clock is now the single source of truth: Advance moves it, and crossing a day, by the button or the clock, runs that day's upkeep once. No calendar module needed. On load the survival day realigns to the clock, so a world that drifted before this lines back up. Only the day pointer moves; supplies and conditions are untouched.
+
 ## 1.3.0
 
 - Hot meals are on by default, and the Cook button works once per survival day. After you cook, it locks until the day advances, so a stray click can't burn extra firewood.

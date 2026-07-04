@@ -10,11 +10,13 @@ import type { SurvivalSystemAdapter } from "./systems/adapter";
 import { resolveActiveAdapter } from "./systems/registry";
 import {
   addSelectedTokens,
+  alignTickDayToClock,
   diagnoseSurvival,
   migrateAbstractToLedger,
   readHeadline,
   readModel,
   runTickViaFoundry,
+  takePendingConjuredWater,
 } from "./state/bridge";
 
 // Foundry entry point. Wiring only — survival logic lives in the system-neutral core (src/core)
@@ -85,6 +87,12 @@ Hooks.once("ready", () => {
     activeAdapter.seedSupplies().catch((e: unknown) => console.warn(`${MODULE_ID} | seed supplies failed`, e));
   }
 
+  // Clock is the source of truth: realign the survival-day pointer to the world clock so a world
+  // that drifted before this fix (panel advances didn't move the clock) lines back up. Pointer only.
+  if (isPrimaryGM()) {
+    alignTickDayToClock().catch((e: unknown) => console.warn(`${MODULE_ID} | align tick day failed`, e));
+  }
+
   const mod = game.modules.get(MODULE_ID);
   if (mod) {
     mod.api = {
@@ -132,7 +140,9 @@ Hooks.once("ready", () => {
     const prevDay = Math.floor((worldTime - dt) / SECS_PER_DAY);
     const newDay = Math.floor(worldTime / SECS_PER_DAY);
     if (newDay === prevDay) return;
-    runTickViaFoundry(newDay, activeAdapter)
+    // Create Water (from a panel Advance) stashes its conjured amount for this tick; 0 for a plain clock move.
+    const conjured = takePendingConjuredWater();
+    runTickViaFoundry(newDay, activeAdapter, conjured > 0 ? { conjuredWaterPerDay: conjured } : {})
       .then(async (result) => {
         await postUpkeepCard(result);
         await resolveDeaths(result, activeAdapter!);

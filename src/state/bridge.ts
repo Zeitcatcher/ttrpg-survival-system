@@ -322,13 +322,33 @@ export async function applyDelvingPreset(group: string, setUnderground: boolean)
 }
 
 /** Advance N survival days from the current pointer (Advance Day = 1, Week = 7). */
-export async function advanceDays(
-  days: number,
-  adapter: SurvivalSystemAdapter,
-  extraOptions: Partial<TickOptions> = {},
-): Promise<TickResult> {
+const SECS_PER_DAY = 86400;
+
+// The world clock is the single source of truth for time: the panel's Advance moves the clock, and
+// the updateWorldTime hook does the tick, so the survival day and the Foundry clock stay in lockstep
+// (no Simple Calendar needed). Create Water's conjured amount is negotiated on the panel BEFORE the
+// clock moves, so stash it for the hook to pick up. Only the hook clears it (by taking it), so the
+// value survives regardless of exactly when the hook fires.
+let pendingConjuredWater = 0;
+export function takePendingConjuredWater(): number {
+  const n = pendingConjuredWater;
+  pendingConjuredWater = 0;
+  return n;
+}
+
+/** Advance the Foundry world clock by whole days; the updateWorldTime hook runs the survival tick. */
+export async function advanceWorldClockDays(days: number, conjuredWaterPerDay = 0): Promise<void> {
+  pendingConjuredWater = conjuredWaterPerDay;
+  await game.time.advance(days * SECS_PER_DAY);
+}
+
+/** Realign the survival-day pointer to the world-clock day (clock = source of truth). Called on
+ *  ready so a world that drifted before this fix (panel advances used to not move the clock) lines
+ *  back up without charging anything — only the pointer moves; supplies and conditions are untouched. */
+export async function alignTickDayToClock(): Promise<void> {
+  const clockDay = Math.floor(((game.time?.worldTime as number) ?? 0) / SECS_PER_DAY);
   const last = (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0;
-  return runTickViaFoundry(last + days, adapter, extraOptions);
+  if (last !== clockDay) await game.settings.set(MODULE_ID, "lastTickDay", clockDay);
 }
 
 /** Add an actor (by UUID) to the caravan as a consumer, with a personal/mount pool. Idempotent. */

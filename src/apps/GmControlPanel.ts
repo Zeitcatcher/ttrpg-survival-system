@@ -3,7 +3,7 @@ import { MODULE_ID } from "../settings";
 import {
   addBasePool,
   addSelectedTokens,
-  advanceDays,
+  advanceWorldClockDays,
   applyDelvingPreset,
   castConfirmedWaterSpells,
   cookHotMeal,
@@ -24,8 +24,6 @@ import {
 import { buildHeadlineView } from "./headline";
 import { negotiateWaterCasts } from "./waterCastDialog";
 import type { SurvivalSystemAdapter } from "../systems/adapter";
-import { resolveDeaths } from "./deathDialog";
-import { postUpkeepCard } from "./upkeepCard";
 
 const BANDS: ClimateBand[] = ["temperate", "hot", "extremeHeat", "cold", "extremeCold"];
 
@@ -50,9 +48,9 @@ async function onAdvance(this: any, _e: Event, target: HTMLElement): Promise<voi
       const confirmed = await negotiateWaterCasts(candidates, deficitUnits, waterSpellUnits());
       conjuredWaterPerDay = await castConfirmedWaterSpells(panelAdapter, confirmed);
     }
-    const result = await advanceDays(days, panelAdapter, conjuredWaterPerDay > 0 ? { conjuredWaterPerDay } : {});
-    await postUpkeepCard(result);
-    await resolveDeaths(result, panelAdapter);
+    // Move the world clock forward; the updateWorldTime hook runs the tick, posts the upkeep card,
+    // and resolves deaths, so the survival day and the Foundry clock stay in sync.
+    await advanceWorldClockDays(days, conjuredWaterPerDay);
   }
   this.render();
 }
