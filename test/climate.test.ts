@@ -17,8 +17,8 @@ describe("ClimateModel", () => {
   it("cold bands enable the cold track and demand firewood", () => {
     expect(forBand("temperate").cold).toBe(false);
     expect(forBand("cold").cold).toBe(true);
-    expect(forBand("cold").bundles).toBe(1);
-    expect(forBand("extremeCold").bundles).toBe(2);
+    expect(forBand("cold").bundles).toBe(3);
+    expect(forBand("extremeCold").bundles).toBe(6);
     expect(forBand("extremeCold").coldStagePerNight).toBe(1);
   });
 });

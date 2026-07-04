@@ -2,6 +2,14 @@
 
 Notable changes, newest first. Every version is also on the [Releases page](https://github.com/Zeitcatcher/ttrpg-survival-system/releases); to update inside Foundry, press Update on the module.
 
+## 1.3.0
+
+- Hot meals are on by default, and the Cook button works once per survival day. After you cook, it locks until the day advances, so a stray click can't burn extra firewood.
+- The well-fed buff clears on its own. Its temporary Hit Points are now part of the effect, so removing the effect takes the HP with it, whether the next day begins, the party takes a Rest for the Night, or you delete it by hand. Before this, the HP lingered after the buff was gone.
+- The built-in hot meal has its own icon.
+- Cold weather burns more firewood: three bundles a night in the cold, six in extreme cold (was one and two).
+- Pools & mounts: every row ends with the same two controls, transfer and remove. Removing a pack removes that creature; removing a base removes the base. The roster no longer carries its own remove button.
+
 ## 1.2.1
 
 - Clearer separate and rejoin control in Pools and mounts. Each pool now always shows its state next to the name (with party or separated), and the button says what a click does: Leave when the pool is with the party, Rejoin once it's been left behind. The button stays bright and clickable even when the row is greyed out.

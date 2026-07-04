@@ -120,6 +120,11 @@ Hooks.once("ready", () => {
   Hooks.on("updateItem", refresh);
   Hooks.on("deleteItem", refresh);
 
+  // Rest for the Night ends a character's hot-meal buff (and, via its rule element, the temp HP).
+  Hooks.on("pf2e.restForTheNight", (actor: unknown) => {
+    activeAdapter?.clearHotMeal?.(actor).catch((e: unknown) => console.warn(`${MODULE_ID} | clearHotMeal on rest failed`, e));
+  });
+
   // One survival day per world-clock day-boundary crossing, primary GM only. Rest and an
   // "Advance Day/Week" control will call runTick directly in later milestones.
   Hooks.on("updateWorldTime", (worldTime: number, dt: number) => {

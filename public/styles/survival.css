@@ -149,3 +149,5 @@
 .ss-forage:hover { background: #1d3326; }
 .ss-section-actions { display: flex; gap: 5px; }
 .ss-btn.cook { background: #cf7a3a; border-color: #7a431b; color: #fff; }
+/* Cook is once per day: locked (greyed, not clickable) until the day advances. */
+.ss-btn.cook.spent { background: #3a2f26; border-color: #2a221b; color: #7c6f61; cursor: not-allowed; }

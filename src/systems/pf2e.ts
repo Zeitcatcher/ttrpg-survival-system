@@ -347,11 +347,16 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     }
     data ??= this.#hotMealEffect();
     await actor.createEmbeddedDocuments?.("Item", [data]);
+    // Temp HP is granted by the effect's TempHP rule element (see #hotMealEffect), so it is bound to
+    // the effect's lifetime: remove the effect and the temp HP goes with it. A custom effect (via the
+    // hotMealEffectUuid setting) supplies its own benefits.
+  }
 
-    // Grant temporary HP ≈ character level (never reduce a larger existing pool).
-    const level = actor.level ?? actor.system?.details?.level?.value ?? 1;
-    const current = actor.system?.attributes?.hp?.temp ?? 0;
-    if (level > current) await actor.update?.({ "system.attributes.hp.temp": level });
+  /** Remove the hot-meal effect (and, via its TempHP rule element, the temp HP it granted). Used when
+   *  a survival day advances or the party takes a Rest for the Night. */
+  async clearHotMeal(actor: any): Promise<void> {
+    const marks = (actor.items ?? []).filter?.((i: any) => (i.slug ?? i.system?.slug) === "hot-meal") ?? [];
+    if (marks.length) await actor.deleteEmbeddedDocuments?.("Item", marks.map((i: any) => i.id));
   }
 
   async seedSupplies(): Promise<void> {
@@ -440,11 +445,12 @@ export class Pf2eAdapter implements SurvivalSystemAdapter {
     return {
       name: game.i18n.localize("SURVIVAL.HotMeal.EffectName"),
       type: "effect",
-      img: "icons/svg/heal.svg",
+      img: `modules/${MODULE_ID}/images/hot-meal-icon.webp`,
       system: {
         slug: "hot-meal",
         description: { value: `<p>${game.i18n.localize("SURVIVAL.HotMeal.EffectDesc")}</p>` },
-        rules: [],
+        // Temp HP ≈ character level, owned by the effect so it clears when the effect is removed.
+        rules: [{ key: "TempHP", value: "@actor.level" }],
         traits: { otherTags: [], value: [] },
         level: { value: 0 },
         duration: { value: 1, unit: "days", expiry: "turn-start", sustained: false },

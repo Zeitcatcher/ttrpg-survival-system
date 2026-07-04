@@ -97,6 +97,15 @@ export async function runTickViaFoundry(
   await persistActorStates(state);
   await applyConsequences(state, adapter);
 
+  // A new survival day ends yesterday's hot meal (the buff and, with it, the temp HP). Rest for the
+  // Night clears it too, via the pf2e.restForTheNight hook in module.ts.
+  if (result.daysProcessed > 0 && adapter.clearHotMeal) {
+    for (const c of state.consumers) {
+      const actor = fromUuidSync(c.id);
+      if (actor) await adapter.clearHotMeal(actor);
+    }
+  }
+
   // Optional "next water in N days" desert countdown ticks down with the days that passed.
   const nextWater = (game.settings.get(MODULE_ID, "nextWaterDays") as number) ?? 0;
   if (nextWater > 0) {
@@ -130,6 +139,8 @@ export async function cookHotMeal(adapter: SurvivalSystemAdapter, group = "Main"
     if (burned) break;
   }
   if (!burned) return -1;
+  // Once per survival day: record the day cooked so the panel can lock the Cook button until the next.
+  await game.settings.set(MODULE_ID, "hotMealCookedDay", (game.settings.get(MODULE_ID, "lastTickDay") as number) ?? 0);
 
   let n = 0;
   for (const m of reg.members) {

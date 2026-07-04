@@ -29,7 +29,7 @@ It's verified on Pathfinder 2e (Foundry v13 and up, tested on v14). The architec
 - A days-of-supply header that shows its own math: the pooled total ÷ the party's daily need, per resource, and the pools it counted.
 - Graded hunger, thirst, and cold as native Pathfinder 2e conditions (Fatigued, Clumsy, Drained, and so on), applied as the party starves and cleared as it recovers.
 - Optional Survival mode: let deprivation climb past the safe cap into worse conditions and, eventually, a death you confirm, at a pace you choose.
-- Five climate bands: heat multiplies water use (up to ×3) and brings thirst on a day sooner; cold burns firewood each night to stay warm.
+- Five climate bands: heat multiplies water use (up to ×3) and brings thirst on a day sooner; cold burns firewood each night, three bundles in the cold and six in extreme cold.
 - Size-scaled consumption: Large ×2, Huge ×4, Gargantuan ×8.
 - Two supply modes: Ledger reads real actor inventory (Rations counted by their charges, waterskins, and any item you tag); Abstract is simple typed day-counts.
 - A GM panel and a read-only player HUD, plus one consolidated daily upkeep card in chat, grouped by character.
@@ -101,7 +101,7 @@ Nothing dies on its own, though. When a character reaches the edge, you get a pr
 ## Extras
 
 - Foraging: a once-a-day Survival check that adds food to the shared pool.
-- Hot meal: burn a bundle of firewood to grant the party a short well-fed buff (temporary Hit Points).
+- Hot meal: burn one firewood to give the party a well-fed buff, temporary Hit Points equal to each character's level. You can cook once a day, and the buff clears when the next day begins or the party takes a Rest for the Night.
 - Create Water: when the party would otherwise go thirsty, a caster with a water spell prepared is prompted to cast it. The player decides, the GM can override, and any water the party doesn't drink that day evaporates.
 
 ![The Create Water prompt](docs/images/create-water.png)

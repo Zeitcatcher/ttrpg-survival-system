@@ -40,7 +40,7 @@ export const SETTINGS: readonly SettingDef[] = [
   { key: "foraging", scope: "world", type: "Boolean", default: false, config: true },
   { key: "forageDC", scope: "world", type: "Number", default: 15, config: true },
   { key: "nextWaterDays", scope: "world", type: "Number", default: 0, config: true },
-  { key: "hotMeal", scope: "world", type: "Boolean", default: false, config: true },
+  { key: "hotMeal", scope: "world", type: "Boolean", default: true, config: true },
   { key: "hotMealEffectUuid", scope: "world", type: "String", default: "", config: true },
   // Create Water: prompt eligible casters when an advance would leave someone thirsty.
   { key: "waterSpell", scope: "world", type: "Boolean", default: true, config: true },
@@ -57,6 +57,8 @@ export const SETTINGS: readonly SettingDef[] = [
   { key: "lastTickDay", scope: "world", type: "Number", default: 0, config: false },
   { key: "dataVersion", scope: "world", type: "Number", default: 1, config: false },
   { key: "autoLedgerMigrated", scope: "world", type: "Boolean", default: false, config: false },
+  // The survival day a hot meal was last cooked (Cook is once per day; -1 = never).
+  { key: "hotMealCookedDay", scope: "world", type: "Number", default: -1, config: false },
 ];
 
 /** Register every dial with Foundry. Called from the `init` hook. */

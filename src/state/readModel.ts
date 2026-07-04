@@ -13,8 +13,11 @@ export interface PoolView {
   separated: boolean;
   isMount: boolean;
   isStorage: boolean;
-  /** A caravan member's own pool (pack/carried supply). False = a standalone base — removable. */
+  /** A caravan member's own pool (pack/carried supply). False = a standalone base. */
   hasOwner: boolean;
+  /** The owning consumer's id/name when hasOwner (so the pool's ✕ can remove that creature). */
+  ownerId: string | null;
+  ownerName: string | null;
 }
 
 export interface TrackView {
@@ -67,6 +70,7 @@ export function projectGroup(state: CaravanState, group: string, headline: Headl
 
   const pools: PoolView[] = state.pools.map((p) => {
     const withParty = p.withParty[group] === true;
+    const owner = state.consumers.find((c) => c.poolId === p.id);
     return {
       id: p.id,
       label: p.label,
@@ -75,7 +79,9 @@ export function projectGroup(state: CaravanState, group: string, headline: Headl
       separated: !withParty,
       isMount: p.isMount,
       isStorage: p.isStorage,
-      hasOwner: state.consumers.some((c) => c.poolId === p.id),
+      hasOwner: !!owner,
+      ownerId: owner?.id ?? null,
+      ownerName: owner?.name ?? null,
     };
   });
 

@@ -183,6 +183,12 @@ async function onReset(this: any): Promise<void> {
 }
 async function onCook(this: any): Promise<void> {
   if (!panelAdapter) return;
+  // Once per survival day. The button is disabled when already cooked, but guard here as well.
+  if (
+    (game.settings.get(MODULE_ID, "hotMealCookedDay") as number) ===
+    (game.settings.get(MODULE_ID, "lastTickDay") as number)
+  )
+    return;
   const n = await cookHotMeal(panelAdapter, "Main");
   if (n === -1) ui.notifications?.warn(game.i18n.localize("SURVIVAL.HotMeal.NoWood"));
   else if (n === 0) ui.notifications?.warn(game.i18n.localize("SURVIVAL.HotMeal.CantCook"));
@@ -294,6 +300,10 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       supply: buildHeadlineView(g),
       foragingOn: game.settings.get(MODULE_ID, "foraging") === true,
       hotMealOn: game.settings.get(MODULE_ID, "hotMeal") === true,
+      // Cook is once per survival day: lock the button when this day already has a meal.
+      cookDisabled:
+        (game.settings.get(MODULE_ID, "hotMealCookedDay") as number) ===
+        (game.settings.get(MODULE_ID, "lastTickDay") as number),
       nextWaterDays: (game.settings.get(MODULE_ID, "nextWaterDays") as number) ?? 0,
       supplyModeLabel: game.i18n.localize(
         game.settings.get(MODULE_ID, "supplyDetail") === "ledger" ? "SURVIVAL.Mode.ledger" : "SURVIVAL.Mode.abstract",
@@ -310,6 +320,8 @@ export class GmControlPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         separated: p.separated,
         withNext: (!p.withParty).toString(),
         hasOwner: p.hasOwner,
+        ownerId: p.ownerId,
+        ownerName: p.ownerName,
         food: p.counts.food,
         water: p.counts.water,
         firewood: p.counts.firewood,

@@ -51,8 +51,10 @@ export interface SurvivalSystemAdapter {
   // FORAGING (optional extra)
   rollForage?(actor: any, dc: number): Promise<DegreeOfSuccess | null>;
 
-  // HOT MEAL (optional extra): grant a "well-fed" buff (temp HP + a 1-day marker effect).
+  // HOT MEAL (optional extra): grant a "well-fed" buff (temp HP via a TempHP rule element).
   applyHotMeal?(actor: any): Promise<void>;
+  /** Remove the hot-meal buff (and its temp HP) — on a day advance or a Rest for the Night. */
+  clearHotMeal?(actor: any): Promise<void>;
 
   // LEDGER MODE: seed the module's day-unit supply items into the world (GM convenience).
   seedSupplies?(): Promise<void>;
